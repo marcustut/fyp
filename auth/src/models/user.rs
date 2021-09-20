@@ -16,6 +16,7 @@ pub struct User {
     pub updated_at: NaiveDateTime,
 }
 
+// TODO: Validate does not work currently
 #[derive(Debug, Deserialize, Validate)]
 pub struct NewUser {
     #[validate(length(min = 3))]
@@ -26,6 +27,7 @@ pub struct NewUser {
     pub password: String,
 }
 
+// TODO: Validate does not work currently
 #[derive(Debug, Deserialize, Validate)]
 pub struct UpdateProfile {
     pub full_name: Option<String>,

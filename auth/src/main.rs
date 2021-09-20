@@ -7,10 +7,17 @@ mod handlers;
 mod models;
 
 use crate::config::Config;
-use actix_web::{middleware::Logger, App, HttpServer};
+use crate::db::user::UserRepository;
+use actix_web::{middleware::Logger, web, App, HttpServer};
 use color_eyre::Result;
 use handlers::app_config;
+use std::sync::Arc;
 use tracing::info;
+
+// This is an immutable application state
+struct AppState {
+    app_name: String,
+}
 
 #[actix_rt::main]
 async fn main() -> Result<()> {
@@ -24,8 +31,12 @@ async fn main() -> Result<()> {
     HttpServer::new(move || {
         App::new()
             .wrap(Logger::default())
-            .app_data(pool.clone())
-            .app_data(crypto_service.clone())
+            .app_data(web::Data::new(AppState {
+                app_name: String::from("Auth"),
+            }))
+            .app_data(web::Data::new(pool.clone()))
+            .app_data(web::Data::new(crypto_service.clone()))
+            .app_data(web::Data::new(UserRepository::new(Arc::new(pool.clone()))))
             .configure(app_config)
     })
     .bind(format!("{}:{}", config.host, config.port))?
