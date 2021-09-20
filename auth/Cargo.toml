@@ -17,3 +17,11 @@ tracing = "0.1.28"
 tracing-futures = "0.2.5"
 tracing-log = { version = "0.1.2", features = ["env_logger"] }
 tracing-subscriber = "0.2.24"
+sqlx = { version = "0.5.7", default-features = false, features = ["runtime-tokio-native-tls", "macros", "postgres", "uuid", "chrono"] } 
+uuid = { version = "0.8.2", features = ["serde"] }
+chrono = { version = "0.4.19", features = ["serde"] }
+validator = "0.14"
+validator_derive = "0.14"
+jsonwebtoken = "7.2"
+argonautica = { version = "0.2", features = ["simd"] }
+futures = { version = "0.3", features = ["compat"] }
