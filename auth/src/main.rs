@@ -11,11 +11,21 @@ use tracing::info;
 async fn main() -> Result<()> {
     let config: Config = Config::from_env().expect("Server configuration");
 
+    let pool = config.db_pool().await.expect("Database configuration");
+
+    let crypto_service = config.crypto_service();
+
     info!("Starting server at http://{}:{}", config.host, config.port);
-    HttpServer::new(move || App::new().wrap(Logger::default()).configure(app_config))
-        .bind(format!("{}:{}", config.host, config.port))?
-        .run()
-        .await?;
+    HttpServer::new(move || {
+        App::new()
+            .wrap(Logger::default())
+            .app_data(pool.clone())
+            .app_data(crypto_service.clone())
+            .configure(app_config)
+    })
+    .bind(format!("{}:{}", config.host, config.port))?
+    .run()
+    .await?;
 
     Ok(())
 }
