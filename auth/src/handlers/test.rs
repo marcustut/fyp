@@ -27,7 +27,7 @@ mod tests {
 
     #[actix_rt::test]
     async fn test_user() {
-        let config: Config = Config::from_env().expect("Server configuration");
+        let config: Config = Config::from_env(false).expect("Server configuration");
 
         let pool = config.db_pool().await.expect("Database configuration");
 
@@ -42,25 +42,51 @@ mod tests {
         )
         .await;
 
+        // the test user's username
+        let test_username = String::from("test_user");
+
+        // request body for creating a user
         let req_body = json!({
-            "username": "test_user",
+            "username": test_username,
             "email": "test@test.com",
             "password": "test1234"
         });
 
+        // creating a user
         let resp = test::TestRequest::post()
             .uri("/user")
             .set_json(&req_body)
             .send_request(&mut app)
             .await;
-        assert!(resp.status().is_success(), "Create user");
+        assert!(resp.status().is_success(), "Failed to create user");
 
+        // creating an existing user
+        let resp = test::TestRequest::post()
+            .uri("/user")
+            .set_json(&req_body)
+            .send_request(&mut app)
+            .await;
+        assert!(
+            resp.status().is_client_error(),
+            "Should not be possible to create user with same username"
+        );
+
+        // finding a user
+        let resp = test::TestRequest::get()
+            .uri(&format!("/user/{}", test_username))
+            .send_request(&mut app)
+            .await;
+        assert!(resp.status().is_success(), "Failed to find user");
+
+        // parse the result as a user
         let test_user: User = test::read_body_json(resp).await;
+        assert_eq!(test_user.username, test_username, "Found wrong user");
 
+        // deleting a user
         let resp = test::TestRequest::delete()
             .uri(&format!("/user/{}", test_user.username))
             .send_request(&mut app)
             .await;
-        assert!(resp.status().is_success(), "Delete user");
+        assert!(resp.status().is_success(), "Failed to delete user");
     }
 }

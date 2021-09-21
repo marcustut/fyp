@@ -21,12 +21,14 @@ pub struct Config {
 
 impl Config {
     #[instrument]
-    pub fn from_env() -> Result<Config> {
+    pub fn from_env(enable_tracing: bool) -> Result<Config> {
         dotenv().ok();
 
-        tracing_subscriber::fmt()
-            .with_env_filter(EnvFilter::from_default_env())
-            .init();
+        if enable_tracing {
+            tracing_subscriber::fmt()
+                .with_env_filter(EnvFilter::from_default_env())
+                .init();
+        }
 
         info!("Loading configuration");
 

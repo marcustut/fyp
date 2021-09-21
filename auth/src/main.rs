@@ -21,7 +21,7 @@ struct AppState {
 
 #[actix_rt::main]
 async fn main() -> Result<()> {
-    let config: Config = Config::from_env().expect("Server configuration");
+    let config: Config = Config::from_env(true).expect("Server configuration");
 
     let pool = config.db_pool().await.expect("Database configuration");
 
