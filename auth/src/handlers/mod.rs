@@ -1,4 +1,5 @@
 pub mod health;
+pub mod test;
 pub mod user;
 
 use actix_web::web::ServiceConfig;
