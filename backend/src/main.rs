@@ -13,6 +13,7 @@ use color_eyre::Result;
 use handlers::app_config;
 use std::sync::Arc;
 use tracing::info;
+use crate::models::user::create_schema;
 
 // This is an immutable application state
 struct AppState {
@@ -27,6 +28,8 @@ async fn main() -> Result<()> {
 
     let crypto_service = config.crypto_service();
 
+    let schema = std::sync::Arc::new(create_schema());
+
     info!("Starting server at http://{}:{}", config.host, config.port);
     HttpServer::new(move || {
         App::new()
@@ -36,6 +39,7 @@ async fn main() -> Result<()> {
             }))
             .app_data(web::Data::new(pool.clone()))
             .app_data(web::Data::new(crypto_service.clone()))
+            .app_data(web::Data::new(schema.clone()))
             .app_data(web::Data::new(UserRepository::new(Arc::new(pool.clone()))))
             .configure(app_config)
     })

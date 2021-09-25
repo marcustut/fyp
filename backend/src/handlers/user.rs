@@ -4,7 +4,7 @@ use crate::models::user::NewUser;
 use actix_web::{delete, get, post, web, HttpResponse, Responder};
 
 #[get("/user/{username}")]
-async fn find(username: web::Path<String>, user_repo: web::Data<UserRepository>) -> impl Responder {
+pub(crate) async fn find(username: web::Path<String>, user_repo: web::Data<UserRepository>) -> impl Responder {
     let username = username.into_inner();
     let result = user_repo.get_ref().find(username).await;
     match result {
@@ -14,7 +14,7 @@ async fn find(username: web::Path<String>, user_repo: web::Data<UserRepository>)
 }
 
 #[post("/user")]
-async fn create(
+pub(crate) async fn create(
     new_user: web::Json<NewUser>,
     user_repo: web::Data<UserRepository>,
     crypto_service: web::Data<CryptoService>,
@@ -31,7 +31,7 @@ async fn create(
 }
 
 #[delete("/user/{username}")]
-async fn delete(
+pub(crate) async fn delete(
     username: web::Path<String>,
     user_repo: web::Data<UserRepository>,
 ) -> impl Responder {
