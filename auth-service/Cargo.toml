@@ -1,5 +1,5 @@
 [package]
-name = "backend"
+name = "auth-service"
 version = "0.1.0"
 edition = "2018"
 
@@ -26,4 +26,6 @@ validator_derive = "0.14"
 jsonwebtoken = "7.2"
 argonautica = { version = "0.2", features = ["simd"] }
 futures = { version = "0.3", features = ["compat"] }
-juniper = "0.15.7"
+juniper = "0.15"
+lazy_static = "1.4.0"
+regex = "1.5"
