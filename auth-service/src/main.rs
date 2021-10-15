@@ -5,11 +5,13 @@ extern crate lazy_static;
 
 mod config;
 mod db;
+mod graphql;
 mod handlers;
 mod models;
 
 use crate::config::Config;
 use crate::db::user::UserRepository;
+use crate::graphql::new_schema;
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use color_eyre::Result;
 use handlers::app_config;
@@ -29,6 +31,8 @@ async fn main() -> Result<()> {
 
     let crypto_service = config.crypto_service();
 
+    let schema = new_schema();
+
     info!("Starting server at http://{}:{}", config.host, config.port);
     HttpServer::new(move || {
         App::new()
@@ -38,6 +42,7 @@ async fn main() -> Result<()> {
             }))
             .app_data(web::Data::new(pool.clone()))
             .app_data(web::Data::new(crypto_service.clone()))
+            .app_data(web::Data::new(schema.clone()))
             .app_data(web::Data::new(UserRepository::new(Arc::new(pool.clone()))))
             .configure(app_config)
     })
