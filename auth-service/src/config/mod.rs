@@ -1,6 +1,9 @@
 pub mod crypto;
 
 use crate::config::crypto::CryptoService;
+use crate::db::user::UserRepository;
+use crate::graphql::schema::{AppSchema, Mutation, Query};
+use async_graphql::{EmptySubscription, Schema};
 use color_eyre::Result;
 use dotenv::dotenv;
 use eyre::WrapErr;
@@ -40,7 +43,7 @@ impl Config {
             .context("Loading configuration from environment")
     }
 
-    pub async fn db_pool(&self) -> Result<PgPool> {
+    pub async fn new_db_pool(&self) -> Result<PgPool> {
         info!("Creating database connection pool.");
 
         PgPoolOptions::new()
@@ -50,9 +53,20 @@ impl Config {
             .context("creating database connection pool")
     }
 
-    pub fn crypto_service(&self) -> CryptoService {
+    pub fn new_crypto_service(&self) -> CryptoService {
         CryptoService {
             key: Arc::new(self.secret_key.clone()),
         }
+    }
+
+    pub fn new_schema(
+        &self,
+        user_repo: UserRepository,
+        crypto_service: CryptoService,
+    ) -> AppSchema {
+        Schema::build(Query, Mutation, EmptySubscription)
+            .data(user_repo)
+            .data(crypto_service)
+            .finish()
     }
 }

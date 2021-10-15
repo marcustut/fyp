@@ -1,3 +1,4 @@
+use async_graphql::{InputObject, SimpleObject};
 use chrono::NaiveDateTime;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -8,12 +9,13 @@ lazy_static! {
     static ref RE_HAS_ONE_NUMBER: Regex = Regex::new(r"[0-9]+").unwrap();
 }
 
-#[derive(Debug, Deserialize, Serialize, sqlx::FromRow)]
+#[derive(Debug, Deserialize, Serialize, sqlx::FromRow, SimpleObject)]
 pub struct User {
     pub id: Uuid,
     pub username: String,
     pub email: String,
     #[serde(skip)]
+    #[graphql(skip)]
     pub password_hash: String,
     pub full_name: Option<String>,
     pub bio: Option<String>,
@@ -22,7 +24,7 @@ pub struct User {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize, Validate, InputObject)]
 pub struct NewUser {
     #[validate(length(min = 3, message = "must be at least 3 characters"))]
     pub username: String,

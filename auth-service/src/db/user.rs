@@ -6,6 +6,7 @@ use eyre::Result;
 use sqlx::PgPool;
 use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct UserRepository {
     pool: Arc<PgPool>,
 }
