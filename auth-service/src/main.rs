@@ -9,8 +9,8 @@ mod graphql;
 mod handlers;
 mod models;
 
+use crate::config::Config;
 use crate::db::user::UserRepository;
-use crate::{config::Config, db::user};
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use color_eyre::Result;
 use handlers::app_config;

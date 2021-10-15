@@ -1,7 +1,12 @@
+// use std::borrow::Cow;
+// use std::collections::BTreeMap;
+
 use crate::graphql::utils::get_user_repo_from_ctx;
 use async_graphql::validators::StringMinLength;
-use async_graphql::{Context, EmptySubscription, Error, ErrorExtensions, Object, Schema};
-use serde_json::json;
+// use async_graphql::Value::Null;
+use async_graphql::{Context, EmptySubscription, Error, ErrorExtensions, Object, Schema, Value};
+// use serde_json::json;
+
 use validator::Validate;
 
 use crate::models::user::{NewUser, User};
@@ -50,9 +55,13 @@ impl Mutation {
         // validate the input
         match new_user.validate() {
             Ok(_) => (),
-            Err(e) => {
-                return Err(Error::new("Failed validating NewUser")
-                    .extend_with(|_, e| e.set("validation_error", "HAHHA")))
+            Err(err) => {
+                return Err(Error::new("error validating input").extend_with(|_, e| {
+                    e.set(
+                        "validation_error",
+                        Value::from_json(serde_json::to_value(err.clone()).unwrap()).unwrap(),
+                    )
+                }))
             }
         };
 
@@ -60,7 +69,21 @@ impl Mutation {
         let result = user_repo.create(new_user, &crypto_service).await;
         match result {
             Ok(user) => Ok(user),
-            _ => Err(Error::new("unable to create user")),
+            Err(report) => Err(Error::new(report.to_string())),
+        }
+    }
+
+    async fn delete_user(
+        &self,
+        ctx: &Context<'_>,
+        #[graphql(validator(StringMinLength(length = "3")))] username: String,
+    ) -> Result<User, Error> {
+        let user_repo = get_user_repo_from_ctx(ctx);
+
+        let result = user_repo.delete(username).await;
+        match result {
+            Ok(user) => Ok(user),
+            Err(report) => Err(Error::new(report.to_string())),
         }
     }
 }
