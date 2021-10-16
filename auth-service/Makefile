@@ -1,6 +1,6 @@
 .PHONY: deps dev
 
-APP_NAME="auth"
+APP_NAME="auth-service"
 
 ifneq (,$(wildcard ./.env))
 	include .env

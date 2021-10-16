@@ -1,1 +1,3 @@
-dataset/
+target/
+.idea/
+.env

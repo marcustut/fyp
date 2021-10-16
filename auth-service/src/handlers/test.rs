@@ -29,9 +29,9 @@ mod tests {
     async fn test_user() {
         let config: Config = Config::from_env(false).expect("Server configuration");
 
-        let pool = config.db_pool().await.expect("Database configuration");
+        let pool = config.new_db_pool().await.expect("Database configuration");
 
-        let crypto_service = config.crypto_service();
+        let crypto_service = config.new_crypto_service();
 
         let mut app = test::init_service(
             App::new()
