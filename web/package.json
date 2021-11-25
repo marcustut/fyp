@@ -1,0 +1,23 @@
+{
+  "name": "web",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^12.0.4",
+    "react": "^18.0.0-beta-fdc1d617a-20211118",
+    "react-dom": "^18.0.0-beta-fdc1d617a-20211118"
+  },
+  "devDependencies": {
+    "@types/canvas-confetti": "^1.4.2",
+    "@types/node": "16.11.9",
+    "@types/react": "17.0.35",
+    "eslint": "7",
+    "eslint-config-next": "12.0.4",
+    "typescript": "4.5.2"
+  }
+}
