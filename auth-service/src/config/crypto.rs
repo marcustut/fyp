@@ -1,7 +1,6 @@
-use argonautica::{Error, Hasher};
+use argon2::{self, Config};
 use color_eyre::Result;
 use eyre::eyre;
-use futures::compat::Future01CompatExt;
 use std::sync::Arc;
 use tracing::instrument;
 
@@ -13,12 +12,8 @@ pub struct CryptoService {
 impl CryptoService {
     #[instrument]
     pub async fn hash_password(&self, password: String) -> Result<String> {
-        Hasher::default()
-            .with_secret_key(&*self.key)
-            .with_password(password)
-            .hash_non_blocking()
-            .compat()
-            .await
-            .map_err(|err: Error| eyre!("Hashing error: {:?}", err))
+        let config = Config::default();
+        argon2::hash_encoded(password.as_bytes(), self.key.as_bytes(), &config)
+            .map_err(|err| eyre!("Hashing error: {:?}", err))
     }
 }

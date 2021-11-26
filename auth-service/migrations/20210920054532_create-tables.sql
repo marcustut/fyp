@@ -1,5 +1,5 @@
--- Add migration script here
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- migrate:up
+create extension if not exists "uuid-ossp";
 
 create table users (
     id uuid default uuid_generate_v4() primary key,
@@ -14,3 +14,7 @@ create table users (
     created_at timestamp not null default current_timestamp,
     updated_at timestamp not null default current_timestamp
 );
+-- migrate:down
+drop table users;
+
+drop extension "uuid-ossp";
