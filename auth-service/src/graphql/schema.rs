@@ -3,7 +3,7 @@ use async_graphql::{Context, EmptySubscription, Error, ErrorExtensions, Object, 
 
 use validator::Validate;
 
-use crate::models::user::{NewUser, User};
+use crate::models::user::{NewUser, UpdateProfile, User};
 
 use super::utils::get_crypto_service_from_ctx;
 
@@ -13,13 +13,13 @@ pub struct Query;
 
 #[Object]
 impl Query {
-    async fn hash_password(&self, ctx: &Context<'_>, password: String) -> Result<String, Error> {
-        let crypto_service = get_crypto_service_from_ctx(ctx);
-        match crypto_service.hash_password(password).await {
-            Ok(pwd) => Ok(pwd),
-            Err(e) => Err(Error::new(format!("{:#}", e))),
-        }
-    }
+    // async fn hash_password(&self, ctx: &Context<'_>, password: String) -> Result<String, Error> {
+    //     let crypto_service = get_crypto_service_from_ctx(ctx);
+    //     match crypto_service.hash_password(password).await {
+    //         Ok(pwd) => Ok(pwd),
+    //         Err(e) => Err(Error::new(format!("{:#}", e))),
+    //     }
+    // }
 
     async fn get_user(
         &self,
@@ -65,6 +65,20 @@ impl Mutation {
 
         // create the user
         let result = user_repo.create(new_user, &crypto_service).await;
+        match result {
+            Ok(user) => Ok(user),
+            Err(report) => Err(Error::new(report.to_string())),
+        }
+    }
+
+    async fn update_user(
+        &self,
+        ctx: &Context<'_>,
+        update_profile: UpdateProfile,
+        #[graphql(validator(min_length = 3))] username: String,
+    ) -> Result<User, Error> {
+        let user_repo = get_user_repo_from_ctx(ctx);
+        let result = user_repo.update(update_profile, username).await;
         match result {
             Ok(user) => Ok(user),
             Err(report) => Err(Error::new(report.to_string())),

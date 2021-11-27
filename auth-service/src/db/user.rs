@@ -1,6 +1,6 @@
 use crate::{
     config::crypto::CryptoService,
-    models::user::{NewUser, User},
+    models::user::{NewUser, UpdateProfile, User},
 };
 use eyre::Result;
 use sqlx::PgPool;
@@ -58,6 +58,39 @@ impl UserRepository {
             new_user.email,
             password_hash
         )
+        .fetch_one(&*self.pool)
+        .await?;
+
+        Ok(user)
+    }
+
+    pub async fn update(&self, update_profile: UpdateProfile, username: String) -> Result<User> {
+        let dynamic_update_statement: Vec<String> = update_profile
+            .as_hashmap()
+            .into_iter()
+            .map(|kv| -> String { format!("{} = nullif('{}', ''), ", kv.0, kv.1) })
+            .collect();
+        let dynamic_update_statement = dynamic_update_statement.join(" ");
+        let dynamic_update_statement: String = dynamic_update_statement
+            .chars()
+            .take(dynamic_update_statement.len() - 2)
+            .collect();
+
+        println!("{}\n", dynamic_update_statement);
+
+        let user = sqlx::query_as(
+            format!(
+                r#"
+                UPDATE users
+                SET {}
+                WHERE username = $1
+                RETURNING *
+            "#,
+                dynamic_update_statement
+            )
+            .as_str(),
+        )
+        .bind(username)
         .fetch_one(&*self.pool)
         .await?;
 
