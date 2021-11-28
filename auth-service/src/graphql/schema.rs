@@ -42,6 +42,7 @@ impl Query {
     }
 }
 
+// TODO: Add mutation for `sign_in`, `sign_up`, `refresh_token`
 pub struct Mutation;
 
 #[Object]
