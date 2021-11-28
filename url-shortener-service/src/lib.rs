@@ -36,7 +36,67 @@ pub async fn main(req: Request, env: Env) -> Result<Response> {
     // functionality and a `RouteContext` which you can use to and get route parameters and
     // Environment bindings like KV Stores, Durable Objects, Secrets, and Variables.
     router
-        .get("/", |_, _| Response::ok("Hello from Workers!"))
+        .get("/", |_, _| {
+            Response::from_html(
+                r#"
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+                        <title>URL Shortener</title>
+                    </head>
+                    <body>
+                        <div style="height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                            <h2>URL Shortener</h2>
+                            <form onsubmit="return handleSubmit(event)">
+                                <input
+                                type="text"
+                                id="input-url"
+                                name="url"
+                                size="40"
+                                placeholder="https://google.com"
+                                required
+                                />
+                                <input type="submit" id="input-submit" value="Shorten" />
+                            </form>
+
+                            <p id="shortened-url"></p>
+                        </div>
+                        <script>
+                            function handleSubmit(event) {
+                                event.preventDefault();
+                                fetch('/links', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                        url: document.querySelector('#input-url').value,
+                                    }),
+                                    })
+                                    .then((response) => {
+                                        if (response.status == 200) {
+                                            return response.json();
+                                        } else {
+                                            throw new Error('Issue saving URL');
+                                        }
+                                    })
+                                    .then((data) => {
+                                        document.querySelector('#shortened-url').innerHTML = data.shortened_url;
+                                    })
+                                    .catch((error) => {
+                                        document.querySelector('#shortened-url').innerHTML = 'An error occured';
+                                    });
+                                return false;
+                            }
+                        </script>
+                    </body>
+                    </html>
+                "#,
+            )
+        })
         .post_async("/links", |mut req, ctx| async move {
             let kv = ctx.kv("SHORTEN")?;
 
