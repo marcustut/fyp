@@ -1,15 +1,9 @@
-// use std::borrow::Cow;
-// use std::collections::BTreeMap;
-
 use crate::graphql::utils::get_user_repo_from_ctx;
-use async_graphql::validators::StringMinLength;
-// use async_graphql::Value::Null;
 use async_graphql::{Context, EmptySubscription, Error, ErrorExtensions, Object, Schema, Value};
-// use serde_json::json;
 
 use validator::Validate;
 
-use crate::models::user::{NewUser, User};
+use crate::models::user::{NewUser, UpdateProfile, User};
 
 use super::utils::get_crypto_service_from_ctx;
 
@@ -19,14 +13,18 @@ pub struct Query;
 
 #[Object]
 impl Query {
-    async fn add(&self, a: i32, b: i32) -> i32 {
-        a + b
-    }
+    // async fn hash_password(&self, ctx: &Context<'_>, password: String) -> Result<String, Error> {
+    //     let crypto_service = get_crypto_service_from_ctx(ctx);
+    //     match crypto_service.hash_password(password).await {
+    //         Ok(pwd) => Ok(pwd),
+    //         Err(e) => Err(Error::new(format!("{:#}", e))),
+    //     }
+    // }
 
     async fn get_user(
         &self,
         ctx: &Context<'_>,
-        #[graphql(validator(StringMinLength(length = "3")))] username: String,
+        #[graphql(validator(min_length = 3))] username: String,
     ) -> Result<User, Error> {
         // get user repository
         let user_repo = get_user_repo_from_ctx(ctx);
@@ -36,7 +34,7 @@ impl Query {
 
         match result {
             Ok(user) => Ok(user),
-            _ => Err(Error::new(format!(
+            Err(_) => Err(Error::new(format!(
                 "Can't find user with username `{}`",
                 username
             ))),
@@ -44,6 +42,7 @@ impl Query {
     }
 }
 
+// TODO: Add mutation for `sign_in`, `sign_up`, `refresh_token`
 pub struct Mutation;
 
 #[Object]
@@ -73,10 +72,24 @@ impl Mutation {
         }
     }
 
+    async fn update_user(
+        &self,
+        ctx: &Context<'_>,
+        update_profile: UpdateProfile,
+        #[graphql(validator(min_length = 3))] username: String,
+    ) -> Result<User, Error> {
+        let user_repo = get_user_repo_from_ctx(ctx);
+        let result = user_repo.update(update_profile, username).await;
+        match result {
+            Ok(user) => Ok(user),
+            Err(report) => Err(Error::new(report.to_string())),
+        }
+    }
+
     async fn delete_user(
         &self,
         ctx: &Context<'_>,
-        #[graphql(validator(StringMinLength(length = "3")))] username: String,
+        #[graphql(validator(min_length = 3))] username: String,
     ) -> Result<User, Error> {
         let user_repo = get_user_repo_from_ctx(ctx);
 
