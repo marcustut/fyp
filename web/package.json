@@ -2,22 +2,30 @@
   "name": "web",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "unocss:build": "unocss 'src/**/*.tsx' --out-file src/styles/uno.css",
+    "unocss:watch": "yarn unocss:build --watch",
+    "dev": "concurrently 'yarn unocss:watch' 'next dev'",
+    "build": "yarn unocss:build && next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "^12.0.4",
+    "canvas-confetti": "^1.4.0",
+    "next": "canary",
     "react": "^18.0.0-beta-fdc1d617a-20211118",
     "react-dom": "^18.0.0-beta-fdc1d617a-20211118"
   },
   "devDependencies": {
+    "@iconify-json/mdi": "^1.0.11",
     "@types/canvas-confetti": "^1.4.2",
     "@types/node": "16.11.9",
     "@types/react": "17.0.35",
+    "@unocss/preset-icons": "^0.12.15",
+    "concurrently": "^6.4.0",
     "eslint": "7",
     "eslint-config-next": "12.0.4",
-    "typescript": "4.5.2"
+    "typescript": "4.5.2",
+    "unocss": "^0.12.15",
+    "unocss-preset-typography": "^0.3.0"
   }
 }
