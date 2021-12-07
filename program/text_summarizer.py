@@ -34,7 +34,7 @@ class TextSummarizer():
             tokenizer.save_pretrained(save_directory='../tokenizers/' + path)
 
     def __is_empty(self, path: str) -> bool:
-        '''Checks whether directory path is empty.'''
+        '''Checks whether directory path is empty and creates one if it does not exist.'''
         if os.path.exists(path) and not os.path.isfile(path):
             # Checking if the directory is empty or not
             if not os.listdir(path):
