@@ -5,6 +5,3 @@ dist
 index.html
 .remote-assets
 components.d.ts
-models/
-tokenizers/
-*.pem
