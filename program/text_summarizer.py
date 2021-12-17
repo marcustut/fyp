@@ -1,5 +1,5 @@
 from transformers import pipeline
-from transformers import BartForConditionalGeneration
+from transformers import BartForConditionalGeneration, AutoModel
 from transformers import AutoTokenizer
 from transformers.pipelines.base import Pipeline
 import os
@@ -7,43 +7,50 @@ import os
 class TextSummarizer():
     '''Text summarizers using different models and tokenizers. Includes saving of pre-trained models into directories.'''
 
-    summarizer: Pipeline
-    model: BartForConditionalGeneration
-    tokenizer: AutoTokenizer
+    mode: any
 
-    def __init__(self, checkpoint='sshleifer/distilbart-cnn-12-6') -> None:
+    def __init__(self) -> None:
         '''Initialises the TextSummarizer object with a summarizer, model and tokenizer.'''
-        self.summarizer, self.model, self.tokenizer = self.__create_summarizer(checkpoint=checkpoint)
-        self.__save_model(path=checkpoint, model=self.model, tokenizer=self.tokenizer)
+        self.mode = self.Abstractive()
         pass
 
-    def __create_summarizer(self, checkpoint: str, ) -> Pipeline:
-        '''Creates a summarizer from loading a model and tokenizer.'''
-        checkpoint = 'sshleifer/distilbart-cnn-12-6'
-        model = BartForConditionalGeneration.from_pretrained(checkpoint)
-        tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+    class Abstractive():
+        summarizer: Pipeline
+        model: AutoModel
+        tokenizer: AutoTokenizer
 
-        return pipeline('summarization', model=model, tokenizer=tokenizer), model, tokenizer
+        def __init__(self, checkpoint='sshleifer/distilbart-cnn-12-6') -> None:
+            self.summarizer, self.model, self.tokenizer = self.__create_summarizer(checkpoint=checkpoint)
+            self.__save_model(path=checkpoint, model=self.model, tokenizer=self.tokenizer)
+            pass
 
-    def __save_model(self, path: str, model, tokenizer) -> None:
-        '''Saves the model and tokenizer to a directory.'''
-        if(self.__is_empty('../models/' + path)):
-            model.save_pretrained(save_directory='../models/' + path)
+        def __create_summarizer(self, checkpoint: str, ) -> Pipeline:
+            '''Creates a summarizer from loading a model and tokenizer.'''
+            checkpoint = 'sshleifer/distilbart-cnn-12-6'
+            model = BartForConditionalGeneration.from_pretrained(checkpoint)
+            tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 
-        if(self.__is_empty('../tokenizers/' + path)):
-            tokenizer.save_pretrained(save_directory='../tokenizers/' + path)
+            return pipeline('summarization', model=model, tokenizer=tokenizer), model, tokenizer
 
-    def __is_empty(self, path: str) -> bool:
-        '''Checks whether directory path is empty and creates one if it does not exist.'''
-        if os.path.exists(path) and not os.path.isfile(path):
-            # Checking if the directory is empty or not
-            if not os.listdir(path):
-                return True
+        def __save_model(self, path: str, model, tokenizer) -> None:
+            '''Saves the model and tokenizer to a directory.'''
+            if(self.__is_empty('../models/' + path)):
+                model.save_pretrained(save_directory='../models/' + path)
+
+            if(self.__is_empty('../tokenizers/' + path)):
+                tokenizer.save_pretrained(save_directory='../tokenizers/' + path)
+
+        def __is_empty(self, path: str) -> bool:
+            '''Checks whether directory path is empty and creates one if it does not exist.'''
+            if os.path.exists(path) and not os.path.isfile(path):
+                # Checking if the directory is empty or not
+                if not os.listdir(path):
+                    return True
+                else:
+                    return False
             else:
-                return False
-        else:
-            os.makedirs(path)
+                os.makedirs(path)
 
-    def summarize(self, chunks) -> dict:
-        '''Summarizes text.'''
-        return self.summarizer(chunks, return_text='True')
+        def summarize(self, chunks) -> dict:
+            '''Summarizes text.'''
+            return self.summarizer(chunks, return_text='True')
