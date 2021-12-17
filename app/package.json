@@ -1,5 +1,5 @@
 {
-  "name": "web",
+  "name": "app",
   "private": true,
   "scripts": {
     "unocss:build": "unocss 'src/**/*.tsx' --out-file src/styles/uno.css",
@@ -7,9 +7,11 @@
     "dev": "concurrently 'yarn unocss:watch' 'next dev'",
     "build": "yarn unocss:build && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "tauri": "tauri"
   },
   "dependencies": {
+    "@tauri-apps/api": "^1.0.0-beta.8",
     "canvas-confetti": "^1.4.0",
     "next": "canary",
     "react": "^18.0.0-beta-fdc1d617a-20211118",
@@ -17,6 +19,7 @@
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.0.11",
+    "@tauri-apps/cli": "^1.0.0-beta.10",
     "@types/canvas-confetti": "^1.4.2",
     "@types/node": "16.11.9",
     "@types/react": "17.0.35",
