@@ -1,5 +1,6 @@
 [workspace]
 members = [
   "auth-service",
-  "url-shortener-service"
+  "url-shortener-service",
+  "app/src-tauri"
 ]

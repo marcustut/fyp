@@ -12,7 +12,7 @@ const Home: NextPage = () => {
 
   return (
     <div className="h-100vh bg-dark-400">
-      <div className="i-mdi:alarm text-3xl text-dark-500" />
+      Hello World
     </div>
   );
 };
