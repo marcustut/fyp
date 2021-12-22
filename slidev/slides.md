@@ -42,12 +42,5 @@ The last comment block of each slide will be treated as slide notes. It will be 
 
 # summary_text
 
-- 1MDB trial on pause again as Najib’s MySejahtera still ‘yellow’, judge decides against hybrid mode for now . Former prime minister Najib Razak's 1Malaysia Development Berhad (1MDB) trial was again unable to proceed today . Najib's lawyer says both his client and lead defence lawyer Tan Sri Muhammad Shafee Abdullah still have My Sejahtera statuses that were not “blue” in colour .
-- The judge decided to have the trial only resume on Thursday in light of the situation regarding Najib’s MySejahtera status . Both Najib and Shafee had tested negative through a RT-PCR test and the rapid saliva test kits in recent days . The judge also decided against the prosecution's application to continue the trial using a hybrid manner, but said this option would not be ruled out for the future .
-- Former prime minister Datuk Seri Najib Razak’s 1Malaysia Development Berhad (1MDB) trial was again unable to proceed today . His MySejahtera status is still “yellow” and he cannot enter the court building for the trial to go on . Najib's lawyer suggested that the trial take on four additional hearing days in January to replace the three hearing days that had been lost this week .
-
----
-
-# summary_text
-
-- Today is the second day that the 1MDB trial has been disrupted due to the MySejahtera status of Najib and Shafee not being ‘blue’ Both had tested negative through a RT-PCR test and the rapid saliva test kits in recent days . The judge also decided against the prosecution’s application yesterday to continue the trial using a hybrid manner, but said it would not be ruled out for the future .
+- Bank employee Tai Yoke Eng, 25, said she attended the gathering on Dec 11 at a seafood restaurant in Taman Impian Emas here at the invitation of a friend . Tai claimed that her friend’s boyfriend started to touch her shoulder, which made her feel uncomfortable . She called up her boyfriend, Benjamin Low, 27, asking him to pick her up at the restaurant as she felt uneasy staying on at the party . “I tried to intervene but my friend held my arm,” she said .
+- Best viewed on Chrome browsers . We would love to keep you posted on the latest promotion . Kindly fill the form below to show your support for the latest promotions . Back to the page you came from . Use the weekly Newsquiz to test your knowledge of stories you saw on CNN iReport .

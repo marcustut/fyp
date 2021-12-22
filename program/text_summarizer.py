@@ -5,7 +5,9 @@ from transformers.pipelines.base import Pipeline
 import os
 
 class TextSummarizer():
-    '''Text summarizers using different models and tokenizers. Includes saving of pre-trained models into directories.'''
+    '''Text summarizers using different models and tokenizers. Includes saving of pre-trained models into directories.
+    `mode`: the type of summarisation selected.
+    '''
 
     mode: any
 

@@ -1,3 +1,4 @@
+from inputer import Inputer
 from text_summarizer import TextSummarizer
 from adapter import Adapter
 # from mdutils.mdutils import MdUtils
@@ -6,45 +7,49 @@ import requests
 import transformers
 transformers.logging.set_verbosity_debug()
 
-def get_article(url: str):
-    r = requests.get(url)
-    soup = BeautifulSoup(r.text, 'html.parser')
-    results = soup.find_all(['h1', 'p'])
-    text = [result.text for result in results]
-    article = ' '.join(text)
-    article_len = len(article.split(' '))
-    article = article.replace('.', '.<eos>')
-    article = article.replace('!', '!<eos>')
-    article = article.replace('?', '?<eos>')
+# def get_article(url: str):
+#     r = requests.get(url)
+#     soup = BeautifulSoup(r.text, 'html.parser')
+#     results = soup.find_all(['h1', 'p'])
+#     text = [result.text for result in results]
+#     article = ' '.join(text)
+#     article_len = len(article.split(' '))
+#     article = format_input(text=article)
+#     return article, article_len
 
-    return article, article_len
+# def format_input(text: str):
+#     text = text.replace('.', '.<eos>')
+#     text = text.replace('!', '!<eos>')
+#     text = text.replace('?', '?<eos>')
+#     return text
 
-def get_sentences(article: str):
-    sentences = article.split('<eos>')
 
-    return sentences
+# def get_sentences(article: str):
+#     sentences = article.split('<eos>')
 
-# Return chunked text to have less than 500 words
-def chunk_text(sentences: 'list[str]', max_chunk: int):
-    current_chunk = 0
-    chunks = []
+#     return sentences
 
-    for sentence in sentences:
-        if len(chunks) == current_chunk + 1:
-            # Check if the chunk is less than max_chunk
-            if len(chunks[current_chunk]) + len(sentence.split(' ')) <= max_chunk:
-                chunks[current_chunk].extend(sentence.split(' '))
-            # Next chunk
-            else:
-                current_chunk += 1
-                chunks.append(sentence.split(' '))
-        else:
-            chunks.append(sentence.split(' '))
+# # Return chunked text to have less than 500 words
+# def chunk_text(sentences: 'list[str]', max_chunk: int):
+#     current_chunk = 0
+#     chunks = []
 
-    for chunk_id in range (len(chunks)):
-        chunks[chunk_id] = ' '.join(chunks[chunk_id])
+#     for sentence in sentences:
+#         if len(chunks) == current_chunk + 1:
+#             # Check if the chunk is less than max_chunk
+#             if len(chunks[current_chunk]) + len(sentence.split(' ')) <= max_chunk:
+#                 chunks[current_chunk].extend(sentence.split(' '))
+#             # Next chunk
+#             else:
+#                 current_chunk += 1
+#                 chunks.append(sentence.split(' '))
+#         else:
+#             chunks.append(sentence.split(' '))
 
-    return chunks
+#     for chunk_id in range (len(chunks)):
+#         chunks[chunk_id] = ' '.join(chunks[chunk_id])
+
+#     return chunks
 
 # # Add markdown annotation to summary
 # def convert_markdown(results: dict):
@@ -150,12 +155,14 @@ def generate_statistics(summary: str, words_before: int):
 def main():
     print('---START OF PROGRAM---')
 
-    article, article_len = get_article(url=input('URL: '))
-    text_summarizer = TextSummarizer().mode
+    inputer = Inputer(type='url')
+    chunks, article_len = inputer.get_input(inp=input('URL: '))
+    # article, article_len = get_article(url=input('URL: '))
+    text_summarizer = TextSummarizer().mode # Abstractive summarisation
     adapter = Adapter()
 
-    sentences = get_sentences(article=article)
-    chunks = chunk_text(sentences=sentences, max_chunk=500)
+    # sentences = get_sentences(article=article)
+    # chunks = chunk_text(sentences=sentences, max_chunk=500)
     results = text_summarizer.summarize(chunks=chunks)
     adapter.convert_markdown(results=results)
     summary = extract_sentence(results=results)
