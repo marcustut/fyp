@@ -34,10 +34,13 @@ impl Query {
 
         match result {
             Ok(user) => Ok(user),
-            Err(_) => Err(Error::new(format!(
-                "Can't find user with username `{}`",
-                username
-            ))),
+            Err(report) => {
+                tracing::error!("Failed to fetch user: {:?}", report);
+                Err(Error::new(format!(
+                    "user with username `{}` does not exist",
+                    username
+                )))
+            }
         }
     }
 }
@@ -65,10 +68,16 @@ impl Mutation {
         };
 
         // create the user
-        let result = user_repo.create(new_user, &crypto_service).await;
+        let result = user_repo.create(new_user.clone(), &crypto_service).await;
         match result {
             Ok(user) => Ok(user),
-            Err(report) => Err(Error::new(report.to_string())),
+            Err(report) => {
+                tracing::error!("Failed to create user: {:?}", report);
+                Err(Error::new(format!(
+                    "user with username `{}` already exists",
+                    new_user.username
+                )))
+            }
         }
     }
 
@@ -79,10 +88,16 @@ impl Mutation {
         #[graphql(validator(min_length = 3))] username: String,
     ) -> Result<User, Error> {
         let user_repo = get_user_repo_from_ctx(ctx);
-        let result = user_repo.update(update_profile, username).await;
+        let result = user_repo.update(update_profile, username.clone()).await;
         match result {
             Ok(user) => Ok(user),
-            Err(report) => Err(Error::new(report.to_string())),
+            Err(report) => {
+                tracing::error!("Failed to update user: {:?}", report);
+                Err(Error::new(format!(
+                    "unable to update user with username `{}`",
+                    username
+                )))
+            }
         }
     }
 
@@ -93,10 +108,16 @@ impl Mutation {
     ) -> Result<User, Error> {
         let user_repo = get_user_repo_from_ctx(ctx);
 
-        let result = user_repo.delete(username).await;
+        let result = user_repo.delete(username.clone()).await;
         match result {
             Ok(user) => Ok(user),
-            Err(report) => Err(Error::new(report.to_string())),
+            Err(report) => {
+                tracing::error!("Failed to delete user: {:?}", report);
+                Err(Error::new(format!(
+                    "user with username `{}` does not exist",
+                    username
+                )))
+            }
         }
     }
 }

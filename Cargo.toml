@@ -2,5 +2,4 @@
 members = [
   "auth-service",
   "url-shortener-service",
-  "app/src-tauri"
 ]

@@ -1,9 +1,8 @@
 use async_graphql::{InputObject, SimpleObject};
-use chrono::NaiveDateTime;
+use chrono::{DateTime, Utc};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use uuid::Uuid;
 
 lazy_static! {
     static ref RE_HAS_ONE_ALPHABET: Regex = Regex::new(r"[A-Za-z]+").unwrap();
@@ -12,7 +11,7 @@ lazy_static! {
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow, SimpleObject)]
 pub struct User {
-    pub id: Uuid,
+    pub id: i64,
     pub username: String,
     pub email: String,
     #[serde(skip)]
@@ -21,11 +20,11 @@ pub struct User {
     pub full_name: Option<String>,
     pub bio: Option<String>,
     pub avatar_url: Option<String>,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Deserialize, Validate, InputObject)]
+#[derive(Clone, Debug, Deserialize, Validate, InputObject)]
 pub struct NewUser {
     #[validate(length(min = 3, message = "must be at least 3 characters"))]
     pub username: String,
@@ -41,6 +40,12 @@ pub struct NewUser {
         message = "Password must have at least one number"
     ))]
     pub password: String,
+    #[validate(length(min = 3, message = "must be at least 3 characters"))]
+    pub full_name: Option<String>,
+    #[validate(length(min = 5, message = "must be at least 5 characters"))]
+    pub bio: Option<String>,
+    #[validate(url(message = "avatar_url must be a valid URL"))]
+    pub avatar_url: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Validate, InputObject)]

@@ -8,7 +8,7 @@ use color_eyre::Result;
 use dotenv::dotenv;
 use eyre::WrapErr;
 use serde::Deserialize;
-use sqlx::postgres::{PgPool, PgPoolOptions};
+use sqlx::mysql::{MySqlPool, MySqlPoolOptions};
 use std::sync::Arc;
 use std::time::Duration;
 use tracing::{info, instrument};
@@ -43,10 +43,10 @@ impl Config {
             .context("Loading configuration from environment")
     }
 
-    pub async fn new_db_pool(&self) -> Result<PgPool> {
+    pub async fn new_db_pool(&self) -> Result<MySqlPool> {
         info!("Creating database connection pool.");
 
-        PgPoolOptions::new()
+        MySqlPoolOptions::new()
             .connect_timeout(Duration::from_secs(30))
             .connect(&self.database_url)
             .await
