@@ -1,9 +1,10 @@
 from inputer import Inputer
+from outputer import Outputer
 from text_summarizer import TextSummarizer
 from adapter import Adapter
 # from mdutils.mdutils import MdUtils
-from bs4 import BeautifulSoup
-import requests
+# from bs4 import BeautifulSoup
+# import requests
 import transformers
 transformers.logging.set_verbosity_debug()
 
@@ -130,44 +131,47 @@ transformers.logging.set_verbosity_debug()
 #     print('Slides generated.')
 
 # Convert dict summary object into string
-def extract_sentence(results: dict):
-    summary = ''
-    for result in results:
-        summary += ''.join(str(val[1:]) + "\n" for _, val in result.items())
+# def extract_sentence(results: dict):
+#     summary = ''
+#     for result in results:
+#         summary += ''.join(str(val[1:]) + "\n" for _, val in result.items())
 
-    summary = summary.replace(' .', '.')
-    summary = summary.replace(" !", "!")
-    summary = summary.replace(" ?", "?")
+#     summary = summary.replace(' .', '.')
+#     summary = summary.replace(" !", "!")
+#     summary = summary.replace(" ?", "?")
 
-    return summary
+#     return summary
 
-# Generate summary statistics
-def generate_statistics(summary: str, words_before: int):
-    words_after = len(summary.split(' '))
-    reduced_by = (words_before - words_after) / words_before * 100
+# # Generate summary statistics
+# def generate_statistics(summary: str, words_before: int):
+#     words_after = len(summary.split(' '))
+#     reduced_by = (words_before - words_after) / words_before * 100
 
-    print("Number of words in summary: " + str(words_after))
-    print("Number of words in original article: " + str(words_before))
-    print("Reduced by: " + str(round(reduced_by, 2)) + "%\n")
-    print(summary)
+#     print("Number of words in summary: " + str(words_after))
+#     print("Number of words in original article: " + str(words_before))
+#     print("Reduced by: " + str(round(reduced_by, 2)) + "%\n")
+#     print(summary)
 
 # Main function
 def main():
     print('---START OF PROGRAM---')
 
     inputer = Inputer(type='url')
-    chunks, article_len = inputer.get_input(inp=input('URL: '))
     # article, article_len = get_article(url=input('URL: '))
     text_summarizer = TextSummarizer().mode # Abstractive summarisation
     adapter = Adapter()
+    outputer = Outputer()
 
     # sentences = get_sentences(article=article)
     # chunks = chunk_text(sentences=sentences, max_chunk=500)
+    chunks, article_len = inputer.get_input(inp='https://www.thestar.com.my/news/nation/2021/12/22/couple-clueless-as-to-why-they-were-attacked-at-party')
     results = text_summarizer.summarize(chunks=chunks)
     adapter.convert_markdown(results=results)
-    summary = extract_sentence(results=results)
+    summary = outputer.get_output(results=results)
+    outputer.generate_statistics(summary=summary, words_before=article_len)
+    # summary = extract_sentence(results=results)
     # generate_slides(results=results)
-    generate_statistics(summary=summary, words_before=article_len)
+    # generate_statistics(summary=summary, words_before=article_len)
 
 if __name__ == "__main__":
     main()
