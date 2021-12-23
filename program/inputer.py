@@ -42,7 +42,7 @@ class Inputer():
         results = soup.find_all(['h1', 'p'])
         text = [result.text for result in results]
         article = ' '.join(text)
-        article_len = len(article.split(' '))
+        article_len = len(article.split())
         article = self.__add_tokens(text=article)
         return article, article_len
 
