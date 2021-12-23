@@ -1,6 +1,0 @@
-/* layer: default */
-.bg-dark-400{--un-bg-opacity:1;background-color:rgba(34,34,34,var(--un-bg-opacity));}
-.flex{display:flex;}
-.h-100vh{height:100vh;}
-.justify-center{justify-content:center;}
-.items-center{align-items:center;}
