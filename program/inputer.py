@@ -3,10 +3,13 @@ import requests
 
 class Inputer():
     '''Handles everything regarding the input text, including obtaining, preprocessing and formatting of text.
-    `type`: the input type selected, including "url", "txt" and "pdf".
+    `type`: the input type selected.
+    `valid_types`: valid input types
     `max_chunk`: the maximum length of a text chunk.
     '''
+
     type: str
+    valid_types = {'url', 'txt', 'pdf'}
     max_chunk: int
 
     def __init__(self, type: str, max_chunk=500) -> None:
@@ -14,14 +17,13 @@ class Inputer():
         if(self.__contains__(type)):
             self.type = type
         else:
-            raise Exception('Invalid input type given')
+            raise Exception('Invalid input type given. Valid types are', self.valid_type)
         self.max_chunk = max_chunk
         pass
 
     def __contains__(self, type: str) -> bool:
         '''Checks if input type is valid.'''
-        valid_types = {'url', 'txt', 'pdf'}
-        if(type in valid_types):
+        if(type in self.valid_types):
             return True
         else:
             return False
@@ -68,14 +70,14 @@ class Inputer():
         for sentence in sentences:
             if len(chunks) == current_chunk + 1:
                 # Check if the chunk is less than max_chunk
-                if len(chunks[current_chunk]) + len(sentence.split(' ')) <= self.max_chunk:
-                    chunks[current_chunk].extend(sentence.split(' '))
+                if len(chunks[current_chunk]) + len(sentence.split()) <= self.max_chunk:
+                    chunks[current_chunk].extend(sentence.split())
                 # Next chunk
                 else:
                     current_chunk += 1
-                    chunks.append(sentence.split(' '))
+                    chunks.append(sentence.split())
             else:
-                chunks.append(sentence.split(' '))
+                chunks.append(sentence.split())
 
         for chunk_id in range (len(chunks)):
             chunks[chunk_id] = ' '.join(chunks[chunk_id])

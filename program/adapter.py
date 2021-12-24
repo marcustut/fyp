@@ -59,7 +59,7 @@ The last comment block of each slide will be treated as slide notes. It will be 
 ]
         pass
 
-    def convert_markdown(self, results: dict):
+    def convert_markdown(self, results: dict) -> None:
         '''Converts summarised results into markdown.'''
 
         # Add first slide

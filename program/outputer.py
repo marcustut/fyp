@@ -22,7 +22,7 @@ class Outputer():
         return summary
 
     def __list_to_string(self) -> str:
-        '''Converts a list summary object into string.'''
+        '''Converts a list of dict summary objects into string.'''
         summary = ''
         for result in self.results:
             summary += ''.join(str(val[1:]) + "\n" for _, val in result.items())
