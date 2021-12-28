@@ -1,5 +1,5 @@
 from transformers import pipeline
-from transformers import BartForConditionalGeneration, AutoModel
+from transformers import BartForConditionalGeneration, AutoModel, AutoModelForSeq2SeqLM
 from transformers import AutoTokenizer
 from transformers.pipelines.base import Pipeline
 import os
@@ -85,16 +85,31 @@ class TextSummarizer():
         `title_summarizer`: the summarizer for the title.
         '''
 
-        title_summarizer: any
+        title_summarizer: Pipeline
+        model: AutoModel
+        tokenizer: AutoTokenizer
 
         def __init__(self) -> None:
             '''Initialises the title summarizer.'''
             self.title_summarizer = self.__create_summarizer()
+            self.__save_model(path=checkpoint, model=self.model, tokenizer=self.tokenizer)
             pass
 
         def __create_summarizer(self):
             '''Creates the summarizer.'''
-            pass
+            checkpoint = 'google/pegasus-arxiv'
+            model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint)
+            tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+
+            return pipeline('summarization', model=model, tokenizer=tokenizer), model, tokenizer
+
+        def __save_model(self, path: str, model, tokenizer) -> None:
+            '''Saves the model and tokenizer to a directory.'''
+            if(self.__is_empty('../models/' + path)):
+                model.save_pretrained(save_directory='../models/' + path)
+
+            if(self.__is_empty('../tokenizers/' + path)):
+                tokenizer.save_pretrained(save_directory='../tokenizers/' + path)
 
         def summarize(self, results: 'list[dict]') -> 'list[dict]':
             '''Summarizes from the result body to give a title, then combines these pairs together.'''
