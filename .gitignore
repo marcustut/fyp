@@ -1,6 +1,6 @@
 target/
 .env
 __pycache__/
-models/
+/models
 tokenizers/
 *.pem
