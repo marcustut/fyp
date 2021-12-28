@@ -11,7 +11,7 @@ class Adapter():
     md: str
     metadata: 'list[str]'
 
-    def __init__(self, max_len=1000) -> None:
+    def __init__(self, max_len=500) -> None:
         '''Initialises an adapter'''
         self.slide_len = 0
         self.max_len = max_len
@@ -63,18 +63,21 @@ The last comment block of each slide will be treated as slide notes. It will be 
         '''Converts summarised results into markdown.'''
 
         # Add first slide
+        self.md += self.__add_newline()
         self.md += self.__add_slide()
 
         try:
             for result in results:
                 for head, val in result.items():
-                    if(self.slide_len > self.max_len):# If the number of characters on a slide exceeds max_len, create new slide
+                    val = self.__strip_whitespaces(summary=val)
+                    # If the number of characters on a slide exceeds max_len, create new slide
+                    if(self.slide_len > self.max_len):
+                        self.md += self.__add_newline()
                         self.md += self.__add_slide()
                         self.__reset_length()
 
-                    if(self.slide_len == 0): # If first item in slide
-                        self.md += self.__add_header(head)
-
+                    self.md += self.__add_newline()
+                    self.md += self.__add_header(head)
                     self.md += self.__add_ulist(val)
                     self.__update_length(val)
         except:
@@ -84,6 +87,14 @@ The last comment block of each slide will be treated as slide notes. It will be 
             self.__create_file()
         except:
             raise Exception('Markdown file creation error')
+
+    def __strip_whitespaces(self, summary: str) -> str:
+        '''Strips additional whitespaces in front of punctuations.'''
+        summary = summary.replace(' .', '.')
+        summary = summary.replace(" !", "!")
+        summary = summary.replace(" ?", "?")
+
+        return summary
 
     def __update_length(self, val: str) -> None:
         '''Updates the total number of characters in the current slide.'''
@@ -95,15 +106,18 @@ The last comment block of each slide will be treated as slide notes. It will be 
 
     def __add_header(self, head: str) -> str:
         '''Adds a slide header.'''
-        return "# " + head + "\n"
+        return '# ' + head + '\n'
 
     def __add_ulist(self, val: str) -> str:
         '''Adds an unnumbered list item.'''
-        return "\n-" + val
+        return '\n-' + val
 
     def __add_slide(self) -> str:
         '''Adds a slide.'''
-        return "\n\n---\n\n"
+        return '---'
+
+    def __add_newline(self) -> str:
+        return '\n\n'
 
     def __create_file(self) -> None:
         '''

@@ -13,11 +13,12 @@ def main():
     adapter = Adapter()
     outputer = Outputer()
 
-    # chunks, article_len = inputer.get_input(inp='https://psyche.co/films/a-1960s-ode-to-black-bodies-is-reborn-as-a-riveting-modern-opera')
-    # results = text_summarizer.summarize(chunks=chunks)
-    # adapter.convert_markdown(results=results)
-    # summary = outputer.get_output(results=results)
-    # outputer.generate_statistics(summary=summary, words_before=article_len)
+    chunks, article_len = inputer.get_input(inp='https://en.wikipedia.org/wiki/Rococo')
+    results = text_summarizer.body.summarize(chunks=chunks)
+    results = text_summarizer.title.summarize(results=results)
+    adapter.convert_markdown(results=results)
+    summary = outputer.get_output(results=results)
+    outputer.generate_statistics(summary=summary, words_before=article_len)
 
 if __name__ == "__main__":
     main()
