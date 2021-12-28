@@ -14,12 +14,14 @@ use std::time::Duration;
 use tracing::{info, instrument};
 use tracing_subscriber::EnvFilter;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Config {
     pub host: String,
     pub port: i32,
     pub database_url: String,
     pub secret_key: String,
+    pub github_client_id: String,
+    pub github_client_secret: String,
 }
 
 impl Config {
@@ -63,10 +65,12 @@ impl Config {
         &self,
         user_repo: UserRepository,
         crypto_service: CryptoService,
+        http_client: reqwest::Client,
     ) -> AppSchema {
         Schema::build(Query, Mutation, EmptySubscription)
             .data(user_repo)
             .data(crypto_service)
+            .data(http_client)
             .finish()
     }
 }

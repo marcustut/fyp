@@ -13,3 +13,9 @@ pub fn get_crypto_service_from_ctx(ctx: &Context<'_>) -> CryptoService {
         .expect("Can't get CryptoService from GraphQL Context")
         .clone()
 }
+
+pub fn get_http_client_from_ctx(ctx: &Context<'_>) -> reqwest::Client {
+    ctx.data::<reqwest::Client>()
+        .expect("Can't get HttpClient from GraphQL Context")
+        .clone()
+}

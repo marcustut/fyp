@@ -24,6 +24,13 @@ pub struct User {
     pub updated_at: DateTime<Utc>,
 }
 
+#[derive(Debug, Deserialize, Serialize, SimpleObject)]
+pub struct UserWithAuth {
+    pub access_token: String,
+    pub expired_at: DateTime<Utc>,
+    pub user: User,
+}
+
 #[derive(Clone, Debug, Deserialize, Validate, InputObject)]
 pub struct NewUser {
     #[validate(length(min = 3, message = "must be at least 3 characters"))]
@@ -89,4 +96,36 @@ impl UpdateProfile {
 
         hashmap
     }
+}
+
+#[derive(Clone, Debug, Deserialize, Validate, InputObject)]
+pub struct SignInWithEmail {
+    #[validate(email(message = "must be a valid email"))]
+    pub email: String,
+    #[validate(length(min = 8, message = " Password must have at least 8 characters"))]
+    #[validate(regex(
+        path = "RE_HAS_ONE_ALPHABET",
+        message = "Password must have at least one alphabet"
+    ))]
+    #[validate(regex(
+        path = "RE_HAS_ONE_NUMBER",
+        message = "Password must have at least one number"
+    ))]
+    pub password: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Validate, InputObject)]
+pub struct SignInWithUsername {
+    #[validate(length(min = 3, message = "must be at least 3 characters"))]
+    pub username: String,
+    #[validate(length(min = 8, message = " Password must have at least 8 characters"))]
+    #[validate(regex(
+        path = "RE_HAS_ONE_ALPHABET",
+        message = "Password must have at least one alphabet"
+    ))]
+    #[validate(regex(
+        path = "RE_HAS_ONE_NUMBER",
+        message = "Password must have at least one number"
+    ))]
+    pub password: String,
 }

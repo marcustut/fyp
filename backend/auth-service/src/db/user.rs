@@ -18,8 +18,16 @@ impl UserRepository {
         Self { pool }
     }
 
-    pub async fn find(&self, username: String) -> Result<User> {
+    pub async fn find_by_username(&self, username: String) -> Result<User> {
         let user = sqlx::query_as!(User, "SELECT * FROM users WHERE username = ?", username)
+            .fetch_one(&*self.pool)
+            .await?;
+
+        Ok(user)
+    }
+
+    pub async fn find_by_email(&self, email: String) -> Result<User> {
+        let user = sqlx::query_as!(User, "SELECT * FROM users WHERE email = ?", email)
             .fetch_one(&*self.pool)
             .await?;
 

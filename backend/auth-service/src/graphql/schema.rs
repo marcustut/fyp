@@ -1,11 +1,15 @@
-use crate::graphql::utils::get_user_repo_from_ctx;
+use crate::graphql::utils::{
+    get_crypto_service_from_ctx, get_http_client_from_ctx, get_user_repo_from_ctx,
+};
 use async_graphql::{Context, EmptySubscription, Error, ErrorExtensions, Object, Schema, Value};
 
+use crate::config::crypto::CryptoService;
+use crate::handlers::auth::GitHubEmailsResponse;
 use validator::Validate;
 
-use crate::models::user::{NewUser, UpdateProfile, User};
-
-use super::utils::get_crypto_service_from_ctx;
+use crate::models::user::{
+    NewUser, SignInWithEmail, SignInWithUsername, UpdateProfile, User, UserWithAuth,
+};
 
 pub type AppSchema = Schema<Query, Mutation, EmptySubscription>;
 
@@ -13,15 +17,7 @@ pub struct Query;
 
 #[Object]
 impl Query {
-    // async fn hash_password(&self, ctx: &Context<'_>, password: String) -> Result<String, Error> {
-    //     let crypto_service = get_crypto_service_from_ctx(ctx);
-    //     match crypto_service.hash_password(password).await {
-    //         Ok(pwd) => Ok(pwd),
-    //         Err(e) => Err(Error::new(format!("{:#}", e))),
-    //     }
-    // }
-
-    async fn get_user(
+    async fn user(
         &self,
         ctx: &Context<'_>,
         #[graphql(validator(min_length = 3))] username: String,
@@ -30,7 +26,7 @@ impl Query {
         let user_repo = get_user_repo_from_ctx(ctx);
 
         // find the user with a username
-        let result = user_repo.find(username.clone()).await;
+        let result = user_repo.find_by_username(username.clone()).await;
 
         match result {
             Ok(user) => Ok(user),
@@ -43,14 +39,85 @@ impl Query {
             }
         }
     }
+
+    async fn validate_access_token(&self, ctx: &Context<'_>, token: String) -> bool {
+        let crypto_service = get_crypto_service_from_ctx(ctx);
+        match crypto_service.decode_jwt(token) {
+            Ok(_) => true,
+            Err(_) => false,
+        }
+    }
 }
 
-// TODO: Add mutation for `sign_in`, `sign_up`, `refresh_token`
+// TODO: Add mutation for `refresh_token`
 pub struct Mutation;
 
 #[Object]
 impl Mutation {
-    async fn create_user(&self, ctx: &Context<'_>, new_user: NewUser) -> Result<User, Error> {
+    async fn sign_in_with_username(
+        &self,
+        ctx: &Context<'_>,
+        input: SignInWithUsername,
+    ) -> Result<UserWithAuth, Error> {
+        let user_repo = get_user_repo_from_ctx(ctx);
+        let crypto_service = get_crypto_service_from_ctx(ctx);
+
+        let user = user_repo.find_by_username(input.username).await?;
+
+        if crypto_service.hash_password(input.password).await? != user.password_hash {
+            return Err(Error::new("invalid password"));
+        }
+
+        get_jwt_and_user(crypto_service, user)
+    }
+
+    async fn sign_in_with_email(
+        &self,
+        ctx: &Context<'_>,
+        input: SignInWithEmail,
+    ) -> Result<UserWithAuth, Error> {
+        let user_repo = get_user_repo_from_ctx(ctx);
+        let crypto_service = get_crypto_service_from_ctx(ctx);
+
+        let user = user_repo.find_by_email(input.email).await?;
+
+        if crypto_service.hash_password(input.password).await? != user.password_hash {
+            return Err(Error::new("invalid password"));
+        }
+
+        get_jwt_and_user(crypto_service, user)
+    }
+
+    async fn sign_in_with_github(
+        &self,
+        ctx: &Context<'_>,
+        github_access_token: String,
+    ) -> Result<UserWithAuth, Error> {
+        let http_client = get_http_client_from_ctx(ctx);
+        let user_repo = get_user_repo_from_ctx(ctx);
+        let crypto_service = get_crypto_service_from_ctx(ctx);
+
+        let res = http_client
+            .get("https://api.github.com/user/emails")
+            .header("Authorization", format!("token {}", github_access_token))
+            .header("User-Agent", "curl/7.64.1")
+            .send()
+            .await?
+            .json::<Vec<GitHubEmailsResponse>>()
+            .await?;
+
+        let email = res
+            .into_iter()
+            .find(|res| res.primary)
+            .expect("unable to find a primary GitHub email")
+            .email;
+
+        let user = user_repo.find_by_email(email).await?;
+
+        get_jwt_and_user(crypto_service, user)
+    }
+
+    async fn sign_up(&self, ctx: &Context<'_>, new_user: NewUser) -> Result<UserWithAuth, Error> {
         let user_repo = get_user_repo_from_ctx(ctx);
         let crypto_service = get_crypto_service_from_ctx(ctx);
 
@@ -68,17 +135,9 @@ impl Mutation {
         };
 
         // create the user
-        let result = user_repo.create(new_user.clone(), &crypto_service).await;
-        match result {
-            Ok(user) => Ok(user),
-            Err(report) => {
-                tracing::error!("Failed to create user: {:?}", report);
-                Err(Error::new(format!(
-                    "user with username `{}` already exists",
-                    new_user.username
-                )))
-            }
-        }
+        let user = user_repo.create(new_user.clone(), &crypto_service).await?;
+
+        get_jwt_and_user(crypto_service, user)
     }
 
     async fn update_user(
@@ -120,4 +179,18 @@ impl Mutation {
             }
         }
     }
+}
+
+fn get_jwt_and_user(crypto_service: CryptoService, user: User) -> Result<UserWithAuth, Error> {
+    crypto_service
+        .generate_jwt(user.username.clone())
+        .map(|claim| UserWithAuth {
+            user,
+            access_token: claim.0,
+            expired_at: claim.1,
+        })
+        .map_err(|err| {
+            Error::new("error generating jwt")
+                .extend_with(|_, e| e.set("jwt_error", err.to_string()))
+        })
 }
