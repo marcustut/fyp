@@ -1,6 +1,6 @@
 class Outputer():
-    '''Handles everything regarding the output string text, including capitalising and generating summary statistics.
-    `results`: the summary text returned from a TextSummarizer object for post-processing.
+    '''Generates summary statistics regarding the output text.
+    `results`: the summary text returned from a TextSummarizer object for statistical analysis.
     `words_before`: number of words in the original text before summarising.
     `words_after`: number of words in the summary text after summarising.
     '''
@@ -15,26 +15,16 @@ class Outputer():
     def get_output(self, results: any) -> str:
         '''Gets the summary text in plain string format.'''
         self.results = results
-        if(isinstance(self.results, list)):
-            summary = self.__list_to_string()
+        summary = self.__list_to_string()
         self.words_after = len(summary.split())
 
         return summary
 
     def __list_to_string(self) -> str:
-        '''Converts a list summary object into string.'''
+        '''Converts a list of dict summary objects into string.'''
         summary = ''
         for result in self.results:
             summary += ''.join(str(val[1:]) + "\n" for _, val in result.items())
-
-        self.__strip_whitespaces(summary=summary)
-        return summary
-
-    def __strip_whitespaces(self, summary: str) -> str:
-        '''Strips additional whitespaces in front of punctuations.'''
-        summary = summary.replace(' .', '.')
-        summary = summary.replace(" !", "!")
-        summary = summary.replace(" ?", "?")
 
         return summary
 

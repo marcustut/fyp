@@ -1,24 +1,17 @@
 ---
-# try also 'default' to start simple
-theme: seriph
-# random image from a curated Unsplash collection by Anthony
-# like them? see https://unsplash.com/collections/94734566/slidev
+theme: apple-basic
 background: https://source.unsplash.com/collection/94734566/1920x1080
-# apply any windi css classes to the current slide
-class: 'text-center'
-# https://sli.dev/custom/highlighters.html
+class: text-center
 highlighter: shiki
-# show line numbers in code blocks
 lineNumbers: false
-# some information about the slides, markdown enabled
 info: |
   ## Slidev Starter Template
   Presentation slides for developers.
 
   Learn more at [Sli.dev](https://sli.dev)
-# persist drawings in exports and build
 drawings:
   persist: false
+title: Welcome to Slidev
 ---
 
 # Welcome to Slidev
@@ -47,337 +40,60 @@ The last comment block of each slide will be treated as slide notes. It will be 
 
 ---
 
-# What is Slidev?
+# The Rococo style is one of the most
 
-Slidev is a slides maker and presenter designed for developers, consist of the following features
+- Rococo is an exceptionally ornamental and theatrical style of architecture, art and decoration. The Rococo style began in France in the 1730s as a reaction against the more formal and geometric Louis XIV style. It soon spread to other parts of Europe, particularly northern Italy, Austria, southern Germany, Central Europe and Russia. The term rococo was first used in print in 1825 to describe decoration "out of style and old-fashioned"
 
-- 📝 **Text-based** - focus on the content with Markdown, and then style them later
-- 🎨 **Themable** - theme can be shared and used with npm packages
-- 🧑‍💻 **Developer Friendly** - code highlighting, live coding with autocompletion
-- 🤹 **Interactive** - embedding Vue components to enhance your expressions
-- 🎥 **Recording** - built-in recording and camera view
-- 📤 **Portable** - export into PDF, PNGs, or even a hostable SPA
-- 🛠 **Hackable** - anything possible on a webpage
+# The history of the French Rococo has been
 
-<br>
-<br>
-
-Read more about [Why Slidev?](https://sli.dev/guide/why)
-
-<!--
-You can have `style` tag in markdown to override the style for the current page.
-Learn more: https://sli.dev/guide/syntax#embedded-styles
--->
-
-<style>
-h1 {
-  background-color: #2B90B6;
-  background-image: linear-gradient(45deg, #4EC5D4 10%, #146b8c 20%);
-  background-size: 100%;
-  -webkit-background-clip: text;
-  -moz-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  -moz-text-fill-color: transparent;
-}
-</style>
+- Rocaille style, or French Rococo, appeared in Paris during the reign of Louis XV, and flourished between about 1723 and 1759. Main ornaments of Rococo are: asymmetrical shells, acanthus and other leaves, birds, bouquets of flowers, fruits, musical instruments, angels and Chinoiserie (pagodas, dragons, monkeys, bizarre flowers and Chinese people)
 
 ---
 
-# Navigation
+# The history of Rococo decorative style has been
 
-Hover on the bottom-left corner to see the navigation's controls panel, [learn more](https://sli.dev/guide/navigation.html)
+- Rococo decorative style reached its summit in southern Germany and Austria from the 1730s until the 1770s. Venetian commodes imitated the curving lines and carved ornament of the French rocaille. Notable decorative painters included Giovanni Battista Tiepolo, who painted ceilings and murals of both churches and palazzos.
 
-### Keyboard Shortcuts
+# One of Germany's most famous Rococo
 
-|     |     |
-| --- | --- |
-| <kbd>right</kbd> / <kbd>space</kbd>| next animation or slide |
-| <kbd>left</kbd>  / <kbd>shift</kbd><kbd>space</kbd> | previous animation or slide |
-| <kbd>up</kbd> | previous slide |
-| <kbd>down</kbd> | next slide |
-
-<!-- https://sli.dev/guide/animations.html#click-animations -->
-<img
-  v-click
-  class="absolute -bottom-9 -left-7 w-80 opacity-50"
-  src="https://sli.dev/assets/arrow-bottom-left.svg"
-/>
-<p v-after class="absolute bottom-23 left-45 opacity-30 transform -rotate-10">Here!</p>
-
----
-layout: image-right
-image: https://source.unsplash.com/collection/94734566/1920x1080
----
-
-# Code
-
-Use code snippets and get the highlighting directly![^1]
-
-```ts {all|2|1-6|9|all}
-interface User {
-  id: number
-  firstName: string
-  lastName: string
-  role: string
-}
-
-function updateUser(id: number, update: User) {
-  const user = getUser(id)
-  const newUser = {...user, ...update}  
-  saveUser(id, newUser)
-}
-```
-
-<arrow v-click="3" x1="400" y1="420" x2="230" y2="330" color="#564" width="3" arrowSize="1" />
-
-[^1]: [Learn More](https://sli.dev/guide/syntax.html#line-highlighting)
-
-<style>
-.footnotes-sep {
-  @apply mt-20 opacity-10;
-}
-.footnotes {
-  @apply text-sm opacity-75;
-}
-.footnote-backref {
-  display: none;
-}
-</style>
+- The Würzburg Residence (1737–1744) was built for the Prince-Bishop of Wurzburg by Balthasar Neumann. The Hall of Mirrors in the interior, by the painter and stucco sculptor Johann Baptist Zimmermann, was far more exuberant than any French Rococo. In Great Britain, rococo was called the "French taste" and had less influence on design and the decorative arts than in continental Europe.
 
 ---
 
-# Components
+# Mahogany is one of the most popular wood
 
-<div grid="~ cols-2 gap-4">
-<div>
+- William Hogarth helped develop a theoretical foundation for Rococo beauty. The undulating lines and S-curves prominent in Rococo were the basis for grace and beauty in art or nature. Mahogany made its appearance in England in about 1720, and immediately became popular for furniture, along with walnut wood.
 
-You can use Vue components directly inside your slides.
+# One of France's most famous furniture
 
-We have provided a few built-in components like `<Tweet/>` and `<Youtube/>` that you can use directly. And adding your custom components is also super easy.
-
-```html
-<Counter :count="10" />
-```
-
-<!-- ./components/Counter.vue -->
-<Counter :count="10" m="t-4" />
-
-Check out [the guides](https://sli.dev/builtin/components.html) for more.
-
-</div>
-<div>
-
-```html
-<Tweet id="1390115482657726468" />
-```
-
-<Tweet id="1390115482657726468" scale="0.65" />
-
-</div>
-</div>
-
-
----
-class: px-20
----
-
-# Themes
-
-Slidev comes with powerful theming support. Themes can provide styles, layouts, components, or even configurations for tools. Switching between themes by just **one edit** in your frontmatter:
-
-<div grid="~ cols-2 gap-2" m="-t-2">
-
-```yaml
----
-theme: default
----
-```
-
-```yaml
----
-theme: seriph
----
-```
-
-<img border="rounded" src="https://github.com/slidevjs/themes/blob/main/screenshots/theme-default/01.png?raw=true">
-
-<img border="rounded" src="https://github.com/slidevjs/themes/blob/main/screenshots/theme-seriph/01.png?raw=true">
-
-</div>
-
-Read more about [How to use a theme](https://sli.dev/themes/use.html) and
-check out the [Awesome Themes Gallery](https://sli.dev/themes/gallery.html).
-
----
-preload: false
----
-
-# Animations
-
-Animations are powered by [@vueuse/motion](https://motion.vueuse.org/).
-
-```html
-<div
-  v-motion
-  :initial="{ x: -80 }"
-  :enter="{ x: 0 }">
-  Slidev
-</div>
-```
-
-<div class="w-60 relative mt-6">
-  <div class="relative w-40 h-40">
-    <img
-      v-motion
-      :initial="{ x: 800, y: -100, scale: 1.5, rotate: -50 }"
-      :enter="final"
-      class="absolute top-0 left-0 right-0 bottom-0"
-      src="https://sli.dev/logo-square.png"
-    />
-    <img
-      v-motion
-      :initial="{ y: 500, x: -100, scale: 2 }"
-      :enter="final"
-      class="absolute top-0 left-0 right-0 bottom-0"
-      src="https://sli.dev/logo-circle.png"
-    />
-    <img
-      v-motion
-      :initial="{ x: 600, y: 400, scale: 2, rotate: 100 }"
-      :enter="final"
-      class="absolute top-0 left-0 right-0 bottom-0"
-      src="https://sli.dev/logo-triangle.png"
-    />
-  </div>
-
-  <div
-    class="text-5xl absolute top-14 left-40 text-[#2B90B6] -z-1"
-    v-motion
-    :initial="{ x: -80, opacity: 0}"
-    :enter="{ x: 0, opacity: 1, transition: { delay: 2000, duration: 1000 } }">
-    Slidev
-  </div>
-</div>
-
-<!-- vue script setup scripts can be directly used in markdown, and will only affects current page -->
-<script setup lang="ts">
-const final = {
-  x: 0,
-  y: 0,
-  rotate: 0,
-  scale: 1,
-  transition: {
-    type: 'spring',
-    damping: 10,
-    stiffness: 20,
-    mass: 2
-  }
-}
-</script>
-
-<div
-  v-motion
-  :initial="{ x:35, y: 40, opacity: 0}"
-  :enter="{ y: 0, opacity: 1, transition: { delay: 3500 } }">
-
-[Learn More](https://sli.dev/guide/animations.html#motion)
-
-</div>
+- The ornamental style called rocaille emerged in France between 1710 and 1750, mostly during the regency and reign of Louis XV. Its principal characteristics were picturesque detail, curves and counter-curves, asymmetry, and a theatrical exuberance. The best known furniture designer of the period was Juste-Aurèle Meissonnier (1695–1750)
 
 ---
 
-# LaTeX
+# rocailles were one of the
 
-LaTeX is supported out-of-box powered by [KaTeX](https://katex.org/).
+- The most extravagant rocaille forms were found in the consoles, tables designed to stand against walls. The period also saw the arrival of Chinoiserie, often in the form of lacquered and gilded commodes, called falcon de Chine of Vernis Martin, after the ebenist who introduced the technique to France.
 
-<br>
+# Rococo painting was one of the most popular
 
-Inline $\sqrt{3x-1}+(1+x)^2$
-
-Block
-$$
-\begin{array}{c}
-
-\nabla \times \vec{\mathbf{B}} -\, \frac1c\, \frac{\partial\vec{\mathbf{E}}}{\partial t} &
-= \frac{4\pi}{c}\vec{\mathbf{j}}    \nabla \cdot \vec{\mathbf{E}} & = 4 \pi \rho \\
-
-\nabla \times \vec{\mathbf{E}}\, +\, \frac1c\, \frac{\partial\vec{\mathbf{B}}}{\partial t} & = \vec{\mathbf{0}} \\
-
-\nabla \cdot \vec{\mathbf{B}} & = 0
-
-\end{array}
-$$
-
-<br>
-
-[Learn more](https://sli.dev/guide/syntax#latex)
+- The style particularly influenced François Lemoyne, who painted the lavish decoration of the ceiling of the Salon of Hercules at the Palace of Versailles, completed in 1735. In Austria and Southern Germany, Italian painting had the largest effect on the Rococo style. The Venetian painter Giovanni Battista Tiepolo, assisted by his son, was invited to paint frescoes for the Würzburg Residence. The most prominent painter of Bavarian rococo churches was Johann Baptist Zimmermann.
 
 ---
 
-# Diagrams
+# rococo sculpture was one of the most
 
-You can create diagrams / graphs from textual descriptions, directly in your Markdown.
+- The most elaborate examples of rococo sculpture were found in Spain, Austria and southern Germany. The El Transparente altar, in the major chapel of Toledo Cathedral is a towering sculpture of polychrome marble and gilded stucco, combined with paintings, statues and symbols. A new form of small-scale sculpture appeared, the porcelain figure, or small group of figures.
 
-<div class="grid grid-cols-3 gap-10 pt-4 -mb-6">
+# Tchaikovsky's The Variations on a Rococo
 
-```mermaid {scale: 0.5}
-sequenceDiagram
-    Alice->John: Hello John, how are you?
-    Note over Alice,John: A typical interaction
-```
-
-```mermaid {theme: 'neutral', scale: 0.8}
-graph TD
-B[Text] --> C{Decision}
-C -->|One| D[Result 1]
-C -->|Two| E[Result 2]
-```
-
-```plantuml {scale: 0.7}
-@startuml
-
-package "Some Group" {
-  HTTP - [First Component]
-  [Another Component]
-}
-
-node "Other Groups" {
-  FTP - [Second Component]
-  [First Component] --> FTP
-}
-
-cloud {
-  [Example 1]
-}
-
-
-database "MySql" {
-  folder "This is my folder" {
-    [Folder 3]
-  }
-  frame "Foo" {
-    [Frame 4]
-  }
-}
-
-
-[Another Component] --> [Example 1]
-[Example 1] --> [Folder 3]
-[Folder 3] --> [Frame 4]
-
-@enduml
-```
-
-</div>
-
-[Learn More](https://sli.dev/guide/syntax.html#diagrams)
-
+- The Rococo music style developed out of baroque music. It can be characterized as light, intimate music with extremely elaborate and refined forms of ornamentation. In the second half of the 18th century, a reaction against the Rococo style occurred. Led by Christoph Willibald Gluck, this reaction ushered in the Classical era. Pyotr Ilyich Tchaikovsky wrote The Variations on a Rococo Theme for cello and orchestra in 1877.
 
 ---
-layout: center
-class: text-center
----
 
-# Learn More
+# The 'pannier' and 'man
 
-[Documentations](https://sli.dev) · [GitHub](https://github.com/slidevjs/slidev) · [Showcases](https://sli.dev/showcases.html)
+- The 'pannier' and 'mantua' became fashionable around 1718, they were wide hoops under the dress to extend the hips out sideways. This gave the Rococo period the iconic dress of wide hips combined with the large amount of decoration on the garments. The Watteau pleats[45] also became more popular, named after the painter Jean-Antoine.
+
+# Here is a full list of works by
+
+- Jean-Baptiste van Loo, The Triumph of Galatea, 1720 Jean François de Troy, A Reading of Molière, 1728 Francis Hayman, Dancing Milkmaids, 1735 Charles-André van LOO, Halt to the Hunt, 1737 Gustaf Lundberg, Portrait of François Boucher, 1741   Giovan Battista Tiepolo, The Banquet of Cleopatra, 1743 François Boucher, Marie-Louise O'Murphy, 1752 Maurice Quentin de La Tour, Full-length portrait of the Marquise de Pompadour, 1748–1755 François
