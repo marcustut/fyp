@@ -1,0 +1,16 @@
+database:
+  user: ${DATABASE_USER}
+  password: ${DATABASE_PASSWORD}
+  net: tcp
+  addr: ${DATABASE_ADDR}
+  dbname: ${DATABASE_DBNAME}
+  allowNativePasswords: true
+  params:
+    parseTime: true
+    charset: utf8mb4
+    loc: Asia/Kuala_Lumpur
+    tls: true
+
+services:
+  slide:
+    port: 8080

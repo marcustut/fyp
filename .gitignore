@@ -1,6 +1,7 @@
 target/
-.env
+.env*
 __pycache__/
 /models
 tokenizers/
 *.pem
+.DS_Store
