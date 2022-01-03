@@ -135,8 +135,9 @@ class Title(TextSummarizer):
             # Now the body is the key and the title is the value
             dict_ = self.__transpose_dict(dict_)
             for body in dict_:
+                # Summarize the given text
                 title = self.summarizer(body, return_text='True', max_length=20)
-                dict_[body] = title[0]['summary_text'] # Only one value returned
+                dict_[body] = title[0]['summary_text'] # Only one dict returned in an array
                 pass
             dict_ = self.__transpose_dict(dict_)
             new_results.append(dict_)
