@@ -21,9 +21,27 @@ var (
 		Columns:    SlidesColumns,
 		PrimaryKey: []*schema.Column{SlidesColumns[0]},
 	}
+	// UsersColumns holds the columns for the "users" table.
+	UsersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "username", Type: field.TypeString, Unique: true, Size: 50},
+		{Name: "email", Type: field.TypeString, Unique: true, Size: 320},
+		{Name: "full_name", Type: field.TypeString, Nullable: true, Size: 60},
+		{Name: "avatar_url", Type: field.TypeString, Nullable: true, Size: 2083},
+		{Name: "bio", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime DEFAULT CURRENT_TIMESTAMP"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"}},
+	}
+	// UsersTable holds the schema information for the "users" table.
+	UsersTable = &schema.Table{
+		Name:       "users",
+		Columns:    UsersColumns,
+		PrimaryKey: []*schema.Column{UsersColumns[0]},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		SlidesTable,
+		UsersTable,
 	}
 )
 

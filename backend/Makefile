@@ -26,3 +26,15 @@ migrate-down:
 # Check migration status
 migrate-status:
 	dbmate -u $(DATABASE_URL) -d $(DB_MIGRATIONS_DIR) --no-dump-schema status
+
+# Migrate scheme in ent to database
+migrate_schema:
+	go run ./cmd/migration/main.go
+
+# Generate Ent
+generate:
+	go generate ./...
+
+# Start dev server
+start:
+	air

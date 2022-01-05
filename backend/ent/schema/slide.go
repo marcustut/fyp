@@ -17,8 +17,8 @@ type Slide struct {
 func (Slide) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("id").
-			GoType(ulid.ID("")).
-			DefaultFunc(func() ulid.ID { return ulid.MustNew("SLID_") }),
+			GoType("").
+			DefaultFunc(func() string { return string(ulid.MustNew("SLID_")) }),
 		field.String("name"),
 		field.Time("created_at").
 			Default(time.Now).

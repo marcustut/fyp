@@ -10,7 +10,6 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
 )
 
@@ -56,15 +55,15 @@ func (sc *SlideCreate) SetNillableUpdatedAt(t *time.Time) *SlideCreate {
 }
 
 // SetID sets the "id" field.
-func (sc *SlideCreate) SetID(u ulid.ID) *SlideCreate {
-	sc.mutation.SetID(u)
+func (sc *SlideCreate) SetID(s string) *SlideCreate {
+	sc.mutation.SetID(s)
 	return sc
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (sc *SlideCreate) SetNillableID(u *ulid.ID) *SlideCreate {
-	if u != nil {
-		sc.SetID(*u)
+func (sc *SlideCreate) SetNillableID(s *string) *SlideCreate {
+	if s != nil {
+		sc.SetID(*s)
 	}
 	return sc
 }
@@ -177,7 +176,7 @@ func (sc *SlideCreate) sqlSave(ctx context.Context) (*Slide, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		_node.ID = _spec.ID.Value.(ulid.ID)
+		_node.ID = _spec.ID.Value.(string)
 	}
 	return _node, nil
 }

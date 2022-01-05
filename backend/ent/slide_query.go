@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/marcustut/fyp/backend/ent/predicate"
-	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
 )
 
@@ -85,8 +84,8 @@ func (sq *SlideQuery) FirstX(ctx context.Context) *Slide {
 
 // FirstID returns the first Slide ID from the query.
 // Returns a *NotFoundError when no Slide ID was found.
-func (sq *SlideQuery) FirstID(ctx context.Context) (id ulid.ID, err error) {
-	var ids []ulid.ID
+func (sq *SlideQuery) FirstID(ctx context.Context) (id string, err error) {
+	var ids []string
 	if ids, err = sq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -98,7 +97,7 @@ func (sq *SlideQuery) FirstID(ctx context.Context) (id ulid.ID, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (sq *SlideQuery) FirstIDX(ctx context.Context) ulid.ID {
+func (sq *SlideQuery) FirstIDX(ctx context.Context) string {
 	id, err := sq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -136,8 +135,8 @@ func (sq *SlideQuery) OnlyX(ctx context.Context) *Slide {
 // OnlyID is like Only, but returns the only Slide ID in the query.
 // Returns a *NotSingularError when exactly one Slide ID is not found.
 // Returns a *NotFoundError when no entities are found.
-func (sq *SlideQuery) OnlyID(ctx context.Context) (id ulid.ID, err error) {
-	var ids []ulid.ID
+func (sq *SlideQuery) OnlyID(ctx context.Context) (id string, err error) {
+	var ids []string
 	if ids, err = sq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -153,7 +152,7 @@ func (sq *SlideQuery) OnlyID(ctx context.Context) (id ulid.ID, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (sq *SlideQuery) OnlyIDX(ctx context.Context) ulid.ID {
+func (sq *SlideQuery) OnlyIDX(ctx context.Context) string {
 	id, err := sq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -179,8 +178,8 @@ func (sq *SlideQuery) AllX(ctx context.Context) []*Slide {
 }
 
 // IDs executes the query and returns a list of Slide IDs.
-func (sq *SlideQuery) IDs(ctx context.Context) ([]ulid.ID, error) {
-	var ids []ulid.ID
+func (sq *SlideQuery) IDs(ctx context.Context) ([]string, error) {
+	var ids []string
 	if err := sq.Select(slide.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -188,7 +187,7 @@ func (sq *SlideQuery) IDs(ctx context.Context) ([]ulid.ID, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (sq *SlideQuery) IDsX(ctx context.Context) []ulid.ID {
+func (sq *SlideQuery) IDsX(ctx context.Context) []string {
 	ids, err := sq.IDs(ctx)
 	if err != nil {
 		panic(err)
