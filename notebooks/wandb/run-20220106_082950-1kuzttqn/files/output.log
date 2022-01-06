@@ -9,3 +9,23 @@
   Gradient Accumulation steps = 1
   Total optimization steps = 55700
   0%|          | 0/55700 [10:08<?, ?it/s]
+PyTorch: setting up devices0:00<?, ?it/s]
+The default value for the training argument `--report_to` will change in v5 (from all installed integrations to none). In v5, you will need to use `--report_to all` to get the same behavior as now. You should start updating your code and make this info disappear :-).
+***** Running training *****
+  Num examples = 222795
+  Num Epochs = 4
+  Instantaneous batch size per device = 8
+  Total train batch size (w. parallel, distributed & accumulation) = 8
+  Gradient Accumulation steps = 1
+  Total optimization steps = 111400
+Automatic Weights & Biases logging enabled, to disable set os.environ["WANDB_DISABLED"] = "true"
+  0%|          | 0/111400 [00:00<?, ?it/s]PyTorch: setting up devices
+The default value for the training argument `--report_to` will change in v5 (from all installed integrations to none). In v5, you will need to use `--report_to all` to get the same behavior as now. You should start updating your code and make this info disappear :-).
+***** Running training *****
+  Num examples = 222795
+  Num Epochs = 4
+  Instantaneous batch size per device = 2
+  Total train batch size (w. parallel, distributed & accumulation) = 2
+  Gradient Accumulation steps = 1
+  Total optimization steps = 445592
+Automatic Weights & Biases logging enabled, to disable set os.environ["WANDB_DISABLED"] = "true"
