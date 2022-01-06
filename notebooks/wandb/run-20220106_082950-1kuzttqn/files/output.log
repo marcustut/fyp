@@ -1,0 +1,11 @@
+
+  0%|          | 0/55700 [00:00<?, ?it/s]c:\Users\X\Documents\projects\fyp\venv\lib\site-packages\torch\cuda\memory.py:384: FutureWarning: torch.cuda.memory_cached has been renamed to torch.cuda.memory_reserved
+  warnings.warn(
+***** Running training *****
+  Num examples = 222795
+  Num Epochs = 4
+  Instantaneous batch size per device = 16
+  Total train batch size (w. parallel, distributed & accumulation) = 16
+  Gradient Accumulation steps = 1
+  Total optimization steps = 55700
+  0%|          | 0/55700 [10:08<?, ?it/s]
