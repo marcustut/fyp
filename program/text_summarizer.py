@@ -2,6 +2,7 @@ from transformers import pipeline
 from transformers import BartForConditionalGeneration, AutoModel, AutoModelForSeq2SeqLM
 from transformers import AutoTokenizer
 from transformers.pipelines.base import Pipeline
+from summarizer import Summarizer
 import os
 
 
@@ -38,6 +39,17 @@ class TextSummarizer():
             return True
         else:
             return False
+
+class Extractive(TextSummarizer):
+    '''The mode of summarization that can be chosen by the user. This is extractive summarization where a summary is pieced together from the original sentences in the document.'''
+
+    def __init__(self) -> None:
+        self.__create_summarizer()
+        self.__save_model(path='bert-ext.pkl')
+        pass
+
+    def summarize(self, body: str) -> str:
+        self.model = Summarize()
 
 
 class Abstractive(TextSummarizer):
