@@ -1,0 +1,34 @@
+{
+    "os": "Linux-5.10.16.3-microsoft-standard-WSL2-x86_64-with-glibc2.29",
+    "python": "3.8.10",
+    "heartbeatAt": "2022-01-05T23:45:01.192450",
+    "startedAt": "2022-01-05T23:44:42.576601",
+    "docker": null,
+    "gpu": "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+    "gpu_count": 1,
+    "cpu_count": 8,
+    "cuda": null,
+    "args": [
+        "--ip=127.0.0.1",
+        "--stdin=9003",
+        "--control=9001",
+        "--hb=9000",
+        "--Session.signature_scheme=\"hmac-sha256\"",
+        "--Session.key=b\"a9850e12-28e0-45ee-8171-cbac993de92c\"",
+        "--shell=9002",
+        "--transport=\"tcp\"",
+        "--iopub=9004",
+        "--f=/tmp/tmp-8460lHw5oDxEuIN.json"
+    ],
+    "state": "running",
+    "program": "<python with no main file>",
+    "git": {
+        "remote": "https://github.com/marcustut/fyp",
+        "commit": "40288759d75a6a76a97a461f65f7efb48025e3e8"
+    },
+    "email": "lianalingliya@gmail.com",
+    "root": "/home/liana/projects/fyp",
+    "host": "Liana-ASUS",
+    "username": "liana",
+    "executable": "/home/liana/projects/fyp/venv/bin/python"
+}
