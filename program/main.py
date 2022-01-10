@@ -9,11 +9,12 @@ def main():
     print('---START OF PROGRAM---')
 
     inputer = Inputer(type='url')
-    text_summarizer = TextSummarizer(mode='abs') # Abstractive summarisation
+    text_summarizer = TextSummarizer(mode='ext') # Abstractive summarisation
     adapter = Adapter()
     outputer = Outputer()
 
     chunks, article_len = inputer.get_input(inp='https://en.wikipedia.org/wiki/Rococo')
+    # results = text_summarizer.body.summarize(chunks=chunks)
     results = text_summarizer.body.summarize(chunks=chunks)
     results = text_summarizer.title.summarize(results=results)
     adapter.convert_markdown(results=results)

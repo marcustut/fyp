@@ -4,11 +4,14 @@ from transformers import AutoTokenizer
 from transformers.pipelines.base import Pipeline
 from summarizer import Summarizer
 import os
+import pickle
 
 
 class TextSummarizer():
     '''Text summarizers using different models and tokenizers. Includes saving of pre-trained models into directories.
     `valid_modes`: the valid modes of summarisation, including 'abs' and 'ext' for abstractive and extractive summarisation respectively.
+    `body`: summarizer for the slide body.
+    `title`: summarizer for the slide title.
     `summarizer`: the summarizer pipeline.
     `model`: the weights of the model.
     `tokenizer`: the model tokenizer.
@@ -18,7 +21,7 @@ class TextSummarizer():
     body: 'TextSummarizer'
     title: 'Title'
     summarizer: Pipeline
-    model: AutoModel
+    model: any
     tokenizer: AutoTokenizer
 
     def __init__(self, mode: str) -> None:
@@ -29,6 +32,8 @@ class TextSummarizer():
 
         if(mode == 'abs'):
             self.body = Abstractive()
+        elif(mode == 'ext'):
+            self.body = Extractive()
 
         self.title = Title()
         pass
@@ -44,13 +49,39 @@ class Extractive(TextSummarizer):
     '''The mode of summarization that can be chosen by the user. This is extractive summarization where a summary is pieced together from the original sentences in the document.'''
 
     def __init__(self) -> None:
-        self.__create_summarizer()
-        self.__save_model(path='bert-ext.pkl')
+        self.__create_summarizer(path='../models/extractive/')
+        self.__save_model(path='../models/extractive/', model=self.model)
         pass
 
-    def summarize(self, body: str) -> str:
-        self.model = Summarize()
+    def __create_summarizer(self, path: str):
+        # If file is not empty
+        if(self.__is_empty(path) == False):
+            self.model = pickle.load(open(path + 'bert-ext.pkl', 'rb'))
+        else:
+            self.model = Summarizer()
 
+    def __save_model(self, path: str, model) -> None:
+        '''Saves the model and tokenizer to a directory.'''
+        if(self.__is_empty(path)):
+            pickle.dump(model, open(path + 'bert-ext.pkl', 'wb'))
+
+    def __is_empty(self, path: str) -> bool:
+        '''Checks whether directory path is empty and creates one if it does not exist.'''
+        if os.path.exists(path) and not os.path.isfile(path):
+            # Checking if the directory is empty or not
+            if not os.listdir(path):
+                return True
+            else:
+                return False
+        else:
+            os.makedirs(path)
+
+    def summarize(self, chunks: 'list[str]', ratio=0.05) -> 'list[dict]':
+        results = []
+        for chunk in chunks:
+            dict_ = {'summary_text': ' ' + self.model(chunk, ratio=ratio)}
+            results.append(dict_)
+        return results
 
 class Abstractive(TextSummarizer):
     '''The mode of summarization that can be chosen by the user. This is abstractive summarization where new sentences are generated from the original document.
@@ -154,7 +185,5 @@ class Title(TextSummarizer):
             dict_ = self.__transpose_dict(dict_)
             new_results.append(dict_)
             print('dict_:', dict_)
-
-        print(new_results)
 
         return new_results
