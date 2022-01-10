@@ -1,0 +1,34 @@
+{
+    "os": "Windows-10-10.0.19043-SP0",
+    "python": "3.9.9",
+    "heartbeatAt": "2022-01-10T01:37:23.695342",
+    "startedAt": "2022-01-10T01:37:20.980244",
+    "docker": null,
+    "gpu": "Quadro RTX 8000",
+    "gpu_count": 1,
+    "cpu_count": 16,
+    "cuda": null,
+    "args": [
+        "--ip=127.0.0.1",
+        "--stdin=9003",
+        "--control=9001",
+        "--hb=9000",
+        "--Session.signature_scheme=\"hmac-sha256\"",
+        "--Session.key=b\"e9c5bd83-b1a1-424a-b374-e9ccc4caf8d3\"",
+        "--shell=9002",
+        "--transport=\"tcp\"",
+        "--iopub=9004",
+        "--f=C:\\Users\\E\\AppData\\Local\\Temp\\tmp-3328sIjPjM5bHNFe.json"
+    ],
+    "state": "running",
+    "program": "<python with no main file>",
+    "git": {
+        "remote": "https://github.com/marcustut/fyp",
+        "commit": "0b8a8f43c97d14b970b8bbcdf7faceba37c9fc79"
+    },
+    "email": null,
+    "root": "C:/Users/E/Documents/projects/fyp",
+    "host": "PC-16",
+    "username": "E",
+    "executable": "c:\\Users\\E\\Documents\\projects\\fyp\\venv\\Scripts\\python.exe"
+}
