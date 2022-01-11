@@ -9,7 +9,7 @@ def main():
     print('---START OF PROGRAM---')
 
     inputer = Inputer(type='url')
-    text_summarizer = TextSummarizer(mode='ext') # Abstractive summarisation
+    text_summarizer = TextSummarizer(mode='abs') # Abstractive summarisation
     adapter = Adapter()
     outputer = Outputer()
 
