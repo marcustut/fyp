@@ -6,3 +6,6 @@ tokenizers/
 *.pem
 dataset/
 venv/
+notebooks/cache_dir/
+notebooks/outputs/
+notebooks/runs/

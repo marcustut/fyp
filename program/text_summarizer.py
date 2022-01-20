@@ -5,6 +5,7 @@ from transformers.pipelines.base import Pipeline
 from summarizer import Summarizer
 import os
 import pickle
+import torch
 
 
 class TextSummarizer():
@@ -28,7 +29,7 @@ class TextSummarizer():
         '''Initialises the TextSummarizer object with the summarization mode and the title summarizer.'''
         if(self.__contains__(mode) == False):
             raise Exception(
-                'Invalid summarizer mode given. Valid mdoes are', self.valid_modes)
+                'Invalid summarizer mode given. Valid modes are', self.valid_modes)
 
         if(mode == 'abs'):
             self.body = Abstractive()
@@ -132,7 +133,7 @@ class Title(TextSummarizer):
     '''An internal class that will be used to generate slide titles, and combining the title with body results.
     '''
 
-    def __init__(self, file='../models/title-generator-t5-arxiv-16-4.pkl') -> None:
+    def __init__(self, file='../models/title-generator-t5-arxiv-36-8.pkl') -> None:
         '''Initialises the title summarizer.'''
         self.__create_summarizer(file=file)
         # self.__save_model(path=file, model=self.model, tokenizer=self.tokenizer)
@@ -193,7 +194,7 @@ class Title(TextSummarizer):
             dict_ = self.__transpose_dict(dict_)
             for body in dict_:
                 # Summarize the given text
-                dict_[body] = self.summarizer(body) # Returns a list
+                dict_[body] = self.summarizer(body)[0] # Returns a list so take only the first element
                 pass
             dict_ = self.__transpose_dict(dict_)
             new_results.append(dict_)
