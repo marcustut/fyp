@@ -125,7 +125,7 @@ The last comment block of each slide will be treated as slide notes. It will be 
         First creates a text file for writing of strings, for further renaming of the `.txt` file to `.md`.
         '''
 
-        with open('../slidev/slides.txt', 'w') as f:
+        with open('../slidev/slides.txt', 'w', encoding='utf-8') as f:
             f.writelines(self.metadata)
             f.write(self.md)
 

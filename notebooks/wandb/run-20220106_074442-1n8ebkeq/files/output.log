@@ -1,0 +1,340 @@
+Title: Calculation of prompt diphoton production cross sections at Tevatron and
+  LHC energies
+Abstract:   A fully differential calculation in perturbative quantum chromodynamics is
+presented for the production of massive photon pairs at hadron colliders. All
+next-to-leading order perturbative contributions from quark-antiquark,
+gluon-(anti)quark, and gluon-gluon subprocesses are included, as well as
+all-orders resummation of initial-state gluon radiation valid at
+next-to-next-to-leading logarithmic accuracy. The region of phase space is
+specified in which the calculation is most reliable. Good agreement is
+demonstrated with data from the Fermilab Tevatron, and predictions are made for
+more detailed tests with CDF and DO data. Predictions are shown for
+distributions of diphoton pairs produced at the energy of the Large Hadron
+Collider (LHC). Distributions of the diphoton pairs from the decay of a Higgs
+boson are contrasted with those produced from QCD processes at the LHC, showing
+that enhanced sensitivity to the signal can be obtained with judicious
+selection of events.
+Ref: Phys.Rev.D76:013009,2007
+loading configuration file https://huggingface.co/sshleifer/distilbart-cnn-12-6/resolve/main/config.json from cache at /home/liana/.cache/huggingface/transformers/adac95cf641be69365b3dd7fe00d4114b3c7c77fb0572931db31a92d4995053b.a50597c2c8b540e8d07e03ca4d58bf615a365f134fb10ca988f4f67881789178
+Model config BartConfig {
+  "_num_labels": 3,
+  "activation_dropout": 0.0,
+  "activation_function": "gelu",
+  "add_bias_logits": false,
+  "add_final_layer_norm": false,
+  "architectures": [
+    "BartForConditionalGeneration"
+  ],
+  "attention_dropout": 0.0,
+  "bos_token_id": 0,
+  "classif_dropout": 0.0,
+  "classifier_dropout": 0.0,
+  "d_model": 1024,
+  "decoder_attention_heads": 16,
+  "decoder_ffn_dim": 4096,
+  "decoder_layerdrop": 0.0,
+  "decoder_layers": 6,
+  "decoder_start_token_id": 2,
+  "dropout": 0.1,
+  "early_stopping": true,
+  "encoder_attention_heads": 16,
+  "encoder_ffn_dim": 4096,
+  "encoder_layerdrop": 0.0,
+  "encoder_layers": 12,
+  "eos_token_id": 2,
+  "extra_pos_embeddings": 2,
+  "force_bos_token_to_be_generated": true,
+  "forced_bos_token_id": 0,
+  "forced_eos_token_id": 2,
+  "gradient_checkpointing": false,
+  "id2label": {
+    "0": "LABEL_0",
+    "1": "LABEL_1",
+    "2": "LABEL_2"
+  },
+  "init_std": 0.02,
+  "is_encoder_decoder": true,
+  "label2id": {
+    "LABEL_0": 0,
+    "LABEL_1": 1,
+    "LABEL_2": 2
+  },
+  "length_penalty": 2.0,
+  "max_length": 142,
+  "max_position_embeddings": 1024,
+  "min_length": 56,
+  "model_type": "bart",
+  "no_repeat_ngram_size": 3,
+  "normalize_before": false,
+  "normalize_embedding": true,
+  "num_beams": 4,
+  "num_hidden_layers": 12,
+  "output_past": true,
+  "pad_token_id": 1,
+  "prefix": " ",
+  "replacing_rate": 0,
+  "scale_embedding": false,
+  "static_position_embeddings": false,
+  "student_decoder_layers": null,
+  "student_encoder_layers": null,
+  "task_specific_params": {
+    "summarization": {
+      "early_stopping": true,
+      "length_penalty": 2.0,
+      "max_length": 142,
+      "min_length": 56,
+      "no_repeat_ngram_size": 3,
+      "num_beams": 4
+    }
+  },
+  "transformers_version": "4.12.5",
+  "use_cache": true,
+  "vocab_size": 50264
+}
+loading file https://huggingface.co/sshleifer/distilbart-cnn-12-6/resolve/main/vocab.json from cache at /home/liana/.cache/huggingface/transformers/9951e68693b9a7c583ae677e9cb53c02715d9bd0311a78706401372653cdea0a.647b4548b6d9ea817e82e7a9231a320231a1c9ea24053cc9e758f3fe68216f05
+loading file https://huggingface.co/sshleifer/distilbart-cnn-12-6/resolve/main/merges.txt from cache at /home/liana/.cache/huggingface/transformers/7588c8d398d659b230a038240cc023f67b6848117d2999f06ab625af7bfc7ec1.5d12962c5ee615a4c803841266e9c3be9a691a924f72d395d3a6c6c81157788b
+loading file https://huggingface.co/sshleifer/distilbart-cnn-12-6/resolve/main/tokenizer.json from cache at None
+loading file https://huggingface.co/sshleifer/distilbart-cnn-12-6/resolve/main/added_tokens.json from cache at None
+loading file https://huggingface.co/sshleifer/distilbart-cnn-12-6/resolve/main/special_tokens_map.json from cache at None
+loading file https://huggingface.co/sshleifer/distilbart-cnn-12-6/resolve/main/tokenizer_config.json from cache at /home/liana/.cache/huggingface/transformers/f5316f64f9716436994a7ad76a354dc20ecb2dd74eb61d278f103a9c8b80291f.67d01b18f2079bd75eac0b2f2e7235768c7f26bd728e7a855a1c5acae01a91a8
+loading configuration file https://huggingface.co/sshleifer/distilbart-cnn-12-6/resolve/main/config.json from cache at /home/liana/.cache/huggingface/transformers/adac95cf641be69365b3dd7fe00d4114b3c7c77fb0572931db31a92d4995053b.a50597c2c8b540e8d07e03ca4d58bf615a365f134fb10ca988f4f67881789178
+Model config BartConfig {
+  "_num_labels": 3,
+  "activation_dropout": 0.0,
+  "activation_function": "gelu",
+  "add_bias_logits": false,
+  "add_final_layer_norm": false,
+  "architectures": [
+    "BartForConditionalGeneration"
+  ],
+  "attention_dropout": 0.0,
+  "bos_token_id": 0,
+  "classif_dropout": 0.0,
+  "classifier_dropout": 0.0,
+  "d_model": 1024,
+  "decoder_attention_heads": 16,
+  "decoder_ffn_dim": 4096,
+  "decoder_layerdrop": 0.0,
+  "decoder_layers": 6,
+  "decoder_start_token_id": 2,
+  "dropout": 0.1,
+  "early_stopping": true,
+  "encoder_attention_heads": 16,
+  "encoder_ffn_dim": 4096,
+  "encoder_layerdrop": 0.0,
+  "encoder_layers": 12,
+  "eos_token_id": 2,
+  "extra_pos_embeddings": 2,
+  "force_bos_token_to_be_generated": true,
+  "forced_bos_token_id": 0,
+  "forced_eos_token_id": 2,
+  "gradient_checkpointing": false,
+  "id2label": {
+    "0": "LABEL_0",
+    "1": "LABEL_1",
+    "2": "LABEL_2"
+  },
+  "init_std": 0.02,
+  "is_encoder_decoder": true,
+  "label2id": {
+    "LABEL_0": 0,
+    "LABEL_1": 1,
+    "LABEL_2": 2
+  },
+  "length_penalty": 2.0,
+  "max_length": 142,
+  "max_position_embeddings": 1024,
+  "min_length": 56,
+  "model_type": "bart",
+  "no_repeat_ngram_size": 3,
+  "normalize_before": false,
+  "normalize_embedding": true,
+  "num_beams": 4,
+  "num_hidden_layers": 12,
+  "output_past": true,
+  "pad_token_id": 1,
+  "prefix": " ",
+  "replacing_rate": 0,
+  "scale_embedding": false,
+  "static_position_embeddings": false,
+  "student_decoder_layers": null,
+  "student_encoder_layers": null,
+  "task_specific_params": {
+    "summarization": {
+      "early_stopping": true,
+      "length_penalty": 2.0,
+      "max_length": 142,
+      "min_length": 56,
+      "no_repeat_ngram_size": 3,
+      "num_beams": 4
+    }
+  },
+  "transformers_version": "4.12.5",
+  "use_cache": true,
+  "vocab_size": 50264
+}
+loading configuration file https://huggingface.co/sshleifer/distilbart-cnn-12-6/resolve/main/config.json from cache at /home/liana/.cache/huggingface/transformers/adac95cf641be69365b3dd7fe00d4114b3c7c77fb0572931db31a92d4995053b.a50597c2c8b540e8d07e03ca4d58bf615a365f134fb10ca988f4f67881789178
+Model config BartConfig {
+  "_num_labels": 3,
+  "activation_dropout": 0.0,
+  "activation_function": "gelu",
+  "add_bias_logits": false,
+  "add_final_layer_norm": false,
+  "architectures": [
+    "BartForConditionalGeneration"
+  ],
+  "attention_dropout": 0.0,
+  "bos_token_id": 0,
+  "classif_dropout": 0.0,
+  "classifier_dropout": 0.0,
+  "d_model": 1024,
+  "decoder_attention_heads": 16,
+  "decoder_ffn_dim": 4096,
+  "decoder_layerdrop": 0.0,
+  "decoder_layers": 6,
+  "decoder_start_token_id": 2,
+  "dropout": 0.1,
+  "early_stopping": true,
+  "encoder_attention_heads": 16,
+  "encoder_ffn_dim": 4096,
+  "encoder_layerdrop": 0.0,
+  "encoder_layers": 12,
+  "eos_token_id": 2,
+  "extra_pos_embeddings": 2,
+  "force_bos_token_to_be_generated": true,
+  "forced_bos_token_id": 0,
+  "forced_eos_token_id": 2,
+  "gradient_checkpointing": false,
+  "id2label": {
+    "0": "LABEL_0",
+    "1": "LABEL_1",
+    "2": "LABEL_2"
+  },
+  "init_std": 0.02,
+  "is_encoder_decoder": true,
+  "label2id": {
+    "LABEL_0": 0,
+    "LABEL_1": 1,
+    "LABEL_2": 2
+  },
+  "length_penalty": 2.0,
+  "max_length": 142,
+  "max_position_embeddings": 1024,
+  "min_length": 56,
+  "model_type": "bart",
+  "no_repeat_ngram_size": 3,
+  "normalize_before": false,
+  "normalize_embedding": true,
+  "num_beams": 4,
+  "num_hidden_layers": 12,
+  "output_past": true,
+  "pad_token_id": 1,
+  "prefix": " ",
+  "replacing_rate": 0,
+  "scale_embedding": false,
+  "static_position_embeddings": false,
+  "student_decoder_layers": null,
+  "student_encoder_layers": null,
+  "task_specific_params": {
+    "summarization": {
+      "early_stopping": true,
+      "length_penalty": 2.0,
+      "max_length": 142,
+      "min_length": 56,
+      "no_repeat_ngram_size": 3,
+      "num_beams": 4
+    }
+  },
+  "transformers_version": "4.12.5",
+  "use_cache": true,
+  "vocab_size": 50264
+}
+loading configuration file https://huggingface.co/sshleifer/distilbart-cnn-12-6/resolve/main/config.json from cache at /home/liana/.cache/huggingface/transformers/adac95cf641be69365b3dd7fe00d4114b3c7c77fb0572931db31a92d4995053b.a50597c2c8b540e8d07e03ca4d58bf615a365f134fb10ca988f4f67881789178
+Model config BartConfig {
+  "_num_labels": 3,
+  "activation_dropout": 0.0,
+  "activation_function": "gelu",
+  "add_bias_logits": false,
+  "add_final_layer_norm": false,
+  "architectures": [
+    "BartForConditionalGeneration"
+  ],
+  "attention_dropout": 0.0,
+  "bos_token_id": 0,
+  "classif_dropout": 0.0,
+  "classifier_dropout": 0.0,
+  "d_model": 1024,
+  "decoder_attention_heads": 16,
+  "decoder_ffn_dim": 4096,
+  "decoder_layerdrop": 0.0,
+  "decoder_layers": 6,
+  "decoder_start_token_id": 2,
+  "dropout": 0.1,
+  "early_stopping": true,
+  "encoder_attention_heads": 16,
+  "encoder_ffn_dim": 4096,
+  "encoder_layerdrop": 0.0,
+  "encoder_layers": 12,
+  "eos_token_id": 2,
+  "extra_pos_embeddings": 2,
+  "force_bos_token_to_be_generated": true,
+  "forced_bos_token_id": 0,
+  "forced_eos_token_id": 2,
+  "gradient_checkpointing": false,
+  "id2label": {
+    "0": "LABEL_0",
+    "1": "LABEL_1",
+    "2": "LABEL_2"
+  },
+  "init_std": 0.02,
+  "is_encoder_decoder": true,
+  "label2id": {
+    "LABEL_0": 0,
+    "LABEL_1": 1,
+    "LABEL_2": 2
+  },
+  "length_penalty": 2.0,
+  "max_length": 142,
+  "max_position_embeddings": 1024,
+  "min_length": 56,
+  "model_type": "bart",
+  "no_repeat_ngram_size": 3,
+  "normalize_before": false,
+  "normalize_embedding": true,
+  "num_beams": 4,
+  "num_hidden_layers": 12,
+  "output_past": true,
+  "pad_token_id": 1,
+  "prefix": " ",
+  "replacing_rate": 0,
+  "scale_embedding": false,
+  "static_position_embeddings": false,
+  "student_decoder_layers": null,
+  "student_encoder_layers": null,
+  "task_specific_params": {
+    "summarization": {
+      "early_stopping": true,
+      "length_penalty": 2.0,
+      "max_length": 142,
+      "min_length": 56,
+      "no_repeat_ngram_size": 3,
+      "num_beams": 4
+    }
+  },
+  "transformers_version": "4.12.5",
+  "use_cache": true,
+  "vocab_size": 50264
+}
+loading weights file https://huggingface.co/sshleifer/distilbart-cnn-12-6/resolve/main/pytorch_model.bin from cache at /home/liana/.cache/huggingface/transformers/b336fa0b874ea92e3e22f07a7e6f8fa9da01221759c33abeb2679d6d98fe7755.585965cf7e82e4536033cd21d76c486af3d6b1c2a34b3a847840d4e7fe9d8844
+All model checkpoint weights were used when initializing BartForConditionalGeneration.
+All the weights of BartForConditionalGeneration were initialized from the model checkpoint at sshleifer/distilbart-cnn-12-6.
+If your task is similar to the task the model of the checkpoint was trained on, you can already use BartForConditionalGeneration for predictions without further training.
+PyTorch: setting up devices
+The default value for the training argument `--report_to` will change in v5 (from all installed integrations to none). In v5, you will need to use `--report_to all` to get the same behavior as now. You should start updating your code and make this info disappear :-).
+***** Running training *****
+  Num examples = 222795
+  Num Epochs = 4
+  Instantaneous batch size per device = 16
+  Total train batch size (w. parallel, distributed & accumulation) = 16
+  Gradient Accumulation steps = 1
+  Total optimization steps = 55700

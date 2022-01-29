@@ -4,4 +4,9 @@ __pycache__/
 /models
 tokenizers/
 *.pem
+dataset/
+venv/
+notebooks/cache_dir/
+notebooks/outputs/
+notebooks/runs/
 .DS_Store
