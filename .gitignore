@@ -1,8 +1,8 @@
 target/
 .env*
-__pycache__/
 /models
 tokenizers/
+__pycache__/
 *.pem
 dataset/
 venv/
