@@ -5,6 +5,7 @@ tokenizers/
 __pycache__/
 *.pem
 dataset/
+tmp/
 venv/
 notebooks/cache_dir/
 notebooks/outputs/
