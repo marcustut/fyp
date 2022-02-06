@@ -36,7 +36,7 @@ resolver:
 # if they match it will use them, otherwise it will generate them.
 autobind:
   - github.com/marcustut/fyp/backend/internal/entity/model
-  - github.com/marcustut/fyp/backend/internal
+  - github.com/marcustut/fyp/backend/ent
 
 # This section declares type mapping between the GraphQL and go type systems
 #

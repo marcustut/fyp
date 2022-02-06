@@ -34,3 +34,11 @@ func (r *queryResolver) Slide(ctx context.Context, id ulid.ID) (*ent.Slide, erro
 	}
 	return s, nil
 }
+
+func (r *queryResolver) Slides(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, where *ent.SlideWhereInput, orderBy *ent.SlideOrder) (*ent.SlideConnection, error) {
+	ss, err := r.controller.Slide.List(ctx, after, first, before, last, where, orderBy)
+	if err != nil {
+		return nil, handler.HandleError(ctx, err)
+	}
+	return ss, nil
+}

@@ -10,5 +10,5 @@ import (
 func (r *registry) NewSlideController() controller.Slide {
 	repo := repository.NewSlideRepository(r.client)
 	u := usecase.NewSlideUsecase(repo)
-	return controller.Slide(u)
+	return controller.NewSlideController(u)
 }

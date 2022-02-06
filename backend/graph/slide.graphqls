@@ -1,3 +1,8 @@
+enum SlideOrderField {
+    CREATED_AT
+    UPDATED_AT
+}
+
 type Slide {
     id: ID!
     name: String
@@ -8,14 +13,35 @@ type Slide {
 input CreateSlideInput {
     name: String
 }
-
 input UpdateSlideInput {
     id: ID!
     name: String
 }
 
+type SlideConnection {
+    totalCount: Int!
+    pageInfo: PageInfo!
+    edges: [SlideEdge]
+}
+type SlideEdge {
+    node: Slide
+    cursor: Cursor!
+}
+input SlideOrder {
+    direction: OrderDirection!
+    field: SlideOrderField
+}
+
 extend type Query {
     Slide(id: ID!): Slide
+    Slides(
+        after: Cursor
+        first: Int
+        before: Cursor
+        last: Int
+        where: SlideWhereInput
+        orderBy: SlideOrder
+    ): SlideConnection
 }
 
 extend type Mutation {
