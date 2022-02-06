@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
+	"log"
+
 	"github.com/marcustut/fyp/backend/config"
 	"github.com/marcustut/fyp/backend/ent"
 	"github.com/marcustut/fyp/backend/ent/migrate"
 	"github.com/marcustut/fyp/backend/internal/infrastructure/datastore"
-	"log"
 )
 
 func main() {

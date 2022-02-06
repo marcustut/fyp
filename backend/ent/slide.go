@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
 )
 
@@ -15,7 +16,7 @@ import (
 type Slide struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID string `json:"id,omitempty"`
+	ID ulid.ID `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -29,10 +30,12 @@ func (*Slide) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case slide.FieldID, slide.FieldName:
+		case slide.FieldName:
 			values[i] = new(sql.NullString)
 		case slide.FieldCreatedAt, slide.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
+		case slide.FieldID:
+			values[i] = new(ulid.ID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Slide", columns[i])
 		}
@@ -49,10 +52,10 @@ func (s *Slide) assignValues(columns []string, values []interface{}) error {
 	for i := range columns {
 		switch columns[i] {
 		case slide.FieldID:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*ulid.ID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
-			} else if value.Valid {
-				s.ID = string(value.String)
+			} else if value != nil {
+				s.ID = *value
 			}
 		case slide.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {

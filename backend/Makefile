@@ -1,4 +1,4 @@
-.PHONY: migrate-up migrate-down migrate-status
+.PHONY: deps migrate-up migrate-down migrate-status
 
 DB_MIGRATIONS_DIR="./migrations"
 
@@ -7,6 +7,16 @@ ifneq (,$(wildcard ./.env))
 	include .env
 	export
 endif
+
+deps:
+	brew install yq
+	brew install pre-commit
+	pre-commit --version
+	pre-commit install
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1
+	go install golang.org/x/tools/cmd/goimports@latest
+	go install github.com/segmentio/golines@latest
+	go install github.com/cosmtrek/air@latest
 
 up:
 	docker-compose up -d
@@ -31,7 +41,7 @@ migrate-status:
 migrate_schema:
 	go run ./cmd/migration/main.go
 
-# Generate Ent
+# Generate Ent and Gqlgen
 generate:
 	go generate ./...
 

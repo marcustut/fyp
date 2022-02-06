@@ -2,10 +2,9 @@ package schema
 
 import (
 	"entgo.io/ent"
-	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/field"
-	"github.com/marcustut/fyp/backend/ent/schema/ulid"
-	"time"
+	entMixin "entgo.io/ent/schema/mixin"
+	"github.com/marcustut/fyp/backend/ent/mixin"
 )
 
 // Slide holds the schema definition for the Slide entity.
@@ -13,29 +12,28 @@ type Slide struct {
 	ent.Schema
 }
 
+// SlideMixin defines Fields
+type SlideMixin struct {
+	entMixin.Schema
+}
+
 // Fields of the Slide.
-func (Slide) Fields() []ent.Field {
+func (SlideMixin) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("id").
-			GoType("").
-			DefaultFunc(func() string { return string(ulid.MustNew("SLID_")) }),
 		field.String("name"),
-		field.Time("created_at").
-			Default(time.Now).
-			SchemaType(map[string]string{
-				dialect.MySQL: "datetime DEFAULT CURRENT_TIMESTAMP",
-			}).
-			Immutable(),
-		field.Time("updated_at").
-			Default(time.Now).
-			SchemaType(map[string]string{
-				dialect.MySQL: "datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
-			}).
-			Immutable(),
 	}
 }
 
 // Edges of the Slide.
 func (Slide) Edges() []ent.Edge {
 	return nil
+}
+
+// Mixin of the Slide.
+func (Slide) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		mixin.NewUlid("SLID_"),
+		SlideMixin{},
+		mixin.NewDatetime(),
+	}
 }

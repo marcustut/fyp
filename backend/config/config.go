@@ -2,15 +2,16 @@ package config
 
 import (
 	"fmt"
-	"github.com/joho/godotenv"
-	"github.com/marcustut/fyp/backend/internal/util/environment"
-	"github.com/spf13/viper"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/joho/godotenv"
+	"github.com/marcustut/fyp/backend/internal/util/environment"
+	"github.com/spf13/viper"
 )
 
 type config struct {

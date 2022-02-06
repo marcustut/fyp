@@ -9,26 +9,47 @@ import (
 	"os"
 	"path/filepath"
 
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent/entc"
 	"entgo.io/ent/entc/gen"
 	"github.com/deepmap/oapi-codegen/pkg/codegen"
 	"github.com/deepmap/oapi-codegen/pkg/util"
-	"github.com/masseelch/elk"
 )
 
 func main() {
-	ex, err := elk.NewExtension(
-		elk.GenerateSpec("openapi.json"),
-		elk.GenerateHandlers(),
+	ex1, err := entgql.NewExtension(
+		entgql.WithWhereFilters(true),
+		entgql.WithConfigPath("../gqlgen.yml"),
+		entgql.WithSchemaPath("../graph/ent.graphqls"),
 	)
 	if err != nil {
-		log.Fatalf("creating elk extension: %v", err)
+		log.Fatalf("failed creating entgql extension: %v", err)
 	}
-	generateClient()
-	err = entc.Generate("./schema", &gen.Config{}, entc.Extensions(ex))
+
+	opts := []entc.Option{
+		entc.Extensions(ex1),
+		entc.TemplateDir("./template"),
+	}
+
+	err = entc.Generate("./schema", &gen.Config{}, opts...)
 	if err != nil {
-		log.Fatalf("running ent codegen: %v", err)
+		log.Fatalf("running ent codegen for gql: %v", err)
 	}
+
+	//ex2, err := elk.NewExtension(
+	//	elk.GenerateSpec("openapi.json"),
+	//	elk.GenerateHandlers(),
+	//)
+	//if err != nil {
+	//	log.Fatalf("failed creating elk extension: %v", err)
+	//}
+	//
+	//generateClient()
+	//
+	//err = entc.Generate("./schema", &gen.Config{}, entc.Extensions(ex2))
+	//if err != nil {
+	//	log.Fatalf("running ent codegen: %v", err)
+	//}
 }
 
 func generateClient() {

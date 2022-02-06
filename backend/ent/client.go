@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/marcustut/fyp/backend/ent/migrate"
+	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 
 	"github.com/marcustut/fyp/backend/ent/slide"
 	"github.com/marcustut/fyp/backend/ent/user"
@@ -168,7 +169,7 @@ func (c *SlideClient) UpdateOne(s *Slide) *SlideUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *SlideClient) UpdateOneID(id string) *SlideUpdateOne {
+func (c *SlideClient) UpdateOneID(id ulid.ID) *SlideUpdateOne {
 	mutation := newSlideMutation(c.config, OpUpdateOne, withSlideID(id))
 	return &SlideUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -185,7 +186,7 @@ func (c *SlideClient) DeleteOne(s *Slide) *SlideDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *SlideClient) DeleteOneID(id string) *SlideDeleteOne {
+func (c *SlideClient) DeleteOneID(id ulid.ID) *SlideDeleteOne {
 	builder := c.Delete().Where(slide.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -200,12 +201,12 @@ func (c *SlideClient) Query() *SlideQuery {
 }
 
 // Get returns a Slide entity by its id.
-func (c *SlideClient) Get(ctx context.Context, id string) (*Slide, error) {
+func (c *SlideClient) Get(ctx context.Context, id ulid.ID) (*Slide, error) {
 	return c.Query().Where(slide.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *SlideClient) GetX(ctx context.Context, id string) *Slide {
+func (c *SlideClient) GetX(ctx context.Context, id ulid.ID) *Slide {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -258,7 +259,7 @@ func (c *UserClient) UpdateOne(u *User) *UserUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *UserClient) UpdateOneID(id int) *UserUpdateOne {
+func (c *UserClient) UpdateOneID(id ulid.ID) *UserUpdateOne {
 	mutation := newUserMutation(c.config, OpUpdateOne, withUserID(id))
 	return &UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -275,7 +276,7 @@ func (c *UserClient) DeleteOne(u *User) *UserDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *UserClient) DeleteOneID(id int) *UserDeleteOne {
+func (c *UserClient) DeleteOneID(id ulid.ID) *UserDeleteOne {
 	builder := c.Delete().Where(user.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -290,12 +291,12 @@ func (c *UserClient) Query() *UserQuery {
 }
 
 // Get returns a User entity by its id.
-func (c *UserClient) Get(ctx context.Context, id int) (*User, error) {
+func (c *UserClient) Get(ctx context.Context, id ulid.ID) (*User, error) {
 	return c.Query().Where(user.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *UserClient) GetX(ctx context.Context, id int) *User {
+func (c *UserClient) GetX(ctx context.Context, id ulid.ID) *User {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)

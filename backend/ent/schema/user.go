@@ -2,10 +2,10 @@ package schema
 
 import (
 	"entgo.io/ent"
-	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/field"
+	entMixin "entgo.io/ent/schema/mixin"
+	"github.com/marcustut/fyp/backend/ent/mixin"
 	"github.com/marcustut/fyp/backend/internal/const/regex"
-	"time"
 )
 
 // User holds the schema definition for the User entity.
@@ -13,8 +13,13 @@ type User struct {
 	ent.Schema
 }
 
+// UserMixin defines Fields
+type UserMixin struct {
+	entMixin.Schema
+}
+
 // Fields of the User.
-func (User) Fields() []ent.Field {
+func (UserMixin) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("username").
 			MinLen(3).
@@ -36,22 +41,19 @@ func (User) Fields() []ent.Field {
 		field.String("bio").
 			NotEmpty().
 			Optional(),
-		field.Time("created_at").
-			Default(time.Now).
-			SchemaType(map[string]string{
-				dialect.MySQL: "datetime DEFAULT CURRENT_TIMESTAMP",
-			}).
-			Immutable(),
-		field.Time("updated_at").
-			Default(time.Now).
-			SchemaType(map[string]string{
-				dialect.MySQL: "datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
-			}).
-			Immutable(),
 	}
 }
 
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return nil
+}
+
+// Mixin of the User.
+func (User) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		mixin.NewUlid("USER_"),
+		UserMixin{},
+		mixin.NewDatetime(),
+	}
 }

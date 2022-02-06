@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/marcustut/fyp/backend/ent/predicate"
+	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
 	"github.com/marcustut/fyp/backend/ent/user"
 
@@ -33,7 +34,7 @@ type SlideMutation struct {
 	config
 	op            Op
 	typ           string
-	id            *string
+	id            *ulid.ID
 	name          *string
 	created_at    *time.Time
 	updated_at    *time.Time
@@ -63,7 +64,7 @@ func newSlideMutation(c config, op Op, opts ...slideOption) *SlideMutation {
 }
 
 // withSlideID sets the ID field of the mutation.
-func withSlideID(id string) slideOption {
+func withSlideID(id ulid.ID) slideOption {
 	return func(m *SlideMutation) {
 		var (
 			err   error
@@ -115,13 +116,13 @@ func (m SlideMutation) Tx() (*Tx, error) {
 
 // SetID sets the value of the id field. Note that this
 // operation is only accepted on creation of Slide entities.
-func (m *SlideMutation) SetID(id string) {
+func (m *SlideMutation) SetID(id ulid.ID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *SlideMutation) ID() (id string, exists bool) {
+func (m *SlideMutation) ID() (id ulid.ID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -439,7 +440,7 @@ type UserMutation struct {
 	config
 	op            Op
 	typ           string
-	id            *int
+	id            *ulid.ID
 	username      *string
 	email         *string
 	full_name     *string
@@ -473,7 +474,7 @@ func newUserMutation(c config, op Op, opts ...userOption) *UserMutation {
 }
 
 // withUserID sets the ID field of the mutation.
-func withUserID(id int) userOption {
+func withUserID(id ulid.ID) userOption {
 	return func(m *UserMutation) {
 		var (
 			err   error
@@ -523,9 +524,15 @@ func (m UserMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of User entities.
+func (m *UserMutation) SetID(id ulid.ID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *UserMutation) ID() (id int, exists bool) {
+func (m *UserMutation) ID() (id ulid.ID, exists bool) {
 	if m.id == nil {
 		return
 	}

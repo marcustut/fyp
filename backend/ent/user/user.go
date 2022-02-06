@@ -4,6 +4,8 @@ package user
 
 import (
 	"time"
+
+	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 )
 
 const (
@@ -66,4 +68,6 @@ var (
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() ulid.ID
 )

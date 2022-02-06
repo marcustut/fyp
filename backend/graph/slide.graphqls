@@ -1,0 +1,24 @@
+type Slide {
+    id: ID!
+    name: String
+    created_at: Time!
+    updated_at: Time!
+}
+
+input CreateSlideInput {
+    name: String
+}
+
+input UpdateSlideInput {
+    id: ID!
+    name: String
+}
+
+extend type Query {
+    Slide(id: ID!): Slide
+}
+
+extend type Mutation {
+    CreateSlide(input: CreateSlideInput!): Slide!
+    UpdateSlide(input: UpdateSlideInput!): Slide!
+}

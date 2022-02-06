@@ -1,18 +1,25 @@
 package ulid
 
 import (
+	"crypto/rand"
 	"database/sql/driver"
 	"fmt"
-	"github.com/oklog/ulid/v2"
 	"io"
 	"strconv"
 	"time"
+
+	"github.com/oklog/ulid/v2"
 )
 
 // ID implements a ULID
 type ID string
 
 var defaultEntropySource *ulid.MonotonicEntropy
+
+func init() {
+	// Seed the default entropy source.
+	defaultEntropySource = ulid.Monotonic(rand.Reader, 0)
+}
 
 // newULID returns a new ULID for time.Now() using the default entropy source.
 func newULID() ulid.ULID {
