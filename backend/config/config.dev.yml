@@ -12,5 +12,11 @@ database:
     tls: true
 
 services:
+  auth:
+    port: 8080
+    secretKey: ${AUTH_SECRET_KEY}
+    githubClientID: ${GITHUB_CLIENT_ID}
+    githubClientSecret: ${GITHUB_CLIENT_SECRET}
+
   slide:
     port: 8081

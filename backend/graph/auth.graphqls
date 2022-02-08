@@ -1,0 +1,25 @@
+type UserWithAuth {
+  access_token: String!
+  expired_at: Time!
+  user: User!
+}
+
+input SignInWithEmail {
+  email: String!
+  password: String!
+}
+input SignInWithUsername {
+  username: String!
+  password: String!
+}
+
+extend type Query {
+  ValidateAccessToken(token: String!): Boolean!
+}
+
+extend type Mutation {
+  SignInWithUsername(input: SignInWithUsername!): UserWithAuth!
+  SignInWithEmail(input: SignInWithEmail!): UserWithAuth!
+  SignInWithGithub(githubAccessToken: String!): UserWithAuth!
+  SignUp(input: CreateUserInput!): UserWithAuth!
+}

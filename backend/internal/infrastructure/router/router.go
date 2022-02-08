@@ -10,8 +10,8 @@ import (
 func New(srv *handler.Server) *mux.Router {
 	r := mux.NewRouter()
 
-	r.Handle("/query", srv).Methods("POST")
-	r.Handle("/", playground.Handler("GraphQL", "/query")).Methods("GET")
+	r.Handle("/graphql", srv).Methods("POST")
+	r.Handle("/playground", playground.Handler("GraphQL", "/graphql")).Methods("GET")
 
 	return r
 }

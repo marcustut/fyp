@@ -30,6 +30,12 @@ type config struct {
 		}
 	}
 	Services struct {
+		Auth struct {
+			Port               int
+			SecretKey          string
+			GithubClientID     string
+			GithubClientSecret string
+		}
 		Slide struct {
 			Port int
 		}

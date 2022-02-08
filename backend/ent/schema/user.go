@@ -2,7 +2,6 @@ package schema
 
 import (
 	"entgo.io/ent"
-	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/field"
 	entMixin "entgo.io/ent/schema/mixin"
 	"github.com/marcustut/fyp/backend/ent/mixin"
@@ -37,16 +36,10 @@ func (UserMixin) Fields() []ent.Field {
 		field.String("password_hash").
 			Immutable(),
 		field.String("avatar_url").
-			SchemaType(map[string]string{
-				dialect.MySQL: "text",
-			}).
 			Match(regex.Regexes[regex.URL]).
 			MaxLen(2083).
 			Optional(),
 		field.String("bio").
-			SchemaType(map[string]string{
-				dialect.MySQL: "text",
-			}).
 			NotEmpty().
 			Optional(),
 	}

@@ -36,6 +36,6 @@ func newDBClient() *ent.Client {
 }
 
 func newController(client *ent.Client) controller.Controller {
-	r := registry.NewSlideRegistry(client)
+	r := registry.NewRegistry(client)
 	return r.NewController()
 }

@@ -28,8 +28,8 @@ var (
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "full_name", Type: field.TypeString, Nullable: true, Size: 60},
 		{Name: "password_hash", Type: field.TypeString},
-		{Name: "avatar_url", Type: field.TypeString, Nullable: true, Size: 2083, SchemaType: map[string]string{"mysql": "text"}},
-		{Name: "bio", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"mysql": "text"}},
+		{Name: "avatar_url", Type: field.TypeString, Nullable: true, Size: 2083},
+		{Name: "bio", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "timestamp DEFAULT CURRENT_TIMESTAMP"}},
 		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"}},
 	}
