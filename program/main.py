@@ -14,7 +14,6 @@ def main():
     outputer = Outputer()
 
     chunks, article_len = inputer.get_input(inp=input())
-    
 
     # results = text_summarizer.body.summarize(chunks=chunks)
     results = text_summarizer.body.summarize(chunks=chunks)
