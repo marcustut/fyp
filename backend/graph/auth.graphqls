@@ -20,6 +20,6 @@ extend type Query {
 extend type Mutation {
   SignInWithUsername(input: SignInWithUsername!): UserWithAuth!
   SignInWithEmail(input: SignInWithEmail!): UserWithAuth!
-  SignInWithGithub(githubAccessToken: String!): UserWithAuth!
+  SignInWithGithub(token: String!): UserWithAuth!
   SignUp(input: CreateUserInput!): UserWithAuth!
 }

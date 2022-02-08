@@ -11,12 +11,25 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-multierror v1.1.1
+	github.com/hasura/go-graphql-client v0.6.3
 	github.com/joho/godotenv v1.4.0
 	github.com/oklog/ulid/v2 v2.0.2
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.10.1
 	github.com/vektah/gqlparser/v2 v2.2.0
 	github.com/vmihailenco/msgpack/v5 v5.0.0-beta.9
+)
+
+require (
+	github.com/gin-gonic/gin v1.7.4 // indirect
+	github.com/go-playground/validator/v10 v10.9.0 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/klauspost/compress v1.14.2 // indirect
+	github.com/ugorji/go/codec v1.2.6 // indirect
+	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
+	google.golang.org/appengine v1.6.7 // indirect
+	google.golang.org/protobuf v1.27.1 // indirect
+	nhooyr.io/websocket v1.8.7 // indirect
 )
 
 require (
@@ -57,6 +70,7 @@ require (
 	github.com/vmihailenco/tagparser v0.1.2 // indirect
 	golang.org/x/crypto v0.0.0-20220208050332-20e1d8d225ab
 	golang.org/x/mod v0.5.1 // indirect
+	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/term v0.0.0-20210422114643-f5beecf764ed // indirect
 	golang.org/x/text v0.3.7 // indirect

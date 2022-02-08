@@ -54,7 +54,7 @@ type ComplexityRoot struct {
 		DeleteUserByEmail    func(childComplexity int, email string) int
 		DeleteUserByUsername func(childComplexity int, username string) int
 		SignInWithEmail      func(childComplexity int, input graph.SignInWithEmail) int
-		SignInWithGithub     func(childComplexity int, githubAccessToken string) int
+		SignInWithGithub     func(childComplexity int, token string) int
 		SignInWithUsername   func(childComplexity int, input graph.SignInWithUsername) int
 		SignUp               func(childComplexity int, input ent.CreateUserInput) int
 		UpdateSlide          func(childComplexity int, input ent.UpdateSlideInput) int
@@ -129,7 +129,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	SignInWithUsername(ctx context.Context, input graph.SignInWithUsername) (*graph.UserWithAuth, error)
 	SignInWithEmail(ctx context.Context, input graph.SignInWithEmail) (*graph.UserWithAuth, error)
-	SignInWithGithub(ctx context.Context, githubAccessToken string) (*graph.UserWithAuth, error)
+	SignInWithGithub(ctx context.Context, token string) (*graph.UserWithAuth, error)
 	SignUp(ctx context.Context, input ent.CreateUserInput) (*graph.UserWithAuth, error)
 	CreateSlide(ctx context.Context, input ent.CreateSlideInput) (*ent.Slide, error)
 	UpdateSlide(ctx context.Context, input ent.UpdateSlideInput) (*ent.Slide, error)
@@ -247,7 +247,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.SignInWithGithub(childComplexity, args["githubAccessToken"].(string)), true
+		return e.complexity.Mutation.SignInWithGithub(childComplexity, args["token"].(string)), true
 
 	case "Mutation.SignInWithUsername":
 		if e.complexity.Mutation.SignInWithUsername == nil {
@@ -682,7 +682,7 @@ extend type Query {
 extend type Mutation {
   SignInWithUsername(input: SignInWithUsername!): UserWithAuth!
   SignInWithEmail(input: SignInWithEmail!): UserWithAuth!
-  SignInWithGithub(githubAccessToken: String!): UserWithAuth!
+  SignInWithGithub(token: String!): UserWithAuth!
   SignUp(input: CreateUserInput!): UserWithAuth!
 }
 `, BuiltIn: false},
@@ -1134,14 +1134,14 @@ func (ec *executionContext) field_Mutation_SignInWithGithub_args(ctx context.Con
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["githubAccessToken"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("githubAccessToken"))
+	if tmp, ok := rawArgs["token"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("token"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["githubAccessToken"] = arg0
+	args["token"] = arg0
 	return args, nil
 }
 
@@ -1577,7 +1577,7 @@ func (ec *executionContext) _Mutation_SignInWithGithub(ctx context.Context, fiel
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SignInWithGithub(rctx, args["githubAccessToken"].(string))
+		return ec.resolvers.Mutation().SignInWithGithub(rctx, args["token"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
