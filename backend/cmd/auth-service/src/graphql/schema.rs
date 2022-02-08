@@ -64,7 +64,9 @@ impl Mutation {
 
         let user = user_repo.find_by_username(input.username).await?;
 
-        if crypto_service.hash_password(input.password).await? != user.password_hash {
+        if crypto_service.hash_password(input.password).await?
+            != String::from_utf8_lossy(&user.password_hash)
+        {
             return Err(Error::new("invalid password"));
         }
 
@@ -81,7 +83,9 @@ impl Mutation {
 
         let user = user_repo.find_by_email(input.email).await?;
 
-        if crypto_service.hash_password(input.password).await? != user.password_hash {
+        if crypto_service.hash_password(input.password).await?
+            != String::from_utf8_lossy(&user.password_hash)
+        {
             return Err(Error::new("invalid password"));
         }
 
@@ -183,7 +187,7 @@ impl Mutation {
 
 fn get_jwt_and_user(crypto_service: CryptoService, user: User) -> Result<UserWithAuth, Error> {
     crypto_service
-        .generate_jwt(user.username.clone())
+        .generate_jwt(String::from_utf8_lossy(&user.username).to_string())
         .map(|claim| UserWithAuth {
             user,
             access_token: claim.0,

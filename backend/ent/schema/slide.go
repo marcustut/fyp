@@ -34,6 +34,6 @@ func (Slide) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		mixin.NewUlid("SLID_"),
 		SlideMixin{},
-		mixin.NewDatetime(),
+		mixin.NewTimestamp(),
 	}
 }

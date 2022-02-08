@@ -31,7 +31,7 @@ struct GraphQLResponse {
 
 #[derive(Debug, Deserialize)]
 struct SignInWithGithub {
-    signInWithGithub: UserWithAuth,
+    sign_in_with_github: UserWithAuth,
 }
 
 #[get("/oauth/github")]
@@ -59,7 +59,7 @@ pub(crate) async fn redirect(
         format!(
             "
             mutation {{
-                signInWithGithub(githubAccessToken: \"{}\") {{
+                sign_in_with_github(githubAccessToken: \"{}\") {{
                     access_token: accessToken
                     expired_at: expiredAt
                     user {{
@@ -96,7 +96,7 @@ pub(crate) async fn redirect(
             "Location",
             format!(
                 "/health?access_token={}",
-                user.data.signInWithGithub.access_token
+                user.data.sign_in_with_github.access_token
             ),
         ))
         .finish()

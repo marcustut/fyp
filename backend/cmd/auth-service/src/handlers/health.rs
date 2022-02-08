@@ -18,6 +18,7 @@ mod tests {
             App::new()
                 .app_data(web::Data::new(AppState {
                     app_name: String::from("Auth"),
+                    app_config: todo!(),
                 }))
                 .configure(app_config),
         )

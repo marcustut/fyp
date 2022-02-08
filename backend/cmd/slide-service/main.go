@@ -23,7 +23,7 @@ func main() {
 	srv := graphql.NewServer(client, ctrl)
 	r := router.New(srv)
 
-	log.Printf("app running on port %d\n", config.C.Services.Slide.Port)
+	log.Printf("slide-service running on port %d\n", config.C.Services.Slide.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.C.Services.Slide.Port), r))
 }
 
@@ -36,6 +36,6 @@ func newDBClient() *ent.Client {
 }
 
 func newController(client *ent.Client) controller.Controller {
-	r := registry.New(client)
+	r := registry.NewSlideRegistry(client)
 	return r.NewController()
 }

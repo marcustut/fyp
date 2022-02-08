@@ -64,21 +64,7 @@ func init() {
 	// userDescEmail is the schema descriptor for email field.
 	userDescEmail := userMixinFields1[1].Descriptor()
 	// user.EmailValidator is a validator for the "email" field. It is called by the builders before save.
-	user.EmailValidator = func() func(string) error {
-		validators := userDescEmail.Validators
-		fns := [...]func(string) error{
-			validators[0].(func(string) error),
-			validators[1].(func(string) error),
-		}
-		return func(email string) error {
-			for _, fn := range fns {
-				if err := fn(email); err != nil {
-					return err
-				}
-			}
-			return nil
-		}
-	}()
+	user.EmailValidator = userDescEmail.Validators[0].(func(string) error)
 	// userDescFullName is the schema descriptor for full_name field.
 	userDescFullName := userMixinFields1[2].Descriptor()
 	// user.FullNameValidator is a validator for the "full_name" field. It is called by the builders before save.
@@ -98,7 +84,7 @@ func init() {
 		}
 	}()
 	// userDescAvatarURL is the schema descriptor for avatar_url field.
-	userDescAvatarURL := userMixinFields1[3].Descriptor()
+	userDescAvatarURL := userMixinFields1[4].Descriptor()
 	// user.AvatarURLValidator is a validator for the "avatar_url" field. It is called by the builders before save.
 	user.AvatarURLValidator = func() func(string) error {
 		validators := userDescAvatarURL.Validators
@@ -116,7 +102,7 @@ func init() {
 		}
 	}()
 	// userDescBio is the schema descriptor for bio field.
-	userDescBio := userMixinFields1[4].Descriptor()
+	userDescBio := userMixinFields1[5].Descriptor()
 	// user.BioValidator is a validator for the "bio" field. It is called by the builders before save.
 	user.BioValidator = userDescBio.Validators[0].(func(string) error)
 	// userDescCreatedAt is the schema descriptor for created_at field.

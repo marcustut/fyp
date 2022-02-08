@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use eyre::Result;
 use sqlx::MySqlPool;
+use ulid::Ulid;
 
 use crate::{
     config::crypto::CryptoService,
@@ -42,6 +43,7 @@ impl UserRepository {
         let user_id = sqlx::query!(
             r#"
                 INSERT INTO users (
+                    id,
                     username, 
                     email, 
                     password_hash,
@@ -50,6 +52,7 @@ impl UserRepository {
                     bio
                 )
                 VALUES (
+                    ?,
                     ?, 
                     ?, 
                     ?,
@@ -58,6 +61,7 @@ impl UserRepository {
                     ?
                 ) 
             "#,
+            Ulid::new().to_string(),
             new_user.username,
             new_user.email,
             password_hash,

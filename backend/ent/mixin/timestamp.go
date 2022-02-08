@@ -10,23 +10,23 @@ import (
 	"entgo.io/ent/schema/mixin"
 )
 
-// DatetimeMixin defines an ent Mixin
-type DatetimeMixin struct {
+// TimestampMixin defines an ent Mixin
+type TimestampMixin struct {
 	mixin.Schema
 }
 
-// NewDatetime creates a Mixin that includes created_at and updated_at
-func NewDatetime() *DatetimeMixin {
-	return &DatetimeMixin{}
+// NewTimestamp creates a Mixin that includes created_at and updated_at
+func NewTimestamp() *TimestampMixin {
+	return &TimestampMixin{}
 }
 
 // Fields provides the created_at and updated_at field.
-func (m DatetimeMixin) Fields() []ent.Field {
+func (m TimestampMixin) Fields() []ent.Field {
 	return []ent.Field{
 		field.Time("created_at").
 			Default(time.Now).
 			SchemaType(map[string]string{
-				dialect.MySQL: "datetime DEFAULT CURRENT_TIMESTAMP",
+				dialect.MySQL: "timestamp DEFAULT CURRENT_TIMESTAMP",
 			}).
 			Annotations(
 				entgql.OrderField("CREATED_AT"),
@@ -35,7 +35,7 @@ func (m DatetimeMixin) Fields() []ent.Field {
 		field.Time("updated_at").
 			Default(time.Now).
 			SchemaType(map[string]string{
-				dialect.MySQL: "datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+				dialect.MySQL: "timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
 			}).
 			Annotations(
 				entgql.OrderField("UPDATED_AT"),

@@ -19,6 +19,8 @@ const (
 	FieldEmail = "email"
 	// FieldFullName holds the string denoting the full_name field in the database.
 	FieldFullName = "full_name"
+	// FieldPasswordHash holds the string denoting the password_hash field in the database.
+	FieldPasswordHash = "password_hash"
 	// FieldAvatarURL holds the string denoting the avatar_url field in the database.
 	FieldAvatarURL = "avatar_url"
 	// FieldBio holds the string denoting the bio field in the database.
@@ -37,6 +39,7 @@ var Columns = []string{
 	FieldUsername,
 	FieldEmail,
 	FieldFullName,
+	FieldPasswordHash,
 	FieldAvatarURL,
 	FieldBio,
 	FieldCreatedAt,

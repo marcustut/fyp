@@ -109,6 +109,21 @@ input UserWhereInput {
   fullNameEqualFold: String
   fullNameContainsFold: String
   
+  """password_hash field predicates"""
+  passwordHash: String
+  passwordHashNEQ: String
+  passwordHashIn: [String!]
+  passwordHashNotIn: [String!]
+  passwordHashGT: String
+  passwordHashGTE: String
+  passwordHashLT: String
+  passwordHashLTE: String
+  passwordHashContains: String
+  passwordHashHasPrefix: String
+  passwordHashHasSuffix: String
+  passwordHashEqualFold: String
+  passwordHashContainsFold: String
+  
   """avatar_url field predicates"""
   avatarURL: String
   avatarURLNEQ: String

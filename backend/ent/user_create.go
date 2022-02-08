@@ -47,6 +47,12 @@ func (uc *UserCreate) SetNillableFullName(s *string) *UserCreate {
 	return uc
 }
 
+// SetPasswordHash sets the "password_hash" field.
+func (uc *UserCreate) SetPasswordHash(s string) *UserCreate {
+	uc.mutation.SetPasswordHash(s)
+	return uc
+}
+
 // SetAvatarURL sets the "avatar_url" field.
 func (uc *UserCreate) SetAvatarURL(s string) *UserCreate {
 	uc.mutation.SetAvatarURL(s)
@@ -225,6 +231,9 @@ func (uc *UserCreate) check() error {
 			return &ValidationError{Name: "full_name", err: fmt.Errorf(`ent: validator failed for field "full_name": %w`, err)}
 		}
 	}
+	if _, ok := uc.mutation.PasswordHash(); !ok {
+		return &ValidationError{Name: "password_hash", err: errors.New(`ent: missing required field "password_hash"`)}
+	}
 	if v, ok := uc.mutation.AvatarURL(); ok {
 		if err := user.AvatarURLValidator(v); err != nil {
 			return &ValidationError{Name: "avatar_url", err: fmt.Errorf(`ent: validator failed for field "avatar_url": %w`, err)}
@@ -296,6 +305,14 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Column: user.FieldFullName,
 		})
 		_node.FullName = value
+	}
+	if value, ok := uc.mutation.PasswordHash(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldPasswordHash,
+		})
+		_node.PasswordHash = value
 	}
 	if value, ok := uc.mutation.AvatarURL(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

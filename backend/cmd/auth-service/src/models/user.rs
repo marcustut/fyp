@@ -2,6 +2,8 @@ use async_graphql::{InputObject, SimpleObject};
 use chrono::{DateTime, Utc};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use sqlx::mysql::MySqlTypeInfo;
+use sqlx::MySql;
 use std::collections::HashMap;
 
 lazy_static! {
@@ -11,17 +13,27 @@ lazy_static! {
 
 #[derive(Debug, Deserialize, Serialize, sqlx::FromRow, SimpleObject)]
 pub struct User {
-    pub id: i64,
-    pub username: String,
-    pub email: String,
+    pub id: Vec<u8>,
+    pub username: Vec<u8>,
+    pub email: Vec<u8>,
     #[serde(skip)]
     #[graphql(skip)]
-    pub password_hash: String,
-    pub full_name: Option<String>,
-    pub bio: Option<String>,
-    pub avatar_url: Option<String>,
+    pub password_hash: Vec<u8>,
+    pub full_name: Option<Vec<u8>>,
+    pub bio: Option<Vec<u8>>,
+    pub avatar_url: Option<Vec<u8>>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+}
+
+impl sqlx::Type<MySql> for User {
+    fn type_info() -> MySqlTypeInfo {
+        String::type_info()
+    }
+
+    fn compatible(ty: &MySqlTypeInfo) -> bool {
+        String::compatible(ty)
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, SimpleObject)]

@@ -117,11 +117,18 @@ mod tests {
 
         // parse the result as a user
         let test_user: User = test::read_body_json(resp).await;
-        assert_eq!(test_user.username, test_username, "Found wrong user");
+        assert_eq!(
+            String::from_utf8_lossy(&test_user.username),
+            test_username,
+            "Found wrong user"
+        );
 
         // deleting a user
         let resp = test::TestRequest::delete()
-            .uri(&format!("/user/{}", test_user.username))
+            .uri(&format!(
+                "/user/{}",
+                String::from_utf8_lossy(&test_user.username)
+            ))
             .send_request(&mut app)
             .await;
         assert!(resp.status().is_success(), "Failed to delete user");

@@ -21,7 +21,7 @@ lazy_static = "1.4.0"
 regex = "1.5"
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0"
-sqlx = { version = "0.5.9", default-features = false, features = [
+sqlx = { version = "0.5.10", default-features = false, features = [
     "runtime-tokio-native-tls",
     "macros",
     "mysql",
@@ -33,6 +33,7 @@ tracing-futures = "0.2.5"
 tracing-log = { version = "0.1.2", features = ["env_logger"] }
 tracing-subscriber = "0.2.24"
 uuid = { version = "0.8.2", features = ["serde", "v4"] }
+ulid = "0.5.0"
 validator = "0.14"
 validator_derive = "0.14"
 reqwest = { version = "0.11", features = ["json"] }

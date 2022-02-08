@@ -38,7 +38,7 @@ migrate-status:
 	dbmate -u $(DATABASE_URL) -d $(DB_MIGRATIONS_DIR) --no-dump-schema status
 
 # Migrate scheme in ent to database
-migrate_schema:
+migrate_schema: generate
 	go run ./cmd/migration/main.go
 
 # Generate Ent and Gqlgen

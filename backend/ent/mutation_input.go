@@ -59,13 +59,14 @@ func (u *SlideUpdateOne) SetInput(i UpdateSlideInput) *SlideUpdateOne {
 
 // CreateUserInput represents a mutation input for creating users.
 type CreateUserInput struct {
-	Username  string
-	Email     string
-	FullName  *string
-	AvatarURL *string
-	Bio       *string
-	CreatedAt *time.Time
-	UpdatedAt *time.Time
+	Username     string
+	Email        string
+	FullName     *string
+	PasswordHash string
+	AvatarURL    *string
+	Bio          *string
+	CreatedAt    *time.Time
+	UpdatedAt    *time.Time
 }
 
 // Mutate applies the CreateUserInput on the UserCreate builder.
@@ -75,6 +76,7 @@ func (i *CreateUserInput) Mutate(m *UserCreate) {
 	if v := i.FullName; v != nil {
 		m.SetFullName(*v)
 	}
+	m.SetPasswordHash(i.PasswordHash)
 	if v := i.AvatarURL; v != nil {
 		m.SetAvatarURL(*v)
 	}

@@ -308,6 +308,21 @@ type UserWhereInput struct {
 	FullNameEqualFold    *string  `json:"fullNameEqualFold,omitempty"`
 	FullNameContainsFold *string  `json:"fullNameContainsFold,omitempty"`
 
+	// "password_hash" field predicates.
+	PasswordHash             *string  `json:"passwordHash,omitempty"`
+	PasswordHashNEQ          *string  `json:"passwordHashNEQ,omitempty"`
+	PasswordHashIn           []string `json:"passwordHashIn,omitempty"`
+	PasswordHashNotIn        []string `json:"passwordHashNotIn,omitempty"`
+	PasswordHashGT           *string  `json:"passwordHashGT,omitempty"`
+	PasswordHashGTE          *string  `json:"passwordHashGTE,omitempty"`
+	PasswordHashLT           *string  `json:"passwordHashLT,omitempty"`
+	PasswordHashLTE          *string  `json:"passwordHashLTE,omitempty"`
+	PasswordHashContains     *string  `json:"passwordHashContains,omitempty"`
+	PasswordHashHasPrefix    *string  `json:"passwordHashHasPrefix,omitempty"`
+	PasswordHashHasSuffix    *string  `json:"passwordHashHasSuffix,omitempty"`
+	PasswordHashEqualFold    *string  `json:"passwordHashEqualFold,omitempty"`
+	PasswordHashContainsFold *string  `json:"passwordHashContainsFold,omitempty"`
+
 	// "avatar_url" field predicates.
 	AvatarURL             *string  `json:"avatarURL,omitempty"`
 	AvatarURLNEQ          *string  `json:"avatarURLNEQ,omitempty"`
@@ -568,6 +583,45 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 	}
 	if i.FullNameContainsFold != nil {
 		predicates = append(predicates, user.FullNameContainsFold(*i.FullNameContainsFold))
+	}
+	if i.PasswordHash != nil {
+		predicates = append(predicates, user.PasswordHashEQ(*i.PasswordHash))
+	}
+	if i.PasswordHashNEQ != nil {
+		predicates = append(predicates, user.PasswordHashNEQ(*i.PasswordHashNEQ))
+	}
+	if len(i.PasswordHashIn) > 0 {
+		predicates = append(predicates, user.PasswordHashIn(i.PasswordHashIn...))
+	}
+	if len(i.PasswordHashNotIn) > 0 {
+		predicates = append(predicates, user.PasswordHashNotIn(i.PasswordHashNotIn...))
+	}
+	if i.PasswordHashGT != nil {
+		predicates = append(predicates, user.PasswordHashGT(*i.PasswordHashGT))
+	}
+	if i.PasswordHashGTE != nil {
+		predicates = append(predicates, user.PasswordHashGTE(*i.PasswordHashGTE))
+	}
+	if i.PasswordHashLT != nil {
+		predicates = append(predicates, user.PasswordHashLT(*i.PasswordHashLT))
+	}
+	if i.PasswordHashLTE != nil {
+		predicates = append(predicates, user.PasswordHashLTE(*i.PasswordHashLTE))
+	}
+	if i.PasswordHashContains != nil {
+		predicates = append(predicates, user.PasswordHashContains(*i.PasswordHashContains))
+	}
+	if i.PasswordHashHasPrefix != nil {
+		predicates = append(predicates, user.PasswordHashHasPrefix(*i.PasswordHashHasPrefix))
+	}
+	if i.PasswordHashHasSuffix != nil {
+		predicates = append(predicates, user.PasswordHashHasSuffix(*i.PasswordHashHasSuffix))
+	}
+	if i.PasswordHashEqualFold != nil {
+		predicates = append(predicates, user.PasswordHashEqualFold(*i.PasswordHashEqualFold))
+	}
+	if i.PasswordHashContainsFold != nil {
+		predicates = append(predicates, user.PasswordHashContainsFold(*i.PasswordHashContainsFold))
 	}
 	if i.AvatarURL != nil {
 		predicates = append(predicates, user.AvatarURLEQ(*i.AvatarURL))

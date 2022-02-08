@@ -12,8 +12,8 @@ var (
 	SlidesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
-		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime DEFAULT CURRENT_TIMESTAMP"}},
-		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"}},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "timestamp DEFAULT CURRENT_TIMESTAMP"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"}},
 	}
 	// SlidesTable holds the schema information for the "slides" table.
 	SlidesTable = &schema.Table{
@@ -25,12 +25,13 @@ var (
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
 		{Name: "username", Type: field.TypeString, Unique: true, Size: 50},
-		{Name: "email", Type: field.TypeString, Unique: true, Size: 320},
+		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "full_name", Type: field.TypeString, Nullable: true, Size: 60},
-		{Name: "avatar_url", Type: field.TypeString, Nullable: true, Size: 2083},
-		{Name: "bio", Type: field.TypeString, Nullable: true},
-		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime DEFAULT CURRENT_TIMESTAMP"}},
-		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"}},
+		{Name: "password_hash", Type: field.TypeString},
+		{Name: "avatar_url", Type: field.TypeString, Nullable: true, Size: 2083, SchemaType: map[string]string{"mysql": "text"}},
+		{Name: "bio", Type: field.TypeString, Nullable: true, SchemaType: map[string]string{"mysql": "text"}},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "timestamp DEFAULT CURRENT_TIMESTAMP"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"}},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
