@@ -13,7 +13,9 @@ def main():
     adapter = Adapter()
     outputer = Outputer()
 
-    chunks, article_len = inputer.get_input(inp='https://www.thestar.com.my/opinion/columnists/over-the-top/2022/01/18/when-academics-are-ignorant')
+    chunks, article_len = inputer.get_input(inp=input())
+    
+
     # results = text_summarizer.body.summarize(chunks=chunks)
     results = text_summarizer.body.summarize(chunks=chunks)
     results = text_summarizer.title.summarize(results=results)
