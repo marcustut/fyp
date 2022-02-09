@@ -40,6 +40,6 @@ The last comment block of each slide will be treated as slide notes. It will be 
 
 ---
 
-# Med Med Med Med Med Med Med Med Med Med Med Med Med Med Med Med Med Med Med
+# A note on the equivalence of the acoustic
 
-- com Medium Staff 3 hours ago·3 min read At its core, Medium is a network of readers, writers, and ideas. Branching Out On the newly designed Medium homepage, in addition to recommended stories and stories from authors you follow, we now have a dedicated space that offers even more recommended writers and topics.
+- 

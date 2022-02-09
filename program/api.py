@@ -1,6 +1,7 @@
 from http.client import HTTPException
 from django.forms import ValidationError
-from flask import Flask, send_from_directory
+from flask import Flask, jsonify, send_from_directory
+from flask_cors import CORS
 import flask.scaffold
 flask.helpers._endpoint_from_view_func = flask.scaffold._endpoint_from_view_func
 from flask_restful import Resource, Api, reqparse
@@ -14,9 +15,9 @@ from text_summarizer import TextSummarizer
 from adapter import Adapter
 import transformers
 transformers.logging.set_verbosity_debug() # To check if the model is running
-import json
 
 app = Flask(__name__)
+cors = CORS(app, origins=["*"])
 api = Api(app)
 
 class Summarize(Resource):
@@ -81,7 +82,8 @@ class Summarize(Resource):
                 "reducedByPercentage": reduced
             }
 
-            return json.dumps(response), 200
+            # TODO: Investigate why it became string
+            return response, 200
 
     pass
 
