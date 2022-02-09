@@ -12,6 +12,7 @@ import (
 	"github.com/marcustut/fyp/backend/internal/infrastructure/graphql"
 	"github.com/marcustut/fyp/backend/internal/infrastructure/router"
 	"github.com/marcustut/fyp/backend/internal/registry"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -24,7 +25,7 @@ func main() {
 	r := router.New(srv)
 
 	log.Printf("slide-service running on port %d\n", config.C.Services.Slide.Port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.C.Services.Slide.Port), r))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.C.Services.Slide.Port), cors.Default().Handler(r)))
 }
 
 func newDBClient() *ent.Client {

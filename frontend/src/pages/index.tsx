@@ -1,9 +1,29 @@
-import { useDarkMode } from '@/hooks'
-import { withUrqlClient } from 'next-urql'
 import Head from 'next/head'
+import { withUrqlClient } from 'next-urql'
+import { useDarkMode } from '@/hooks'
+import { AUTH_API_URL } from '@/lib/constants'
+import { useQuery } from 'urql'
+import { useState } from 'react'
+import { AuthDialog } from '@/components/AuthDialog'
+
+const VALIDATE_ACCESS_TOKEN_QUERY = `
+  query ValidateAccessToken($access_token: String!) {
+    ValidateAccessToken(token: $access_token)
+  }
+`
 
 const IndexPage = () => {
+  const [authOpen, setAuthOpen] = useState<boolean>(false)
   const { darkMode, setDarkMode } = useDarkMode()
+  // const [summarizedText, setSummarizedText] = useState<string>('not summarized')
+  const [result] = useQuery({
+    query: VALIDATE_ACCESS_TOKEN_QUERY,
+    variables: { access_token: 'hahdahshsahdh' },
+  })
+
+  const handleSignIn = () => {
+    setAuthOpen(true)
+  }
 
   return (
     <>
@@ -11,6 +31,8 @@ const IndexPage = () => {
         <title>Landing Page</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
+      <AuthDialog open={authOpen} setOpen={setAuthOpen} />
 
       <div className="space-y-20 overflow-hidden dark:text-white">
         <header className="px-4 sm:px-6 md:px-8">
@@ -54,7 +76,10 @@ const IndexPage = () => {
 
             <p className="mt-3 text-2xl">
               Get started by{' '}
-              <button className="relative rounded-md bg-gray-200 px-2.5 py-1 font-mono text-lg transition duration-150 ease-in-out hover:bg-gray-300 dark:bg-gray-700 hover:dark:bg-gray-600">
+              <button
+                className="relative rounded-md bg-gray-200 px-2.5 py-1 font-mono text-lg transition duration-150 ease-in-out hover:bg-gray-300 dark:bg-gray-700 hover:dark:bg-gray-600"
+                onClick={handleSignIn}
+              >
                 <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75"></span>
                   <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-indigo-500"></span>
@@ -82,5 +107,5 @@ const IndexPage = () => {
 }
 
 export default withUrqlClient((_ssrExchange, ctx) => ({
-  url: process.env.AUTH_API_URL,
+  url: AUTH_API_URL,
 }))(IndexPage)
