@@ -14,6 +14,7 @@ database:
 services:
   auth:
     port: 8080
+    clientReturnURL: ${CLIENT_RETURN_URL}
     secretKey: ${AUTH_SECRET_KEY}
     githubClientID: ${GITHUB_CLIENT_ID}
     githubClientSecret: ${GITHUB_CLIENT_SECRET}

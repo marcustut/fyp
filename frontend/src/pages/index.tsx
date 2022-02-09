@@ -1,7 +1,8 @@
 import { useDarkMode } from '@/hooks'
+import { withUrqlClient } from 'next-urql'
 import Head from 'next/head'
 
-export default function Landing() {
+const IndexPage = () => {
   const { darkMode, setDarkMode } = useDarkMode()
 
   return (
@@ -79,3 +80,7 @@ export default function Landing() {
     </>
   )
 }
+
+export default withUrqlClient((_ssrExchange, ctx) => ({
+  url: process.env.AUTH_API_URL,
+}))(IndexPage)

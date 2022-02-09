@@ -32,6 +32,7 @@ type config struct {
 	Services struct {
 		Auth struct {
 			Port               int
+			ClientReturnURL    string
 			SecretKey          string
 			GithubClientID     string
 			GithubClientSecret string

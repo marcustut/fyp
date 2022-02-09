@@ -57,7 +57,7 @@ func New(srv *handler.Server) *mux.Router {
 		}
 
 		// new graphql client
-		client := graphql.NewClient("http://localhost:8081/graphql", nil)
+		client := graphql.NewClient(fmt.Sprintf("http://%s/graphql", r.Host), nil)
 
 		// send a graphql query to login with GitHub access_token
 		var m struct {
@@ -72,10 +72,9 @@ func New(srv *handler.Server) *mux.Router {
 			log.Printf("unable to make GraphQL request to auth-service: %v\n", err)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
-		log.Println(m)
 
 		// finally, send response to redirect user to welcome page with access token
-		w.Header().Set("Location", "https://www.google.com?access_token="+string(m.SignInWithGithub.AccessToken))
+		w.Header().Set("Location", fmt.Sprintf("%s?access_token=%s", config.C.Services.Auth.ClientReturnURL, string(m.SignInWithGithub.AccessToken)))
 		w.WriteHeader(http.StatusFound)
 	})
 
