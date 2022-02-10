@@ -1,0 +1,36 @@
+mutation SignUp($input: CreateUserInput!) {
+  SignUp(input: $input) {
+    ...UserWithAuthFields
+  }
+}
+
+mutation SignInWithUsername($input: SignInWithUsername!) {
+  SignInWithUsername(input: $input) {
+    ...UserWithAuthFields
+  }
+}
+
+mutation SignInWithEmail($input: SignInWithEmail!) {
+  SignInWithEmail(input: $input) {
+    ...UserWithAuthFields
+  }
+}
+
+fragment UserFields on User {
+  id
+  username
+  email
+  full_name
+  avatar_url
+  bio
+  created_at
+  updated_at
+}
+
+fragment UserWithAuthFields on UserWithAuth {
+  access_token
+  expired_at
+  user {
+    ...UserFields
+  }
+}

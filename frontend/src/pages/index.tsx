@@ -2,11 +2,11 @@ import Head from 'next/head'
 import { withUrqlClient } from 'next-urql'
 import { useDarkMode } from '@/hooks'
 import { AUTH_API_URL } from '@/lib/constants'
-import { useQuery } from 'urql'
+import { gql, useQuery } from 'urql'
 import { useState } from 'react'
-import { AuthDialog } from '@/components/AuthDialog'
+import { AuthDialog } from '@/features/auth'
 
-const VALIDATE_ACCESS_TOKEN_QUERY = `
+const VALIDATE_ACCESS_TOKEN_QUERY = gql`
   query ValidateAccessToken($access_token: String!) {
     ValidateAccessToken(token: $access_token)
   }
