@@ -33,7 +33,7 @@ input SlideOrder {
 }
 
 extend type Query {
-  Slide(id: ID!): Slide
+  Slide(id: ID!): Slide!
   Slides(
     after: Cursor
     first: Int
@@ -41,10 +41,10 @@ extend type Query {
     last: Int
     where: SlideWhereInput
     orderBy: SlideOrder
-  ): SlideConnection
+  ): SlideConnection!
 }
 
 extend type Mutation {
-  CreateSlide(input: CreateSlideInput!): Slide
-  UpdateSlide(input: UpdateSlideInput!): Slide
+  CreateSlide(input: CreateSlideInput!): Slide!
+  UpdateSlide(input: UpdateSlideInput!): Slide!
 }

@@ -15,6 +15,7 @@ input SignInWithUsername {
 
 extend type Query {
   ValidateAccessToken(token: String!): Boolean!
+  UserByAccessToken(token: String!): UserWithAuth!
 }
 
 extend type Mutation {

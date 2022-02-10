@@ -73,6 +73,7 @@ type ComplexityRoot struct {
 		Slide               func(childComplexity int, id ulid.ID) int
 		Slides              func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, where *ent.SlideWhereInput, orderBy *ent.SlideOrder) int
 		User                func(childComplexity int, id ulid.ID) int
+		UserByAccessToken   func(childComplexity int, token string) int
 		UserByEmail         func(childComplexity int, email string) int
 		UserByUsername      func(childComplexity int, username string) int
 		Users               func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, where *ent.UserWhereInput, orderBy *ent.UserOrder) int
@@ -142,6 +143,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Node(ctx context.Context, id ulid.ID) (ent.Noder, error)
 	ValidateAccessToken(ctx context.Context, token string) (bool, error)
+	UserByAccessToken(ctx context.Context, token string) (*graph.UserWithAuth, error)
 	Slide(ctx context.Context, id ulid.ID) (*ent.Slide, error)
 	Slides(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, where *ent.SlideWhereInput, orderBy *ent.SlideOrder) (*ent.SlideConnection, error)
 	User(ctx context.Context, id ulid.ID) (*ent.User, error)
@@ -372,6 +374,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.User(childComplexity, args["id"].(ulid.ID)), true
+
+	case "Query.UserByAccessToken":
+		if e.complexity.Query.UserByAccessToken == nil {
+			break
+		}
+
+		args, err := ec.field_Query_UserByAccessToken_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.UserByAccessToken(childComplexity, args["token"].(string)), true
 
 	case "Query.UserByEmail":
 		if e.complexity.Query.UserByEmail == nil {
@@ -677,6 +691,7 @@ input SignInWithUsername {
 
 extend type Query {
   ValidateAccessToken(token: String!): Boolean!
+  UserByAccessToken(token: String!): UserWithAuth!
 }
 
 extend type Mutation {
@@ -947,7 +962,7 @@ input SlideOrder {
 }
 
 extend type Query {
-  Slide(id: ID!): Slide
+  Slide(id: ID!): Slide!
   Slides(
     after: Cursor
     first: Int
@@ -955,12 +970,12 @@ extend type Query {
     last: Int
     where: SlideWhereInput
     orderBy: SlideOrder
-  ): SlideConnection
+  ): SlideConnection!
 }
 
 extend type Mutation {
-  CreateSlide(input: CreateSlideInput!): Slide
-  UpdateSlide(input: UpdateSlideInput!): Slide
+  CreateSlide(input: CreateSlideInput!): Slide!
+  UpdateSlide(input: UpdateSlideInput!): Slide!
 }
 `, BuiltIn: false},
 	{Name: "graph/user.graphqls", Input: `enum UserOrderField {
@@ -1012,9 +1027,9 @@ input UserOrder {
 }
 
 extend type Query {
-  User(id: ID!): User
-  UserByUsername(username: String!): User
-  UserByEmail(email: String!): User
+  User(id: ID!): User!
+  UserByUsername(username: String!): User!
+  UserByEmail(email: String!): User!
   Users(
     after: Cursor
     first: Int
@@ -1022,15 +1037,15 @@ extend type Query {
     last: Int
     where: UserWhereInput
     orderBy: UserOrder
-  ): UserConnection
+  ): UserConnection!
 }
 
 extend type Mutation {
-  CreateUser(input: CreateUserInput!): User
-  UpdateUser(input: UpdateUserInput!): User
-  DeleteUser(id: ID!): User
-  DeleteUserByUsername(username: String!): User
-  DeleteUserByEmail(email: String!): User
+  CreateUser(input: CreateUserInput!): User!
+  UpdateUser(input: UpdateUserInput!): User!
+  DeleteUser(id: ID!): User!
+  DeleteUserByUsername(username: String!): User!
+  DeleteUserByEmail(email: String!): User!
 }
 `, BuiltIn: false},
 }
@@ -1292,6 +1307,21 @@ func (ec *executionContext) field_Query_Slides_args(ctx context.Context, rawArgs
 		}
 	}
 	args["orderBy"] = arg5
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_UserByAccessToken_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["token"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("token"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["token"] = arg0
 	return args, nil
 }
 
@@ -1668,11 +1698,14 @@ func (ec *executionContext) _Mutation_CreateSlide(ctx context.Context, field gra
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.Slide)
 	fc.Result = res
-	return ec.marshalOSlide2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlide(ctx, field.Selections, res)
+	return ec.marshalNSlide2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlide(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_UpdateSlide(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1707,11 +1740,14 @@ func (ec *executionContext) _Mutation_UpdateSlide(ctx context.Context, field gra
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.Slide)
 	fc.Result = res
-	return ec.marshalOSlide2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlide(ctx, field.Selections, res)
+	return ec.marshalNSlide2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlide(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_CreateUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1746,11 +1782,14 @@ func (ec *executionContext) _Mutation_CreateUser(ctx context.Context, field grap
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_UpdateUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1785,11 +1824,14 @@ func (ec *executionContext) _Mutation_UpdateUser(ctx context.Context, field grap
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_DeleteUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1824,11 +1866,14 @@ func (ec *executionContext) _Mutation_DeleteUser(ctx context.Context, field grap
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_DeleteUserByUsername(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1863,11 +1908,14 @@ func (ec *executionContext) _Mutation_DeleteUserByUsername(ctx context.Context, 
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_DeleteUserByEmail(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1902,11 +1950,14 @@ func (ec *executionContext) _Mutation_DeleteUserByEmail(ctx context.Context, fie
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *ent.PageInfo) (ret graphql.Marshaler) {
@@ -2124,6 +2175,48 @@ func (ec *executionContext) _Query_ValidateAccessToken(ctx context.Context, fiel
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_UserByAccessToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_UserByAccessToken_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().UserByAccessToken(rctx, args["token"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*graph.UserWithAuth)
+	fc.Result = res
+	return ec.marshalNUserWithAuth2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋgraphᚐUserWithAuth(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_Slide(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2156,11 +2249,14 @@ func (ec *executionContext) _Query_Slide(ctx context.Context, field graphql.Coll
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.Slide)
 	fc.Result = res
-	return ec.marshalOSlide2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlide(ctx, field.Selections, res)
+	return ec.marshalNSlide2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlide(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_Slides(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2195,11 +2291,14 @@ func (ec *executionContext) _Query_Slides(ctx context.Context, field graphql.Col
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.SlideConnection)
 	fc.Result = res
-	return ec.marshalOSlideConnection2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideConnection(ctx, field.Selections, res)
+	return ec.marshalNSlideConnection2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_User(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2234,11 +2333,14 @@ func (ec *executionContext) _Query_User(ctx context.Context, field graphql.Colle
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_UserByUsername(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2273,11 +2375,14 @@ func (ec *executionContext) _Query_UserByUsername(ctx context.Context, field gra
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_UserByEmail(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2312,11 +2417,14 @@ func (ec *executionContext) _Query_UserByEmail(ctx context.Context, field graphq
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_Users(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2351,11 +2459,14 @@ func (ec *executionContext) _Query_Users(ctx context.Context, field graphql.Coll
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.UserConnection)
 	fc.Result = res
-	return ec.marshalOUserConnection2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUserConnection(ctx, field.Selections, res)
+	return ec.marshalNUserConnection2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUserConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6006,18 +6117,39 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "CreateSlide":
 			out.Values[i] = ec._Mutation_CreateSlide(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "UpdateSlide":
 			out.Values[i] = ec._Mutation_UpdateSlide(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "CreateUser":
 			out.Values[i] = ec._Mutation_CreateUser(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "UpdateUser":
 			out.Values[i] = ec._Mutation_UpdateUser(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "DeleteUser":
 			out.Values[i] = ec._Mutation_DeleteUser(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "DeleteUserByUsername":
 			out.Values[i] = ec._Mutation_DeleteUserByUsername(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "DeleteUserByEmail":
 			out.Values[i] = ec._Mutation_DeleteUserByEmail(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6105,6 +6237,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "UserByAccessToken":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_UserByAccessToken(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "Slide":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -6114,6 +6260,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_Slide(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "Slides":
@@ -6125,6 +6274,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_Slides(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "User":
@@ -6136,6 +6288,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_User(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "UserByUsername":
@@ -6147,6 +6302,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_UserByUsername(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "UserByEmail":
@@ -6158,6 +6316,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_UserByEmail(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "Users":
@@ -6169,6 +6330,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_Users(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "__type":
@@ -6775,6 +6939,34 @@ func (ec *executionContext) unmarshalNSignInWithUsername2githubᚗcomᚋmarcustu
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNSlide2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlide(ctx context.Context, sel ast.SelectionSet, v ent.Slide) graphql.Marshaler {
+	return ec._Slide(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSlide2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlide(ctx context.Context, sel ast.SelectionSet, v *ent.Slide) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Slide(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSlideConnection2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideConnection(ctx context.Context, sel ast.SelectionSet, v ent.SlideConnection) graphql.Marshaler {
+	return ec._SlideConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSlideConnection2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideConnection(ctx context.Context, sel ast.SelectionSet, v *ent.SlideConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._SlideConnection(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNSlideWhereInput2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideWhereInput(ctx context.Context, v interface{}) (*ent.SlideWhereInput, error) {
 	res, err := ec.unmarshalInputSlideWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
@@ -6820,6 +7012,10 @@ func (ec *executionContext) unmarshalNUpdateUserInput2githubᚗcomᚋmarcustut�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNUser2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v ent.User) graphql.Marshaler {
+	return ec._User(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v *ent.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -6828,6 +7024,20 @@ func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbac
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNUserConnection2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUserConnection(ctx context.Context, sel ast.SelectionSet, v ent.UserConnection) graphql.Marshaler {
+	return ec._UserConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUserConnection2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUserConnection(ctx context.Context, sel ast.SelectionSet, v *ent.UserConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._UserConnection(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNUserWhereInput2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUserWhereInput(ctx context.Context, v interface{}) (*ent.UserWhereInput, error) {
@@ -7233,13 +7443,6 @@ func (ec *executionContext) marshalOSlide2ᚖgithubᚗcomᚋmarcustutᚋfypᚋba
 	return ec._Slide(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOSlideConnection2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideConnection(ctx context.Context, sel ast.SelectionSet, v *ent.SlideConnection) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._SlideConnection(ctx, sel, v)
-}
-
 func (ec *executionContext) marshalOSlideEdge2ᚕᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.SlideEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -7472,13 +7675,6 @@ func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbac
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOUserConnection2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUserConnection(ctx context.Context, sel ast.SelectionSet, v *ent.UserConnection) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._UserConnection(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOUserEdge2ᚕᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUserEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.UserEdge) graphql.Marshaler {

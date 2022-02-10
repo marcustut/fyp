@@ -33,17 +33,17 @@ export type CreateUserInput = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  CreateSlide?: Maybe<Slide>;
-  CreateUser?: Maybe<User>;
-  DeleteUser?: Maybe<User>;
-  DeleteUserByEmail?: Maybe<User>;
-  DeleteUserByUsername?: Maybe<User>;
+  CreateSlide: Slide;
+  CreateUser: User;
+  DeleteUser: User;
+  DeleteUserByEmail: User;
+  DeleteUserByUsername: User;
   SignInWithEmail: UserWithAuth;
   SignInWithGithub: UserWithAuth;
   SignInWithUsername: UserWithAuth;
   SignUp: UserWithAuth;
-  UpdateSlide?: Maybe<Slide>;
-  UpdateUser?: Maybe<User>;
+  UpdateSlide: Slide;
+  UpdateUser: User;
 };
 
 
@@ -121,12 +121,13 @@ export type PageInfo = {
 export type Query = {
   __typename?: 'Query';
   Node?: Maybe<Node>;
-  Slide?: Maybe<Slide>;
-  Slides?: Maybe<SlideConnection>;
-  User?: Maybe<User>;
-  UserByEmail?: Maybe<User>;
-  UserByUsername?: Maybe<User>;
-  Users?: Maybe<UserConnection>;
+  Slide: Slide;
+  Slides: SlideConnection;
+  User: User;
+  UserByAccessToken: UserWithAuth;
+  UserByEmail: User;
+  UserByUsername: User;
+  Users: UserConnection;
   ValidateAccessToken: Scalars['Boolean'];
 };
 
@@ -153,6 +154,11 @@ export type QuerySlidesArgs = {
 
 export type QueryUserArgs = {
   id: Scalars['ID'];
+};
+
+
+export type QueryUserByAccessTokenArgs = {
+  token: Scalars['String'];
 };
 
 
@@ -456,6 +462,13 @@ export type UserWithAuth = {
   user: User;
 };
 
+export type UserByAccessTokenQueryVariables = Exact<{
+  token: Scalars['String'];
+}>;
+
+
+export type UserByAccessTokenQuery = { __typename?: 'Query', UserByAccessToken: { __typename?: 'UserWithAuth', access_token: string, expired_at: any, user: { __typename?: 'User', id: string, username: string, email: string, full_name?: string | null, avatar_url?: string | null, bio?: string | null, created_at: any, updated_at: any } } };
+
 export type SignUpMutationVariables = Exact<{
   input: CreateUserInput;
 }>;
@@ -502,6 +515,17 @@ export const UserWithAuthFieldsFragmentDoc = gql`
   }
 }
     ${UserFieldsFragmentDoc}`;
+export const UserByAccessTokenDocument = gql`
+    query UserByAccessToken($token: String!) {
+  UserByAccessToken(token: $token) {
+    ...UserWithAuthFields
+  }
+}
+    ${UserWithAuthFieldsFragmentDoc}`;
+
+export function useUserByAccessTokenQuery(options: Omit<Urql.UseQueryArgs<UserByAccessTokenQueryVariables>, 'query'>) {
+  return Urql.useQuery<UserByAccessTokenQuery>({ query: UserByAccessTokenDocument, ...options });
+};
 export const SignUpDocument = gql`
     mutation SignUp($input: CreateUserInput!) {
   SignUp(input: $input) {

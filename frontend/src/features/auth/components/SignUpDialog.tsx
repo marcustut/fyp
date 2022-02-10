@@ -1,17 +1,12 @@
 import React from 'react'
 import { useForm } from 'react-hook-form'
-import { Icon } from '@iconify/react'
 import { Dialog } from '@/components/Dialog'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AuthView } from '@/features/auth'
-import { z } from 'zod'
 import { Button } from '@/components/Button'
-
-const SignUpCredentials = z.object({
-  email: z.string().email(),
-  username: z.string().min(3).max(50),
-  password: z.string().min(8).max(24),
-})
+import { SignUpCredentials, SignUpCredentialsType, useAuth } from '@/lib/auth'
+import { z } from 'zod'
+import { toast } from 'react-toastify'
 
 type SignUpDialogProps = {
   open: boolean
@@ -28,12 +23,14 @@ export const SignUpDialog: React.FC<SignUpDialogProps> = ({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<z.infer<typeof SignUpCredentials>>({
+  } = useForm<SignUpCredentialsType>({
     resolver: zodResolver(SignUpCredentials),
   })
+  const { signUp } = useAuth()
 
-  const onSubmit = (creds: any) => {
-    console.log(creds)
+  const onSubmit = async (creds: z.infer<typeof SignUpCredentials>) => {
+    const err = await signUp(creds)
+    if (err) toast(err.message, { type: 'error' })
   }
 
   return (

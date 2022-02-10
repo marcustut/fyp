@@ -1,16 +1,14 @@
 import React from 'react'
 import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { toast } from 'react-toastify'
 import { Icon } from '@iconify/react'
 import { Dialog } from '@/components/Dialog'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AuthView } from '@/features/auth'
-import { z } from 'zod'
 import { regex } from '@/utils/regex'
-import {
-  useSignInWithEmailMutation,
-  useSignInWithUsernameMutation,
-} from '@/generated/graphql'
 import { Button } from '@/components/Button'
+import { useAuth } from '@/lib/auth'
 
 const LoginCredentials = z.object({
   emailOrUsername: z.string().nonempty(),
@@ -35,18 +33,24 @@ export const SignInDialog: React.FC<SignInDialogProps> = ({
   } = useForm<z.infer<typeof LoginCredentials>>({
     resolver: zodResolver(LoginCredentials),
   })
-  const [resultEmail, signInWithEmail] = useSignInWithEmailMutation()
-  const [resultUsername, signInWithUsername] = useSignInWithUsernameMutation()
+  const { loading, signIn } = useAuth()
 
-  const onSubmit = (creds: z.infer<typeof LoginCredentials>) => {
-    if (creds.emailOrUsername.toLowerCase().match(regex.email))
-      signInWithEmail({
-        input: { email: creds.emailOrUsername, password: creds.password },
+  const onSubmit = async (creds: z.infer<typeof LoginCredentials>) => {
+    if (creds.emailOrUsername.toLowerCase().match(regex.email)) {
+      const err = await signIn({
+        type: 'email',
+        email: creds.emailOrUsername,
+        password: creds.password,
       })
-    else
-      signInWithUsername({
-        input: { username: creds.emailOrUsername, password: creds.password },
+      if (err) toast(err.message, { type: 'error' })
+    } else {
+      const err = await signIn({
+        type: 'username',
+        username: creds.emailOrUsername,
+        password: creds.password,
       })
+      if (err) toast(err.message, { type: 'error' })
+    }
   }
 
   return (
@@ -83,17 +87,16 @@ export const SignInDialog: React.FC<SignInDialogProps> = ({
           </form>
 
           <Button
-            loading={resultEmail.fetching || resultUsername.fetching}
+            loading={loading}
             className="mt-4 w-full"
             onClick={handleSubmit(onSubmit)}
           >
             Log in
           </Button>
           <Button
-            href="https://github.com/login/oauth/authorize?client_id={}&redirect_uri=http://localhost:8080/oauth/github"
             variant="secondary"
             className="mt-2 flex w-full items-center justify-center"
-            onClick={() => setOpen(false)}
+            onClick={() => signIn({ type: 'github' })}
           >
             <Icon icon="mdi:github" className="mr-2 h-6 w-6" /> Continue with
             GitHub

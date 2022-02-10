@@ -11,8 +11,8 @@ import (
 const issuer string = "fyp-auth-api"
 const expiryDuration time.Duration = time.Minute * 15
 
-// NewJWTClaimsInput is the input of NewJWTClaims.
-type NewJWTClaimsInput struct {
+// NewTokenInput is the input of NewToken.
+type NewTokenInput struct {
 	// userID of the JWT's owner.
 	ID string
 
@@ -26,8 +26,8 @@ type NewJWTClaimsInput struct {
 	ExpiryDuration *time.Duration
 }
 
-// NewJWTClaimsOutput is the output of NewJWTClaims.
-type NewJWTClaimsOutput struct {
+// NewTokenOutput is the output of NewToken.
+type NewTokenOutput struct {
 	// a string containing the encoded JWT claims.
 	Token string
 
@@ -35,9 +35,9 @@ type NewJWTClaimsOutput struct {
 	ExpiredAt time.Time
 }
 
-// NewJWTClaims generate JWT claims for a particular user.
+// NewToken generate JWT claims for a particular user.
 // Defaults to 15min for expiry duration if not specified.
-func NewJWTClaims(input *NewJWTClaimsInput) (*NewJWTClaimsOutput, error) {
+func NewToken(input *NewTokenInput) (*NewTokenOutput, error) {
 	// jwt expired time
 	var exp time.Time
 	// calculate expiry date
@@ -64,13 +64,13 @@ func NewJWTClaims(input *NewJWTClaimsInput) (*NewJWTClaimsOutput, error) {
 		return nil, err
 	}
 
-	return &NewJWTClaimsOutput{Token: tokenString, ExpiredAt: exp}, nil
+	return &NewTokenOutput{Token: tokenString, ExpiredAt: exp}, nil
 }
 
-// ValidateJWTToken takes a signed JWT token string, parses it
+// ValidateToken takes a signed JWT token string, parses it
 // and check for its validity based on expiry date, signing
 // method and secret key.
-func ValidateJWTToken(token string) (bool, error) {
+func ValidateToken(token string) (bool, error) {
 	// parse token into jwt object
 	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -88,4 +88,18 @@ func ValidateJWTToken(token string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// ParseToken takes a signed JWT token string, parses it
+// as MapClaims and return it.
+func ParseToken(token string) (*jwt.MapClaims, error) {
+	t, err := jwt.ParseWithClaims(token, &jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
+		return []byte(config.C.Services.Auth.SecretKey), nil
+	})
+
+	if claims, ok := t.Claims.(*jwt.MapClaims); ok && t.Valid {
+		return claims, nil
+	}
+
+	return nil, err
 }

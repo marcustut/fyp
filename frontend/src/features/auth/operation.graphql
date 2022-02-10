@@ -1,3 +1,9 @@
+query UserByAccessToken($token: String!) {
+  UserByAccessToken(token: $token) {
+    ...UserWithAuthFields
+  }
+}
+
 mutation SignUp($input: CreateUserInput!) {
   SignUp(input: $input) {
     ...UserWithAuthFields

@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/marcustut/fyp/backend/ent"
 	"github.com/marcustut/fyp/backend/graph"
@@ -33,7 +35,7 @@ func (r *mutationResolver) SignInWithUsername(ctx context.Context, input graph.S
 	}
 
 	// generate new JWT claims
-	jwt, err := jwt.NewJWTClaims(&jwt.NewJWTClaimsInput{
+	jwt, err := jwt.NewToken(&jwt.NewTokenInput{
 		ID:       string(u.ID),
 		Username: u.Username,
 		Email:    u.Email,
@@ -60,7 +62,7 @@ func (r *mutationResolver) SignInWithEmail(ctx context.Context, input graph.Sign
 	}
 
 	// generate new JWT claims
-	jwt, err := jwt.NewJWTClaims(&jwt.NewJWTClaimsInput{
+	jwt, err := jwt.NewToken(&jwt.NewTokenInput{
 		ID:       string(u.ID),
 		Username: u.Username,
 		Email:    u.Email,
@@ -118,7 +120,7 @@ func (r *mutationResolver) SignInWithGithub(ctx context.Context, token string) (
 	}
 
 	// generate new JWT claims
-	jwt, err := jwt.NewJWTClaims(&jwt.NewJWTClaimsInput{
+	jwt, err := jwt.NewToken(&jwt.NewTokenInput{
 		ID:       string(u.ID),
 		Username: u.Username,
 		Email:    u.Email,
@@ -145,7 +147,7 @@ func (r *mutationResolver) SignUp(ctx context.Context, input ent.CreateUserInput
 	}
 
 	// genereate new JWT claims
-	jwt, err := jwt.NewJWTClaims(&jwt.NewJWTClaimsInput{
+	jwt, err := jwt.NewToken(&jwt.NewTokenInput{
 		ID:       string(u.ID),
 		Username: u.Username,
 		Email:    u.Email,
@@ -158,9 +160,44 @@ func (r *mutationResolver) SignUp(ctx context.Context, input ent.CreateUserInput
 }
 
 func (r *queryResolver) ValidateAccessToken(ctx context.Context, token string) (bool, error) {
-	valid, err := jwt.ValidateJWTToken(token)
+	valid, err := jwt.ValidateToken(token)
 	if err != nil {
 		return false, handler.HandleError(ctx, err)
 	}
 	return valid, nil
+}
+
+func (r *queryResolver) UserByAccessToken(ctx context.Context, token string) (*graph.UserWithAuth, error) {
+	// validate access_token
+	valid, err := r.ValidateAccessToken(ctx, token)
+	if err != nil {
+		return nil, handler.HandleError(ctx, err)
+	}
+	if !valid {
+		return nil, handler.HandleError(ctx, fmt.Errorf("access_token is invalid"))
+	}
+
+	// parse access_token into claims
+	claims, err := jwt.ParseToken(token)
+	if err != nil {
+		return nil, handler.HandleError(ctx, err)
+	}
+
+	// get the access_token's expired_at
+	unixTimestamp, err := strconv.ParseInt(fmt.Sprintf("%.0f", (*claims)["exp"]), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	expiredAt := time.Unix(unixTimestamp, 0)
+
+	// get the user's email as string
+	email := fmt.Sprintf("%v", (*claims)["aud"].(map[string]interface{})["email"])
+
+	// fetch user by its email
+	user, err := r.UserByEmail(ctx, email)
+	if err != nil {
+		return nil, handler.HandleError(ctx, err)
+	}
+
+	return &graph.UserWithAuth{AccessToken: token, User: user, ExpiredAt: expiredAt}, nil
 }

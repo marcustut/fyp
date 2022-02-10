@@ -47,9 +47,9 @@ input UserOrder {
 }
 
 extend type Query {
-  User(id: ID!): User
-  UserByUsername(username: String!): User
-  UserByEmail(email: String!): User
+  User(id: ID!): User!
+  UserByUsername(username: String!): User!
+  UserByEmail(email: String!): User!
   Users(
     after: Cursor
     first: Int
@@ -57,13 +57,13 @@ extend type Query {
     last: Int
     where: UserWhereInput
     orderBy: UserOrder
-  ): UserConnection
+  ): UserConnection!
 }
 
 extend type Mutation {
-  CreateUser(input: CreateUserInput!): User
-  UpdateUser(input: UpdateUserInput!): User
-  DeleteUser(id: ID!): User
-  DeleteUserByUsername(username: String!): User
-  DeleteUserByEmail(email: String!): User
+  CreateUser(input: CreateUserInput!): User!
+  UpdateUser(input: UpdateUserInput!): User!
+  DeleteUser(id: ID!): User!
+  DeleteUserByUsername(username: String!): User!
+  DeleteUserByEmail(email: String!): User!
 }

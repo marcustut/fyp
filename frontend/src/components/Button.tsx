@@ -1,6 +1,6 @@
 import React from 'react'
-import { Icon } from '@iconify/react'
 import Link from 'next/link'
+import { Spinner } from '@/components/Spinner'
 
 type ButtonProps = React.DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -27,15 +27,7 @@ export const Button: React.FC<ButtonProps> = ({
   const text =
     variant === 'primary' ? `text-white` : `text-slate-500 dark:text-slate-50`
   const cn = `${className} ${bg} ${text} rounded-md py-3 text-sm font-medium transition duration-200 ease-in-out`
-  const inner = (
-    <>
-      {loading ? (
-        <Icon icon="mdi:loading" className="mx-auto h-5 w-5 animate-spin" />
-      ) : (
-        children
-      )}
-    </>
-  )
+  const inner = <>{loading ? <Spinner /> : children}</>
 
   return (
     <>

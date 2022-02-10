@@ -1,25 +1,13 @@
 import Head from 'next/head'
-import { withUrqlClient } from 'next-urql'
-import { useDarkMode } from '@/hooks'
-import { AUTH_API_URL } from '@/lib/constants'
-import { gql, useQuery } from 'urql'
 import { useState } from 'react'
+import { NextPage } from 'next'
+import { useDarkMode } from '@/hooks'
 import { AuthDialog } from '@/features/auth'
 
-const VALIDATE_ACCESS_TOKEN_QUERY = gql`
-  query ValidateAccessToken($access_token: String!) {
-    ValidateAccessToken(token: $access_token)
-  }
-`
-
-const IndexPage = () => {
+const IndexPage: NextPage = () => {
   const [authOpen, setAuthOpen] = useState<boolean>(false)
   const { darkMode, setDarkMode } = useDarkMode()
   // const [summarizedText, setSummarizedText] = useState<string>('not summarized')
-  const [result] = useQuery({
-    query: VALIDATE_ACCESS_TOKEN_QUERY,
-    variables: { access_token: 'hahdahshsahdh' },
-  })
 
   const handleSignIn = () => {
     setAuthOpen(true)
@@ -106,6 +94,4 @@ const IndexPage = () => {
   )
 }
 
-export default withUrqlClient((_ssrExchange, ctx) => ({
-  url: AUTH_API_URL,
-}))(IndexPage)
+export default IndexPage
