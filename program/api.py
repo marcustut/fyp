@@ -1,27 +1,26 @@
 from http.client import HTTPException
 from django.forms import ValidationError
-from flask import Flask
+from flask import Flask, jsonify, send_from_directory
+from flask_cors import CORS
+import flask.scaffold
+flask.helpers._endpoint_from_view_func = flask.scaffold._endpoint_from_view_func
 from flask_restful import Resource, Api, reqparse
 from django.core.validators import URLValidator
-from grpc import StatusCode
 import requests
 import ast
 
-# from program.enum import SummarizeMode, SummarizeType
 from inputer import Inputer
 from outputer import Outputer
 from text_summarizer import TextSummarizer
 from adapter import Adapter
 import transformers
 transformers.logging.set_verbosity_debug() # To check if the model is running
-import json
 
 app = Flask(__name__)
+cors = CORS(app, origins=["*"])
 api = Api(app)
 
 class Summarize(Resource):
-    def get(self):
-        return {"message": "Connection successful"}, 200
 
     def post(self):
         parser = reqparse.RequestParser()
@@ -66,7 +65,7 @@ class Summarize(Resource):
             # Convert to markdown
             try:
                 adapter = Adapter()
-                adapter.convert_markdown(results=results)
+                file_name = adapter.convert_markdown(results=results)
             except Exception as ex:
                 raise HTTPException(StatusCode=500, detail=f"{ex}")
 
@@ -77,29 +76,22 @@ class Summarize(Resource):
 
             # Return markdown string/file via JSON
             response = {
-                "summary": adapter.md,
+                "fileName": file_name,
                 "wordsAfter": words_after,
                 "wordsBefore": words_before,
                 "reducedByPercentage": reduced
             }
 
-            return json.dump(response), 200
-
-        # try:
-        #     summarize_mode = SummarizeMode(args['mode'])
-        # except ValueError:
-        #     raise HTTPException(status_code=404, detail=f"Mode '{args['mode']}' is invalid.")
-
-        # try:
-        #     summarize_type = SummarizeType(args['type'])
-        # except ValueError:
-        #     raise HTTPException(status_code=404, detail=f"Type '{args['type']}' is invalid.")
-
-        # Validate maxChunk
+            # TODO: Investigate why it became string
+            return response, 200
 
     pass
 
 api.add_resource(Summarize, '/summarize')
+
+@app.route("/output/<path:path>", methods=['GET'])
+def send_static_files(path):
+    return send_from_directory('output', path)
 
 if __name__ == '__main__':
     app.run(debug=True) # Debug mode, auto reload on change

@@ -1,3 +1,6 @@
+from typing import Tuple
+
+
 class Outputer():
     '''Generates summary statistics regarding the output text.
     `results`: the summary text returned from a TextSummarizer object for statistical analysis.
@@ -28,12 +31,12 @@ class Outputer():
 
         return summary
 
-    def generate_statistics(self, summary: str, words_before: int) -> None:
+    def generate_statistics(self, summary: str, words_before: int) -> Tuple[int, int, float]:
         '''Generates summary statistics. Returns `summary word count`, `original article word count`, `reduced by percentage`.'''
         self.words_before = words_before
         reduced_by = (self.words_before - self.words_after) / self.words_before * 100
 
-        return str(self.words_after), str(self.words_before), str(round(reduced_by, 2))
+        return self.words_after, self.words_before, round(reduced_by, 2)
 
         # print("Number of words in summary: " + str(self.words_after))
         # print("Number of words in original article: " + str(self.words_before))

@@ -59,7 +59,7 @@ The last comment block of each slide will be treated as slide notes. It will be 
 ]
         pass
 
-    def convert_markdown(self, results: dict) -> None:
+    def convert_markdown(self, results: dict) -> str:
         '''Converts summarised results into markdown.'''
 
         # Add first slide
@@ -84,9 +84,11 @@ The last comment block of each slide will be treated as slide notes. It will be 
             raise Exception('Markdown conversion error')
 
         try:
-            self.__create_file()
+            file_name = self.__create_file()
         except:
             raise Exception('Markdown file creation error')
+
+        return file_name
 
     def __strip_whitespaces(self, summary: str) -> str:
         '''Strips additional whitespaces in front of punctuations.'''
@@ -119,17 +121,22 @@ The last comment block of each slide will be treated as slide notes. It will be 
     def __add_newline(self) -> str:
         return '\n\n'
 
-    def __create_file(self) -> None:
+    def __create_file(self) -> str:
         '''
         Creates a Markdown file with a Slidev template and writes the target Markdown string.
         First creates a text file for writing of strings, for further renaming of the `.txt` file to `.md`.
         '''
 
-        with open('../slidev/slides.txt', 'w', encoding='utf-8') as f:
+        file_name = "slides.txt"
+
+        # with open('../slidev/slides.txt', 'w', encoding='utf-8') as f:
+        with open('./output/slides.txt', 'w', encoding='utf-8') as f:
             f.writelines(self.metadata)
             f.write(self.md)
 
         f.close()
+
+        return file_name
 
         # For some reason, the .md file will go blank if the below command is executed throughout the main.py program. Bash shell script is used instead.
         # os.rename('slides_test.txt', 'slides_test.md')

@@ -133,7 +133,7 @@ class Title(TextSummarizer):
     '''An internal class that will be used to generate slide titles, and combining the title with body results.
     '''
 
-    def __init__(self, file='../models/title-generator-t5-arxiv-36-8.pkl') -> None:
+    def __init__(self, file='../models/title-generator-t5-arxiv-16-4.pkl') -> None:
         '''Initialises the title summarizer.'''
         self.__create_summarizer(file=file)
         # self.__save_model(path=file, model=self.model, tokenizer=self.tokenizer)
