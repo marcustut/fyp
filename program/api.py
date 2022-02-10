@@ -22,7 +22,7 @@ api = Api(app)
 class Summarize(Resource):
     def get(self):
         return {"message": "Connection successful"}, 200
-        
+
     def post(self):
         parser = reqparse.RequestParser()
 
@@ -102,4 +102,4 @@ class Summarize(Resource):
 api.add_resource(Summarize, '/summarize')
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True) # Debug mode, auto reload on change
