@@ -11,14 +11,14 @@ class Adapter():
     md: str
     metadata: 'list[str]'
 
-    def __init__(self, max_len=500) -> None:
+    def __init__(self, theme='apple-basic', max_len=500) -> None:
         '''Initialises an adapter'''
         self.slide_len = 0
         self.max_len = max_len
         self.md = ''
         self.metadata = [
 '''---
-theme: apple-basic
+theme: {}
 background: https://source.unsplash.com/collection/94734566/1920x1080
 class: text-center
 highlighter: shiki
@@ -57,6 +57,7 @@ Presentation slides for developers
 The last comment block of each slide will be treated as slide notes. It will be visible and editable in Presenter Mode along with the slide. [Read more in the docs](https://sli.dev/guide/syntax.html#notes)
 -->'''
 ]
+        self.metadata[0].format(theme)
         pass
 
     def convert_markdown(self, results: dict) -> str:
