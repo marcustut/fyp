@@ -146,7 +146,38 @@ class Title(TextSummarizer):
         self.summarizer = self.model.predict
         pass
 
+    def __transpose_dict(self, dict_: dict) -> dict:
+        '''Transposes the keys and values of the dictionary object. Based on the assumption that all keys and values are unique.'''
+        return {y:x for x, y in dict_.items()}
+
+    def __strip_whitespaces(self, summary: str) -> str:
+        '''Strips additional whitespaces in front of punctuations.'''
+        summary = summary.replace(' .', '.')
+        summary = summary.replace(" !", "!")
+        summary = summary.replace(" ?", "?")
+
+        return summary
+
+# FIXME: find out why title generator does not generate proper titles
+    def summarize(self, results: 'list[dict]') -> 'list[dict]':
+        '''Summarizes from the result body to give a title, then combines these pairs together.'''
+        print('Title Summarizer')
+        new_results = []
+        for dict_ in results:
+            # Now the body is the key and the title is the value
+            dict_ = self.__transpose_dict(dict_)
+            for body in dict_:
+                # Summarize the given text
+                dict_[body] = self.summarizer(self.__strip_whitespaces(summary=body))[0] # Returns a list so take only the first element
+                pass
+            dict_ = self.__transpose_dict(dict_)
+            new_results.append(dict_)
+            print('dict_:', dict_)
+
+        return new_results
+
     # PEGASUS SUMMARIZER
+    # DO NOT DELETE
     # def __init__(self, checkpoint='sshleifer/distill-pegasus-xsum-16-4') -> None:
     #     '''Initialises the title summarizer.'''
     #     self.__create_summarizer(checkpoint=checkpoint)
@@ -180,27 +211,6 @@ class Title(TextSummarizer):
     #             return False
     #     else:
     #         os.makedirs(path)
-
-    def __transpose_dict(self, dict_: dict) -> dict:
-        '''Transposes the keys and values of the dictionary object. Based on the assumption that all keys and values are unique.'''
-        return {y:x for x, y in dict_.items()}
-
-    def summarize(self, results: 'list[dict]') -> 'list[dict]':
-        '''Summarizes from the result body to give a title, then combines these pairs together.'''
-        print('Title Summarizer')
-        new_results = []
-        for dict_ in results:
-            # Now the body is the key and the title is the value
-            dict_ = self.__transpose_dict(dict_)
-            for body in dict_:
-                # Summarize the given text
-                dict_[body] = self.summarizer(body)[0] # Returns a list so take only the first element
-                pass
-            dict_ = self.__transpose_dict(dict_)
-            new_results.append(dict_)
-            print('dict_:', dict_)
-
-        return new_results
 
     # def summarize(self, results: 'list[dict]') -> 'list[dict]':
     #     '''Summarizes from the result body to give a title, then combines these pairs together.'''

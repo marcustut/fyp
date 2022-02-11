@@ -34,8 +34,7 @@ class Summarize(Resource):
         parser.add_argument('maxChunk', default=500, required=False, type=int, choices=range(50, 500, 50))
         parser.add_argument('maxCharPerSlide', default=500, required=False, type=int, choices=range(100, 500, 50)) # max_len
         parser.add_argument('maxCharPerSlide', default=500, required=False, type=int, choices=range(100, 500, 50)) # max_len
-        # TODO: Add themes argument
-        parser.add_argument('theme', default='apple-basic', required=False, type=int, choices=['apple-basic', 'seriph', 'default']) # max_len
+        parser.add_argument('theme', default='seriph', required=False, choices=['apple-basic', 'seriph', 'default']) # max_len
 
         args = parser.parse_args()
 
@@ -117,4 +116,4 @@ def upload_file():
         return {'message': 'Allowed file types are txt and pdf'}, 400
 
 if __name__ == '__main__':
-    app.run(debug=True) # Debug mode, auto reload on change
+    app.run()
