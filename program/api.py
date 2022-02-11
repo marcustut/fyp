@@ -35,7 +35,7 @@ class Summarize(Resource):
         parser.add_argument('maxCharPerSlide', default=500, required=False, type=int, choices=range(100, 500, 50)) # max_len
         parser.add_argument('maxCharPerSlide', default=500, required=False, type=int, choices=range(100, 500, 50)) # max_len
         # TODO: Add themes argument
-        parser.add_argument('theme', default=500, required=False, type=int, choices=['apple-basic', 'seriph']) # max_len
+        parser.add_argument('theme', default='apple-basic', required=False, type=int, choices=['apple-basic', 'seriph', 'default']) # max_len
 
         args = parser.parse_args()
 
@@ -52,7 +52,6 @@ class Summarize(Resource):
             inputer = Inputer(type=args['type'])
 
             # Get URL
-
             try:
                 chunks, article_len = inputer.get_input(inp=args['input'])
             except requests.ConnectionError as ex:
@@ -68,7 +67,7 @@ class Summarize(Resource):
 
             # Convert to markdown
             try:
-                adapter = Adapter()
+                adapter = Adapter(theme=args['theme'])
                 file_name = adapter.convert_markdown(results=results)
             except Exception as ex:
                 raise HTTPException(StatusCode=500, detail=f"{ex}")
