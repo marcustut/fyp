@@ -19,8 +19,9 @@ class Adapter():
         self.max_len = max_len
         self.md = ''
         self.metadata = [
-'''---
-theme: {}
+f'''
+---
+theme: {theme}
 background: https://source.unsplash.com/collection/94734566/1920x1080
 class: text-center
 highlighter: shiki
@@ -59,7 +60,6 @@ Presentation slides for developers
 The last comment block of each slide will be treated as slide notes. It will be visible and editable in Presenter Mode along with the slide. [Read more in the docs](https://sli.dev/guide/syntax.html#notes)
 -->'''
 ]
-        self.metadata[0].format(theme)
         pass
 
     def convert_markdown(self, results: dict) -> str:
@@ -87,6 +87,7 @@ The last comment block of each slide will be treated as slide notes. It will be 
             raise Exception('Markdown conversion error')
 
         try:
+            self.md += '\n' # Add this to prevent client error
             file_name = self.__create_file()
         except:
             raise Exception('Markdown file creation error')

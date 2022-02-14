@@ -132,4 +132,4 @@ def upload_file():
         return {'message': 'Allowed file types are txt and pdf'}, 400
 
 if __name__ == '__main__':
-    app.run(debug=True) # Debug mode, auto reload on change
+    app.run()

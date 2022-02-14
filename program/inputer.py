@@ -43,6 +43,9 @@ class Inputer():
         sentences = self.__get_sentences(article=article)
         chunks = self.__chunk_text(sentences=sentences)
 
+        # TODO: Extract from PDF
+        
+
         return chunks, article_len
 
     def __get_article(self, url: str) -> tuple[str, int]:

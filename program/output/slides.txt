@@ -1,5 +1,6 @@
+
 ---
-theme: apple-basic
+theme: seriph
 background: https://source.unsplash.com/collection/94734566/1920x1080
 class: text-center
 highlighter: shiki
@@ -40,6 +41,16 @@ The last comment block of each slide will be treated as slide notes. It will be 
 
 ---
 
-# A note on the equivalence of the acoustic
+# Many adversarials adversarials
 
-- 
+- Many adults put off talking to young children about ‘race’ and racism until they’re five or older. Research shows that three-month-olds have racial preferences. By the age of three, children in the U.S. have negative associations of ‘low-status racial groups. By ‘racist’ I mean that which upholds, reinforces, reproduces, or perpetuates racism.
+
+# Sulliva Sulliva
+
+- Sullivan says, ‘To help children navigate their social environments, adults must understand what children know about race, and when they acquire this knowledge. One way to do so with minimal influence is to show the child pictures of people of varying skin tones, hair textures, etc. Then, with the images laid out in front of you, you can ask them if they think the people or characters before them look the same or different.
+
+---
+
+# Muscles be muscles?
+
+- You must assess the child’s environment to see how it shapes their perceptions of ‘race’ and racism. Assessing the environment includes looking at any thoughts and biases you might have that consciously or subconsciously affect the child. In part two, I will give scientific answers to questions about human phenotypic differences.
