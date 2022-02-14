@@ -33,9 +33,7 @@ class Summarize(Resource):
         parser.add_argument('input', required=True)
         parser.add_argument('maxChunk', default=500, required=False, type=int, choices=range(50, 500, 50))
         parser.add_argument('maxCharPerSlide', default=500, required=False, type=int, choices=range(100, 500, 50)) # max_len
-        parser.add_argument('maxCharPerSlide', default=500, required=False, type=int, choices=range(100, 500, 50)) # max_len
-        # TODO: Add themes argument
-        parser.add_argument('theme', default='apple-basic', required=False, type=int, choices=['apple-basic', 'seriph', 'default']) # max_len
+        parser.add_argument('theme', default='apple-basic', required=False, type=int, choices=['apple-basic', 'seriph', 'default'])
 
         args = parser.parse_args()
 
@@ -57,35 +55,52 @@ class Summarize(Resource):
             except requests.ConnectionError as ex:
                 raise HTTPException(StatusCode=404, detail=f"URL does not exist. {ex} ")
 
-            # Summarize
+        elif args['type'] == 'pdf':
+
+            # TODO: Check if path exists
+            # Extract text
             try:
-                text_summarizer = TextSummarizer(mode=args['mode'])
-                results = text_summarizer.body.summarize(chunks=chunks)
-                results = text_summarizer.title.summarize(results=results)
+                chunks, article_len = inputer.get_input(inp=args['input'])
             except Exception as ex:
-                raise HTTPException(StatusCode=500, detail=f"{ex}")
+                raise HTTPException(StatusCode=422, detail=f"Failed to extract text from PDF file. {ex}")
 
-            # Convert to markdown
+        elif args['type'] == 'txt':
+            # TODO: Check if path exists
+            # Read TXT file
             try:
-                adapter = Adapter(theme=args['theme'])
-                file_name = adapter.convert_markdown(results=results)
+                chunks, article_len = inputer.get_input(inp=args['input'])
             except Exception as ex:
-                raise HTTPException(StatusCode=500, detail=f"{ex}")
+                raise HTTPException(StatusCode=422, detail=f"Fsiled to read content from TXT file. {ex}")
 
-            # Output statistics
-            outputer = Outputer()
-            summary = outputer.get_output(results=results)
-            words_after, words_before, reduced = outputer.generate_statistics(summary=summary, words_before=article_len)
+        # Summarize
+        try:
+            text_summarizer = TextSummarizer(mode=args['mode'])
+            results = text_summarizer.body.summarize(chunks=chunks)
+            results = text_summarizer.title.summarize(results=results)
+        except Exception as ex:
+            raise HTTPException(StatusCode=500, detail=f"{ex}")
 
-            # Return markdown string/file via JSON
-            response = {
-                "fileName": file_name,
-                "wordsAfter": words_after,
-                "wordsBefore": words_before,
-                "reducedByPercentage": reduced
-            }
+        # Convert to markdown
+        try:
+            adapter = Adapter(theme=args['theme'])
+            file_name = adapter.convert_markdown(results=results)
+        except Exception as ex:
+            raise HTTPException(StatusCode=500, detail=f"{ex}")
 
-            return response, 200
+        # Output statistics
+        outputer = Outputer()
+        summary = outputer.get_output(results=results)
+        words_after, words_before, reduced = outputer.generate_statistics(summary=summary, words_before=article_len)
+
+        # Return markdown string/file via JSON
+        response = {
+            "fileName": file_name,
+            "wordsAfter": words_after,
+            "wordsBefore": words_before,
+            "reducedByPercentage": reduced
+        }
+
+        return response, 200
 
     pass
 

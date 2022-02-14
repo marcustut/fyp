@@ -8,7 +8,7 @@ transformers.logging.set_verbosity_debug() # To check if the model is running
 def main():
     print('---START OF PROGRAM---')
 
-    inputer = Inputer(type='url')
+    inputer = Inputer(type='pdf')
     text_summarizer = TextSummarizer(mode='abs') # Abstractive summarisation
     adapter = Adapter()
     outputer = Outputer()

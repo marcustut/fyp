@@ -7,6 +7,7 @@ import os
 import pickle
 import torch
 
+# TODO: Load model on server start
 
 class TextSummarizer():
     '''Text summarizers using different models and tokenizers. Includes saving of pre-trained models into directories.
@@ -128,6 +129,7 @@ class Abstractive(TextSummarizer):
         print(results)
         return results
 
+# TODO: Find out why the model isn't working
 
 class Title(TextSummarizer):
     '''An internal class that will be used to generate slide titles, and combining the title with body results.
