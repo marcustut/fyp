@@ -16,7 +16,7 @@ const IndexPage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Landing Page</title>
+        <title>AI Summarizer</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
