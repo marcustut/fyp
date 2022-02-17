@@ -9,7 +9,6 @@ import {
 } from 'react-table'
 
 import {
-  GlobalSearch,
   TableTable,
   TableHead,
   TableHeadRow,
@@ -17,6 +16,8 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  TableRowProps,
+  TableCellProps,
 } from '@/components'
 
 type TableProps<T extends Record<string, unknown>> = {
@@ -26,6 +27,8 @@ type TableProps<T extends Record<string, unknown>> = {
   updateGlobalFilter?: React.Dispatch<
     React.SetStateAction<(filterValue: any) => void>
   >
+  tableRowProps?: TableRowProps
+  tableCellProps?: TableCellProps
   searchable?: boolean
   sortable?: boolean
   className?: string
@@ -36,6 +39,8 @@ export const Table = <T extends Record<string, any>>({
   columns,
   hooks,
   updateGlobalFilter,
+  tableRowProps,
+  tableCellProps,
   searchable = true,
   sortable = true,
   className = '',
@@ -76,7 +81,6 @@ export const Table = <T extends Record<string, any>>({
 
   return (
     <>
-      {/* {searchable && <GlobalSearch setGlobalFilter={setGlobalFilter} />} */}
       <TableTable className={`${className}`} {...getTableProps()}>
         <TableHead>
           {headerGroups.map((headerGroup, i) => (
@@ -104,9 +108,13 @@ export const Table = <T extends Record<string, any>>({
           {rows.map((row) => {
             prepareRow(row)
             return (
-              <TableRow {...row.getRowProps()} key={row.id}>
+              <TableRow {...row.getRowProps()} key={row.id} {...tableRowProps}>
                 {row.cells.map((cell) => (
-                  <TableCell {...cell.getCellProps()} key={cell.column.id}>
+                  <TableCell
+                    {...cell.getCellProps()}
+                    key={cell.column.id}
+                    {...tableCellProps}
+                  >
                     {cell.render('Cell')}
                   </TableCell>
                 ))}

@@ -1,9 +1,12 @@
 import React from 'react'
+import { TWidth, THeight } from 'tailwindcss-classnames'
 
-type AvatarProps = {
+export type AvatarProps = {
   src?: string | null
   gender: 'male' | 'female'
   name: string
+  width: TWidth
+  height: THeight
   outline?: boolean
   rounded?: boolean
   className?: string

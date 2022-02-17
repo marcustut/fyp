@@ -9,7 +9,9 @@ export const AppContainer: React.FC<AppContainerProps> = ({
   children,
 }) => {
   return (
-    <div className={`w-3/5 rounded-3xl bg-indigo-100 p-8 ${className}`}>
+    <div
+      className={`w-3/5 rounded-3xl bg-indigo-100 p-8 dark:bg-indigo-800 ${className}`}
+    >
       {children}
     </div>
   )

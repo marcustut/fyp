@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import dayjs from 'dayjs'
-import { Icon } from '@iconify/react'
+import { toast } from 'react-toastify'
 import { Column } from 'react-table'
-import { TW } from 'tailwindcss-classnames'
+import { TW, TTailwindString } from 'tailwindcss-classnames'
+import { Icon } from '@iconify/react'
 
 import {
   Notification,
@@ -11,8 +12,11 @@ import {
   AppContainer,
   Table,
   GlobalSearch,
+  Menu,
 } from '@/components'
 import { UserWithAuth } from '@/generated/graphql'
+import { AvatarDropdown } from '@/features/auth'
+import { NewSlide } from '@/features/slide'
 
 type FileBrowserProps = {
   user: UserWithAuth
@@ -71,20 +75,27 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({ user }) => {
             Header: 'Name',
             accessor: 'title',
             Cell: ({ value }) => {
-              const type = data.filter((d) => d.title === value).shift()!.title
+              const type = data
+                .filter((d) => d.title === value)
+                .shift()!
+                .fileName.split('.')
+                .reverse()[0]
               return (
-                <div className="flex w-96 items-center pr-4 font-medium text-slate-900">
+                <div
+                  className="flex w-full items-center py-3 pr-4 font-medium text-slate-900 hover:cursor-pointer dark:text-slate-50"
+                  onClick={() => toast(value)}
+                >
                   <Icon
                     icon={
                       type === 'pdf'
-                        ? 'icon-park-outline:file-pdf-one'
+                        ? 'mdi:file-pdf'
                         : type === 'mp4'
-                        ? 'icon-park-outline:image-files'
+                        ? 'mdi:file-video'
                         : type === 'png'
-                        ? 'icon-park-outline:video-file'
-                        : 'icon-park-outline:file-doc'
+                        ? 'mdi:file-image'
+                        : 'mdi:file-document'
                     }
-                    className="mr-3 h-8 w-8"
+                    className="mx-3 h-8 w-8"
                   />
                   <p className="w-full truncate">{value}</p>
                 </div>
@@ -104,15 +115,40 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({ user }) => {
           {
             Header: 'Last Modified',
             accessor: (row) => dayjs(row.updatedAt).format('MMM D, YYYY'),
-            Cell: ({ value }: { value: string }) => <p>{value}</p>,
+            Cell: ({ value }: { value: string }) => <p className="">{value}</p>,
           },
           {
             id: 'action',
             Header: '',
             Cell: () => (
-              <button>
-                <Icon icon="heroicons-solid:dots-horizontal" />
-              </button>
+              <Menu
+                tw={{ margin: TW.margin('mr-3') }}
+                buttonRender={() => (
+                  <Icon icon="heroicons-solid:dots-horizontal" />
+                )}
+                items={[
+                  {
+                    render: () => <>Open in New Tab</>,
+                    icon: (defaultClasses) => (
+                      <Icon
+                        icon="heroicons-outline:external-link"
+                        className={`${defaultClasses}`}
+                      />
+                    ),
+                    onClick: () => toast.warn('not implemented'),
+                  },
+                  {
+                    render: () => <>Delete</>,
+                    icon: (defaultClasses) => (
+                      <Icon
+                        icon="heroicons-outline:trash"
+                        className={defaultClasses}
+                      />
+                    ),
+                    onClick: () => toast.warn('not implemented'),
+                  },
+                ]}
+              />
             ),
           },
         ] as Column<typeof data[0]>[])
@@ -126,35 +162,39 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({ user }) => {
           icon={(defaultClasses) => (
             <Icon icon="heroicons-outline:search" className={defaultClasses} />
           )}
+          inputContainerClassName={'dark:focus-within:text-indigo-50'}
         />
-        <Notification dot className="mr-8 h-8 w-8" />
-        <Avatar
-          src={user.user.avatar_url}
-          gender={'male'}
-          name={user.user.full_name ?? user.user.username}
-          outline
-          className="h-8 w-8"
+        <Notification
+          dot
+          className="mr-8 h-8 w-8"
+          onClick={() => toast.warn('not implemented')}
+        />
+        <AvatarDropdown
+          avatarProps={{
+            src: user.user.avatar_url,
+            gender: 'male',
+            name: user.user.full_name ?? user.user.username,
+            outline: true,
+            width: 'w-8',
+            height: 'h-8',
+          }}
         />
       </div>
 
       <div className="mt-12 flex flex-col">
         <div className="flex items-center justify-between">
           <h1 className="text-4xl font-semibold">My files</h1>
-          <Button
-            tw={(defaultClasses) => ({
-              ...defaultClasses,
-              display: TW.display('flex'),
-              alignItems: TW.alignItems('items-center'),
-              borderRadius: TW.borderRadius('rounded-full'),
-              backgroundColor: TW.backgroundColor('bg-indigo-600'),
-            })}
-          >
-            <Icon
-              icon="heroicons-outline:plus-circle"
-              className="mr-3 h-5 w-5"
-            />
-            New Slide
-          </Button>
+          <NewSlide
+            buttonProps={{
+              tw: (defaultClasses) => ({
+                ...defaultClasses,
+                display: TW.display('flex'),
+                alignItems: TW.alignItems('items-center'),
+                borderRadius: TW.borderRadius('rounded-full'),
+                backgroundColor: TW.backgroundColor('bg-indigo-600'),
+              }),
+            }}
+          />
         </div>
       </div>
 
@@ -162,6 +202,30 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({ user }) => {
         data={data}
         columns={columns}
         updateGlobalFilter={setSetGlobalFilter}
+        tableRowProps={{
+          tw: {
+            margin: TW.margin('mx-8'),
+            textColor: TW.textColor('hover:text-indigo-50'),
+          },
+          className: 'group',
+        }}
+        tableCellProps={{
+          tw: {
+            padding: TW.padding('py-1'),
+            backgroundColor: TW.backgroundColor(
+              'group-hover:bg-indigo-200',
+              'dark:group-hover:bg-indigo-500' as TTailwindString
+            ),
+            borderRadius: TW.borderRadius(
+              'first:rounded-l-3xl',
+              'last:rounded-r-3xl'
+            ),
+            transitionProperty: TW.transitionProperty('transition'),
+            transitionDuration: TW.transitionDuration('duration-200'),
+            transitionTimingFunction:
+              TW.transitionTimingFunction('ease-in-out'),
+          },
+        }}
         className="mt-12 w-full"
       />
     </AppContainer>

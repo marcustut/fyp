@@ -6,7 +6,7 @@ import { Button } from '@/components'
 
 export const CTA: React.FC = () => {
   return (
-    <div className="mt-auto flex flex-col items-center justify-center rounded-3xl bg-gradient-to-t from-indigo-100 to-slate-100 p-8 text-center">
+    <div className="mt-auto flex flex-col items-center justify-center rounded-3xl bg-gradient-to-t from-indigo-100 to-slate-100 p-8 text-center dark:from-indigo-800 dark:to-slate-900">
       <img src="/images/feedback.png" className="scale-125 transform" />
       <p className="mt-4 font-semibold">We are in Closed Beta</p>
       <p className="my-3 text-sm text-slate-400">

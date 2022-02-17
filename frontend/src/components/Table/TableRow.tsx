@@ -1,24 +1,29 @@
 import React from 'react'
+import { classnames } from 'tailwindcss-classnames'
 
-type TableRowProps = React.DetailedHTMLProps<
+import { TailwindClasses } from '@/types/utils'
+
+export type TableRowProps = React.DetailedHTMLProps<
   React.HTMLAttributes<HTMLTableRowElement>,
   HTMLTableRowElement
 > & {
+  tw?: TailwindClasses
   className?: string
 }
 
 export const TableRow: React.FC<TableRowProps> = ({
   children,
+  tw,
   className = '',
   ...props
 }) => {
-  // const defaultUtilities: WindiUtilities = {
-  //   text: 'body-text text-word-active-light dark:text-word-active-dark',
-  //   border: 'border-b border-grey dark:border-grey-border',
-  // }
-
   return (
-    <tr className={`text-slate-400 ${className}`} {...props}>
+    <tr
+      className={`text-slate-400 dark:text-slate-300 ${className} ${
+        tw ? classnames(...Object.values(tw)) : ''
+      }`}
+      {...props}
+    >
       {children}
     </tr>
   )

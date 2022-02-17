@@ -5,7 +5,7 @@ import {
   useSignUpMutation,
 } from '@/generated/graphql'
 import { useLocalStorage } from '@/hooks'
-import { getItem } from '@/utils/storage'
+import { clearItem, getItem } from '@/utils/storage'
 import { useRouter } from 'next/router'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useContext } from 'react'
@@ -123,6 +123,7 @@ export const AuthProvider: React.FC = ({ children }) => {
   const signOut: IAuthContext['signOut'] = () => {
     setLoading(true)
     setUser(undefined)
+    clearItem('token')
     setLoading(false)
   }
 

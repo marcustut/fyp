@@ -7,7 +7,7 @@ import { TailwindClasses } from '@/types/utils'
 
 type ButtonVariant = 'primary' | 'secondary' | 'transparent'
 
-type ButtonProps = React.DetailedHTMLProps<
+export type ButtonProps = React.DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
   HTMLButtonElement
 > & {

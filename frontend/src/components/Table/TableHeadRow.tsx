@@ -13,7 +13,10 @@ export const TableHeadRow: React.FC<TableHeadRowProps> = ({
   ...props
 }) => {
   return (
-    <tr className={`capitalize text-slate-500 ${className}`} {...props}>
+    <tr
+      className={`capitalize text-slate-500 dark:text-slate-50 ${className}`}
+      {...props}
+    >
       {children}
     </tr>
   )
