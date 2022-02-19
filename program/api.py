@@ -23,7 +23,12 @@ api = Api(app)
 
 ALLOWED_EXTENSIONS = set(['txt', 'pdf'])
 
+# TODO: Load model on server start
+
 class Summarize(Resource):
+
+    text_summarizer_abs = ''
+    text_summarizer_ext = ''
 
     def post(self):
         parser = reqparse.RequestParser()
@@ -57,24 +62,35 @@ class Summarize(Resource):
 
         elif args['type'] == 'pdf':
 
-            # TODO: Check if path exists
-            # Extract text
-            try:
-                chunks, article_len = inputer.get_input(inp=args['input'])
-            except Exception as ex:
-                raise HTTPException(StatusCode=422, detail=f"Failed to extract text from PDF file. {ex}")
+            # Check if path exists
+            if os.path.exists(args=['input']):
+                # Extract text
+                try:
+                    chunks, article_len = inputer.get_input(inp=args['input'])
+                except Exception as ex:
+                    raise HTTPException(StatusCode=422, detail=f"Failed to extract text from PDF file. {ex}")
+            else:
+                raise HTTPException(StatusCode=404, detail="File does not exist.")
 
         elif args['type'] == 'txt':
-            # TODO: Check if path exists
-            # Read TXT file
-            try:
-                chunks, article_len = inputer.get_input(inp=args['input'])
-            except Exception as ex:
-                raise HTTPException(StatusCode=422, detail=f"Fsiled to read content from TXT file. {ex}")
+            # Check if path exists
+            if os.path.exists(args=['input']):
+                # Read TXT file
+                try:
+                    chunks, article_len = inputer.get_input(inp=args['input'])
+                except Exception as ex:
+                    raise HTTPException(StatusCode=422, detail=f"Failed to read content from TXT file. {ex}")
+            else:
+                raise HTTPException(StatusCode=404, detail="File does not exist.")
+
+        # Choose summarizer
+        if args['mode'] == 'abs':
+            text_summarizer = self.text_summarizer_abs
+        else:
+            text_summarizer = self.text_summarizer_ext
 
         # Summarize
         try:
-            text_summarizer = TextSummarizer(mode=args['mode'])
             results = text_summarizer.body.summarize(chunks=chunks)
             results = text_summarizer.title.summarize(results=results)
         except Exception as ex:
@@ -101,6 +117,13 @@ class Summarize(Resource):
         }
 
         return response, 200
+
+    def __init__(self) -> None:
+        try:
+            self.text_summarizer_abs = TextSummarizer(mode='abs')
+            self.text_summarizer_ext = TextSummarizer(mode='ext')
+        except Exception as ex:
+            raise HTTPException(StatusCode=500, detail=f"Failed to initialise summarizer. {ex}")
 
     pass
 
@@ -130,6 +153,10 @@ def upload_file():
 
     else:
         return {'message': 'Allowed file types are txt and pdf'}, 400
+
+with app.app_context():
+    print("Run before app.run()")
+    summarize = Summarize()
 
 if __name__ == '__main__':
     app.run()

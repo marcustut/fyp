@@ -5,9 +5,6 @@ from transformers.pipelines.base import Pipeline
 from summarizer import Summarizer
 import os
 import pickle
-import torch
-
-# TODO: Load model on server start
 
 class TextSummarizer():
     '''Text summarizers using different models and tokenizers. Includes saving of pre-trained models into directories.
