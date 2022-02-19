@@ -13,7 +13,7 @@ class Inputer():
     valid_types = {'url', 'txt', 'pdf'}
     max_chunk: int
 
-    def __init__(self, type: str, max_chunk=500) -> None:
+    def __init__(self, type: str, max_chunk: int) -> None:
         '''Initialises the Inputer object.'''
         if(self.__contains__(type)):
             self.type = type
@@ -43,9 +43,6 @@ class Inputer():
         sentences = self.__get_sentences(article=article)
         chunks = self.__chunk_text(sentences=sentences)
 
-        # TODO: Extract from PDF
-
-
         return chunks, article_len
 
     def __get_article(self, url: str) -> 'tuple[str, int]':
@@ -63,8 +60,10 @@ class Inputer():
         '''Extracts text from PDF files.'''
         article = ''
         with pdfplumber.open(path) as pdf:
-            for page in pdf.pages():
+            for page in pdf.pages:
                 article += ' '.join(((page.extract_text(layout=False)).replace('\n', '')).split())
+
+        article = self.__add_tokens(text=article)
 
         return article, len(article.split())
 
@@ -73,6 +72,8 @@ class Inputer():
         article = ''
         with open(path, 'r', encoding='utf-8') as f:
             article += ' '.join(((f.read())).replace('\n', ' ').split())
+
+        article = self.__add_tokens(text=article)
 
         return article, len(article.split())
 

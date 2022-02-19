@@ -36,8 +36,8 @@ class Summarize(Resource):
         parser.add_argument('mode', required=True, choices=['abs', 'ext'])
         parser.add_argument('type', required=True, choices=['txt', 'url', 'pdf'])
         parser.add_argument('input', required=True)
-        parser.add_argument('maxChunk', default=500, required=False, type=int, choices=range(50, 500, 50))
-        parser.add_argument('maxCharPerSlide', default=500, required=False, type=int, choices=range(100, 500, 50)) # max_len
+        parser.add_argument('maxChunk', default=500, required=False, type=int, choices=range(50, 501, 50))
+        parser.add_argument('maxCharPerSlide', default=500, required=False, type=int, choices=range(100, 501, 50)) # max_len
         parser.add_argument('theme', default='apple-basic', required=False, choices=['apple-basic', 'seriph', 'default'])
 
         args = parser.parse_args()
@@ -52,7 +52,7 @@ class Summarize(Resource):
             except ValidationError:
                 raise HTTPException(StatusCode=400, detail=f"Input is an invalid URL.")
 
-            inputer = Inputer(type=args['type'])
+            inputer = Inputer(type=args['type'], max_chunk=args['maxChunk'])
 
             # Get URL
             try:
@@ -63,10 +63,11 @@ class Summarize(Resource):
         elif args['type'] == 'pdf':
 
             # Check if path exists
-            if os.path.exists(args=['input']):
+            if os.path.isfile(f"./uploads/{args['input']}"):
                 # Extract text
+                inputer = Inputer(type=args['type'], max_chunk=args['maxChunk'])
                 try:
-                    chunks, article_len = inputer.get_input(inp=args['input'])
+                    chunks, article_len = inputer.get_input(inp="./uploads/" + args['input'])
                 except Exception as ex:
                     raise HTTPException(StatusCode=422, detail=f"Failed to extract text from PDF file. {ex}")
             else:
@@ -74,10 +75,11 @@ class Summarize(Resource):
 
         elif args['type'] == 'txt':
             # Check if path exists
-            if os.path.exists(args=['input']):
+            if os.path.isfile(f"./uploads/{args['input']}"):
+                inputer = Inputer(type=args['type'], max_chunk=args['maxChunk'])
                 # Read TXT file
                 try:
-                    chunks, article_len = inputer.get_input(inp=args['input'])
+                    chunks, article_len = inputer.get_input(inp="./uploads/" + args['input'])
                 except Exception as ex:
                     raise HTTPException(StatusCode=422, detail=f"Failed to read content from TXT file. {ex}")
             else:

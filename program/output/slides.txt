@@ -41,16 +41,96 @@ The last comment block of each slide will be treated as slide notes. It will be 
 
 ---
 
-# Talking to three-month-old children about race and racism is one of the most important
+# Using the e-commerce method to analyze the use of a p-value
 
-- Many adults put off talking to young children about ‘race’ and racism until they’re five or older. Research shows that three-month-olds have racial preferences. By the age of three, children in the U.S. have negative associations of ‘low-status racial groups. By ‘racist’ I mean that which upholds, reinforces, reproduces, or perpetuates racism.
+- The user has requested enhancement of the downloaded file. See discussions, stats, and author profiles for this publication at: https://www.researchgate.net/publication/357876127Artiﬁcial Intelligence Art: Attitudes and Perceptions Toward Human Versus Artificial Intelligence Artworks. The research is a study on the young generation views and acceptance of Artificial Intelligence (AI) art.
 
-# Professor John Sullivan, a professor at the University of California, has been teaching children about race
+# Ternary Ternoids
 
-- Sullivan says, ‘To help children navigate their social environments, adults must understand what children know about race, and when they acquire this knowledge. One way to do so with minimal influence is to show the child pictures of people of varying skin tones, hair textures, etc. Then, with the images laid out in front of you, you can ask them if they think the people or characters before them look the same or different.
+- The term Artificial Intelligence (AI) originated in the 1950’s in modelling human cognition. Nowadays, the term has evolved to refer to application that rely on deep neural networks. AI art refers to artwork made by collaboration between AI algorithms and human artists. 54% of respondents did not correctly identify emotions in AI artworks.
 
 ---
 
-# In the first part of this course, I will give you answers to questions about race and
+# A pamphlet on the paternal pamphlet
 
-- You must assess the child’s environment to see how it shapes their perceptions of ‘race’ and racism. Assessing the environment includes looking at any thoughts and biases you might have that consciously or subconsciously affect the child. In part two, I will give scientific answers to questions about human phenotypic differences.
+- This paper is constructed in four main sections: Literature Review, Research Methodology, Research Results and Discussion, and Conclusion. According to previous studies, AI can be utilized as Imitator, Collaborator, and Creator. On the other hand, humans might not be able to appreciate AI artworks emotionally as they treated it as artificial.
+
+# 2018 - The 2018 XXII
+
+- In 2018, a painting as the product of human-AI collaboration was auctioned for $432,500 (approximately RM1,716,022) at a British auction house. The painting was created using Generative Adversarial Networks (GANs) The goal of AI as a Collaborator is to create novel artworks itself, though with heavy human involvement.
+
+---
+
+# Elgamma Elgamma Elgamma Elgamma Elgamm
+
+- Elgammal proposed a new art-generating system named Creative Adversarial Network (CAN) CAN is an adaptation of GANs where it also uses the generator and discriminator networks. The difference lies in the training, where the discriminator instead of generator is trained to recognize the styles of artworks.
+
+# A note on a sembly of a p-epoch
+
+- There are three types of creativity: combinational, exploratory and transformational creativity. Combinational creativity generates new combinations from familiar ideas by identifying indirect associations between two concepts from random sources. Poem. exe generates and posts unique Japanese Haiku poems on Twitter through random combinations of data input. AI algorithms face challenges in combinational creativity.
+
+---
+
+# Genetic Genetic Genetic Genetic Genetic Genetic Genetic Genetic Genetic Genetic Genetic Genetic Genetic Genetic Genetic Genetic Genetic Genetic Genetic
+
+- Genetic Algorithms (GAs) can be incorporated into the program, which allows random changes that are similar to mutations in biological evolution. Sculptor William Latham cautiously and sparingly employed GAs in his AI program, eliminating large point mutations altogether. As a result, the series of produced images was artworks beyond himself but remains similar in his artistic style.
+
+# Recepti Recepti Recepti Recepti Recepti Recepti Re
+
+- Reception of AI paintings was positive when human subjects were unaware of the painter’s identity [24, 26] When people were told certain paintings were created by AI (attributed artist identity = AI), they rated the paintings significantly lower than other people who thought the artist was human. Therefore, we want to replicate the experiment and find out how attributed artist identity might affect the judgement on AI art.
+
+---
+
+# Section Section Section Section Section
+
+- Section 3 is a Turing test which is used to test whether respondents could pick the correct artwork produced by AI. Section 4 is about personal opinion which elicit the degree of exposure to AI technology and respondents’ acceptance of AI artworks. Section 5 was an experimental design to find out the relationship between attributed artist identity and respondents' judgement on AI artwork.
+
+# Pilot pilot pilot pilot
+
+- A pilot test is conducted on five college students before the questionnaire is distributed online through social media, email and WhatsApp. The reliability of the questionnaire items is also tested using Cronbach’s Alpha test utilizing PSPP with the result of N = 47, α = 87, which indicates a high reliability. Table 1 shows a total of 202 respondents demographics: age, gender, and faculty.
+
+---
+
+# The equivariant equivariant equivalence
+
+- In the questionnaire Section 2, the portraits in questions 1 and 2 are the same images but modified with different color palettes. Respondents are required to choose the group of phrases that closely resembled what they felt from the paintings. If the chosen group of emotions did not correspond to the intended emotion, the response is counted as “emotion not correctly identified” Result of the experiment shows that 54% (mean) of the undergraduates cannot identify the intended emotions correct. This shows that the advancement of AI artworks, human’s apprehension of the artworks is not aligned.
+
+---
+
+# Based Based octro-eff o es e
+
+- Based on Table 3, respondents have moderate exposure to AI technology (Mean = 3. 33) Table 4 shows the acceptance rate of AI artworks and the mean is 74. 9% However, based on Table 5, there is no significant correlation between degree of exposure and acceptance. This result is different from the theory proposed by Zajonc’s “Mere Exposure Effect” [12]
+
+# Ba Q3: Ba Q3: “Baaaaaaa
+
+- Q3: “Based on your personal view, what role do you think is most suitable for AI in the Positive Response creative arts industry? ” (95. 5%) Q4. “Which word describes your feeling about contemporary AI artwork most Positive Response accurately? “ (80. 7%) MEANS 74. 9%) H3: Undergraduates are able to correctly identify human artwork versus AI artworks.
+
+---
+
+# A note on the equivalence of the epoch
+
+- In this experimental test, respondents are informed that the images in a subsection are created by AI. Respondents have to judge the images accordingly. For each attributed identity group, the human artist identity group consistently gain slightly higher ratings. Based on the independent Sample T-Test, there is a relationship between attributed artwork and judgement on AI artwork.
+
+# A note on the hadron of hadrons
+
+- This has proven that researchers can focus in improving AI algorithm in order to produce more realistic artworks. Acceptance and judgement of AI artwork is not based on one’s AI knowledge or exposure to AI as arts is a field of feelings and it depends on different individuals’ experience and personal preference.
+
+---
+
+# N-Security of P. R. N
+
+- P. R. N. Childs, P. C. and R. M. N. (2019) Mechanical Design Engineering Handbook. Elsevier. (P.C. N) Childs: A Computational Approach for Combinational Creativity in Design. In Proceedings of the DESIGN 2018, pp. 1815-1824.
+
+# Can GPT GPT GPT GPT GPT GPT GPT GPT GPT
+
+- Can GPT-3 Pass a Writer’s Turing Test? Journal of Cultural Analytics. (2020) Elkins, K. Elkins and Chun, J. (2019) Can the GPT 3 pass a Writer's Turing test? Can the new algorithm pass the Turing test of a writer's work?
+
+# A. Hong
+
+- A. Hong, J. W. and Curran, N. M. (2019) Artificial Intelligence, Artists, and Art: Attitudes Toward Artwork Produced by Humans vs. Artificial Intelligence. Jennings, Jennings, E. E. (2010) Developing Creativity: Artificial Barriers in Artificial Intelligence. Minds and Machines,20(4), pp. 489–501. Jennings, K. E., M. Mazzone, M. Elgammal, A. Kolliopoulos, C. Martindale (1990) The Clockwork Muse: The Predictability Of Artistic Change.
+
+---
+
+# Design Design
+
+- Design Studies: Assessing Design Creativity: Refinements to the Novelty assessment Method, Design Studies, 32(4), pp. 348–383. Sawyer, R. K. Sawyer, K. and Chakrabarti, A. Sundararajan, L. (2014) Mind, Machine, and creativity: An Artist’s Perspective. Journal of Creative Behavior, 48(2), pp 136–151.
