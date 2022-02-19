@@ -29,7 +29,7 @@ class Inputer():
         else:
             return False
 
-    def get_input(self, inp: str) -> tuple[list[str], int]:
+    def get_input(self, inp: str) -> 'tuple[list[str], int]':
         '''Gets input based on the input type.'''
         if(self.type == 'url'):
             article, article_len = self.__get_article(url=inp)
@@ -44,11 +44,11 @@ class Inputer():
         chunks = self.__chunk_text(sentences=sentences)
 
         # TODO: Extract from PDF
-        
+
 
         return chunks, article_len
 
-    def __get_article(self, url: str) -> tuple[str, int]:
+    def __get_article(self, url: str) -> 'tuple[str, int]':
         '''Gets article from URL.'''
         r = requests.get(url)
         soup = BeautifulSoup(r.text, 'html.parser')
@@ -59,7 +59,7 @@ class Inputer():
         article = self.__add_tokens(text=article)
         return article, article_len
 
-    def __extract_pdf(self, path: str) -> tuple[str, int]:
+    def __extract_pdf(self, path: str) -> 'tuple[str, int]':
         '''Extracts text from PDF files.'''
         article = ''
         with pdfplumber.open(path) as pdf:
@@ -68,7 +68,7 @@ class Inputer():
 
         return article, len(article.split())
 
-    def __load_text(self, path: str) -> tuple[str, int]:
+    def __load_text(self, path: str) -> 'tuple[str, int]':
         '''Loads text from TXT files.'''
         article = ''
         with open(path, 'r', encoding='utf-8') as f:

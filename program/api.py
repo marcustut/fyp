@@ -27,8 +27,8 @@ ALLOWED_EXTENSIONS = set(['txt', 'pdf'])
 
 class Summarize(Resource):
 
-    text_summarizer_abs = ''
-    text_summarizer_ext = ''
+    # text_summarizer_abs = ''
+    # text_summarizer_ext = ''
 
     def post(self):
         parser = reqparse.RequestParser()
@@ -38,7 +38,7 @@ class Summarize(Resource):
         parser.add_argument('input', required=True)
         parser.add_argument('maxChunk', default=500, required=False, type=int, choices=range(50, 500, 50))
         parser.add_argument('maxCharPerSlide', default=500, required=False, type=int, choices=range(100, 500, 50)) # max_len
-        parser.add_argument('theme', default='apple-basic', required=False, type=int, choices=['apple-basic', 'seriph', 'default'])
+        parser.add_argument('theme', default='apple-basic', required=False, choices=['apple-basic', 'seriph', 'default'])
 
         args = parser.parse_args()
 
@@ -84,13 +84,14 @@ class Summarize(Resource):
                 raise HTTPException(StatusCode=404, detail="File does not exist.")
 
         # Choose summarizer
-        if args['mode'] == 'abs':
-            text_summarizer = self.text_summarizer_abs
-        else:
-            text_summarizer = self.text_summarizer_ext
+        # if args['mode'] == 'abs':
+        #     text_summarizer = self.text_summarizer_abs
+        # else:
+        #     text_summarizer = self.text_summarizer_ext
 
         # Summarize
         try:
+            text_summarizer = TextSummarizer(mode=args['mode'])
             results = text_summarizer.body.summarize(chunks=chunks)
             results = text_summarizer.title.summarize(results=results)
         except Exception as ex:
@@ -118,12 +119,12 @@ class Summarize(Resource):
 
         return response, 200
 
-    def __init__(self) -> None:
-        try:
-            self.text_summarizer_abs = TextSummarizer(mode='abs')
-            self.text_summarizer_ext = TextSummarizer(mode='ext')
-        except Exception as ex:
-            raise HTTPException(StatusCode=500, detail=f"Failed to initialise summarizer. {ex}")
+    # def __init__(self) -> None:
+    #     try:
+    #         self.text_summarizer_abs = TextSummarizer(mode='abs')
+    #         self.text_summarizer_ext = TextSummarizer(mode='ext')
+    #     except Exception as ex:
+    #         raise HTTPException(StatusCode=500, detail=f"Failed to initialise summarizer. {ex}")
 
     pass
 
@@ -154,9 +155,9 @@ def upload_file():
     else:
         return {'message': 'Allowed file types are txt and pdf'}, 400
 
-with app.app_context():
-    print("Run before app.run()")
-    summarize = Summarize()
+# with app.app_context():
+#     print("Run before app.run()")
+#     summarize = Summarize()
 
 if __name__ == '__main__':
     app.run()
