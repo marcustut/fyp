@@ -13,7 +13,7 @@ class Inputer():
     valid_types = {'url', 'txt', 'pdf'}
     max_chunk: int
 
-    def __init__(self, type: str, max_chunk=500) -> None:
+    def __init__(self, type: str, max_chunk: int) -> None:
         '''Initialises the Inputer object.'''
         if(self.__contains__(type)):
             self.type = type
@@ -29,7 +29,7 @@ class Inputer():
         else:
             return False
 
-    def get_input(self, inp: str) -> tuple[list[str], int]:
+    def get_input(self, inp: str) -> 'tuple[list[str], int]':
         '''Gets input based on the input type.'''
         if(self.type == 'url'):
             article, article_len = self.__get_article(url=inp)
@@ -43,12 +43,9 @@ class Inputer():
         sentences = self.__get_sentences(article=article)
         chunks = self.__chunk_text(sentences=sentences)
 
-        # TODO: Extract from PDF
-        
-
         return chunks, article_len
 
-    def __get_article(self, url: str) -> tuple[str, int]:
+    def __get_article(self, url: str) -> 'tuple[str, int]':
         '''Gets article from URL.'''
         r = requests.get(url)
         soup = BeautifulSoup(r.text, 'html.parser')
@@ -59,20 +56,24 @@ class Inputer():
         article = self.__add_tokens(text=article)
         return article, article_len
 
-    def __extract_pdf(self, path: str) -> tuple[str, int]:
+    def __extract_pdf(self, path: str) -> 'tuple[str, int]':
         '''Extracts text from PDF files.'''
         article = ''
         with pdfplumber.open(path) as pdf:
-            for page in pdf.pages():
+            for page in pdf.pages:
                 article += ' '.join(((page.extract_text(layout=False)).replace('\n', '')).split())
+
+        article = self.__add_tokens(text=article)
 
         return article, len(article.split())
 
-    def __load_text(self, path: str) -> tuple[str, int]:
+    def __load_text(self, path: str) -> 'tuple[str, int]':
         '''Loads text from TXT files.'''
         article = ''
         with open(path, 'r', encoding='utf-8') as f:
             article += ' '.join(((f.read())).replace('\n', ' ').split())
+
+        article = self.__add_tokens(text=article)
 
         return article, len(article.split())
 
