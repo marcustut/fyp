@@ -1,7 +1,7 @@
-
 ---
-theme: seriph
+theme: apple-basic
 background: https://source.unsplash.com/collection/94734566/1920x1080
+download: true
 class: text-center
 highlighter: shiki
 lineNumbers: false
@@ -41,6 +41,6 @@ The last comment block of each slide will be treated as slide notes. It will be 
 
 ---
 
-# The day of the day
+# An Incrrrrrrrrrrrrrrrr
 
-- The day I picked my dog up from the pound was one of the happiest days of both of our lives. "Looking for houses was supposed to be a fun and exciting process. Unfortunately, none of the ones that we saw seemed to match the specifications that we had established. They were too small, too impersonal, too close to the neighbors. After days of finding nothing even close, we began to wonder: was there really a perfect house out there for us? "
+- An increasing number of students rely on computers for research and to produce a perfect paper for school purposes. Some people believe the role of teachers started to fade because computers have been helping some students to progress in their studies quicker compared to studies in an original classroom. However, the presence of a teacher is essential for students because the human contact influences them in positive ways.

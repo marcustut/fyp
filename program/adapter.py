@@ -19,10 +19,10 @@ class Adapter():
         self.max_len = max_len
         self.md = ''
         self.metadata = [
-f'''
----
+f'''---
 theme: {theme}
 background: https://source.unsplash.com/collection/94734566/1920x1080
+download: true
 class: text-center
 highlighter: shiki
 lineNumbers: false
@@ -62,7 +62,7 @@ The last comment block of each slide will be treated as slide notes. It will be 
 ]
         pass
 
-    def convert_markdown(self, results: dict) -> str:
+    def convert_markdown(self, file_name: str, results: dict) -> str:
         '''Converts summarised results into markdown.'''
 
         # Add first slide
@@ -88,7 +88,7 @@ The last comment block of each slide will be treated as slide notes. It will be 
 
         try:
             self.md += '\n' # Add this to prevent client error
-            file_name = self.__create_file()
+            file_name = self.__create_file(file_name)
         except:
             raise Exception('Markdown file creation error')
 
@@ -125,16 +125,16 @@ The last comment block of each slide will be treated as slide notes. It will be 
     def __add_newline(self) -> str:
         return '\n\n'
 
-    def __create_file(self) -> str:
+    def __create_file(self, file_name: str) -> str:
         '''
         Creates a Markdown file with a Slidev template and writes the target Markdown string.
         First creates a text file for writing of strings, for further renaming of the `.txt` file to `.md`.
         '''
 
-        file_name = "slides.txt"
+        # file_name = "slides.txt"
 
         # with open('../slidev/slides.txt', 'w', encoding='utf-8') as f:
-        with open('./output/slides.txt', 'w', encoding='utf-8') as f:
+        with open('./output/' + file_name, 'w', encoding='utf-8') as f:
             f.writelines(self.metadata)
             f.write(self.md)
 

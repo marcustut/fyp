@@ -1,6 +1,6 @@
 
 ---
-theme: seriph
+theme: apple-basic
 background: https://source.unsplash.com/collection/94734566/1920x1080
 class: text-center
 highlighter: shiki
@@ -41,6 +41,6 @@ The last comment block of each slide will be treated as slide notes. It will be 
 
 ---
 
-# The day of the day
+# A note on the h'em
 
-- The day I picked my dog up from the pound was one of the happiest days of both of our lives. "Looking for houses was supposed to be a fun and exciting process. Unfortunately, none of the ones that we saw seemed to match the specifications that we had established. They were too small, too impersonal, too close to the neighbors. After days of finding nothing even close, we began to wonder: was there really a perfect house out there for us? "
+- There have been immense advances in technology in most aspects of people’s lives, especially in the field of education. However, the presence of a teacher is essential for students because the human contact influences them in positive ways.

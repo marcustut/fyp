@@ -180,24 +180,20 @@ class Title(TextSummarizer):
     #     else:
     #         os.makedirs(path)
 
-    def __transpose_dict(self, dict_: dict) -> dict:
-        '''Transposes the keys and values of the dictionary object. Based on the assumption that all keys and values are unique.'''
-        return {y:x for x, y in dict_.items()}
+    # def __transpose_dict(self, dict_: dict) -> dict:
+    #     '''Transposes the keys and values of the dictionary object. Based on the assumption that all keys and values are unique.'''
+    #     return {y:x for x, y in dict_.items()}
 
     def summarize(self, results: 'list[dict]') -> 'list[dict]':
         '''Summarizes from the result body to give a title, then combines these pairs together.'''
-        print('Title Summarizer')
+
         new_results = []
-        for dict_ in results:
-            # Now the body is the key and the title is the value
-            dict_ = self.__transpose_dict(dict_)
-            for body in dict_:
-                # Summarize the given text
-                dict_[body] = self.summarizer(body)[0] # Returns a list so take only the first element
-                pass
-            dict_ = self.__transpose_dict(dict_)
-            new_results.append(dict_)
-            print('dict_:', dict_)
+
+        for i in range(len(results)):
+            body = results[i]['summary_text']
+            new_results.append({self.summarizer(body)[0]: body}) # Output is a list of dicts
+
+        print('new_results:', new_results)
 
         return new_results
 

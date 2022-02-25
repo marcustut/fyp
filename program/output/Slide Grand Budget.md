@@ -1,6 +1,6 @@
 
 ---
-theme: seriph
+theme: apple-basic
 background: https://source.unsplash.com/collection/94734566/1920x1080
 class: text-center
 highlighter: shiki
@@ -41,6 +41,6 @@ The last comment block of each slide will be treated as slide notes. It will be 
 
 ---
 
-# The day of the day
+# To atta atta
 
-- The day I picked my dog up from the pound was one of the happiest days of both of our lives. "Looking for houses was supposed to be a fun and exciting process. Unfortunately, none of the ones that we saw seemed to match the specifications that we had established. They were too small, too impersonal, too close to the neighbors. After days of finding nothing even close, we began to wonder: was there really a perfect house out there for us? "
+- To attach to the report under Appendix School of Information Technology – Industrial Training Log of Ng Yi Jie Week No: __12____ Date: __7/2/2022 – 13/2/2022____ Log Book Summary Monday - Study and recall back the codebase implemented. ( Structure of product test files completely implemented. -

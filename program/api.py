@@ -39,6 +39,7 @@ class Summarize(Resource):
         parser.add_argument('maxChunk', default=500, required=False, type=int, choices=range(50, 501, 50))
         parser.add_argument('maxCharPerSlide', default=500, required=False, type=int, choices=range(100, 501, 50)) # max_len
         parser.add_argument('theme', default='apple-basic', required=False, choices=['apple-basic', 'seriph', 'default'])
+        parser.add_argument('outputName', required=True)
 
         args = parser.parse_args()
 
@@ -102,18 +103,18 @@ class Summarize(Resource):
         # Convert to markdown
         try:
             adapter = Adapter(theme=args['theme'])
-            file_name = adapter.convert_markdown(results=results)
+            adapter.convert_markdown(file_name=args['outputName'], results=results)
         except Exception as ex:
             raise HTTPException(StatusCode=500, detail=f"{ex}")
 
         # Output statistics
         outputer = Outputer()
         summary = outputer.get_output(results=results)
-        words_after, words_before, reduced = outputer.generate_statistics(summary=summary, words_before=article_len)
+        words_after, words_before, reduced = outputer.generate_statistics(words_before=article_len)
 
         # Return markdown string/file via JSON
         response = {
-            "fileName": file_name,
+            "fileName": args['outputName'],
             "wordsAfter": words_after,
             "wordsBefore": words_before,
             "reducedByPercentage": reduced

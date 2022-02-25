@@ -31,10 +31,14 @@ class Outputer():
 
         return summary
 
-    def generate_statistics(self, summary: str, words_before: int) -> Tuple[int, int, float]:
+    def generate_statistics(self, words_before: int) -> Tuple[int, int, float]:
         '''Generates summary statistics. Returns `summary word count`, `original article word count`, `reduced by percentage`.'''
         self.words_before = words_before
-        reduced_by = (self.words_before - self.words_after) / self.words_before * 100
+        try:
+            reduced_by = (self.words_before - self.words_after) / self.words_before * 100
+        except Exception as ex:
+            print(ex)
+            reduced_by = 0
 
         return self.words_after, self.words_before, round(reduced_by, 2)
 

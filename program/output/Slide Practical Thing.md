@@ -1,6 +1,6 @@
 
 ---
-theme: seriph
+theme: apple-basic
 background: https://source.unsplash.com/collection/94734566/1920x1080
 class: text-center
 highlighter: shiki
@@ -41,6 +41,10 @@ The last comment block of each slide will be treated as slide notes. It will be 
 
 ---
 
-# The day of the day
+# 7 km) l'em'ese l'e
 
-- The day I picked my dog up from the pound was one of the happiest days of both of our lives. "Looking for houses was supposed to be a fun and exciting process. Unfortunately, none of the ones that we saw seemed to match the specifications that we had established. They were too small, too impersonal, too close to the neighbors. After days of finding nothing even close, we began to wonder: was there really a perfect house out there for us? "
+- 7 km) long linear earthwork between Ashton-under-Lyne and Stretford in Greater Manchester, England. It may have been derived from the Anglo-Saxon Hnickar, a water spirit who seized and drowned unwary travellers, but the modern name is most likely a corruption of the name Mykelldiche and its variations; this is because the Anglo-Saxon word micel means "big" or "great", harking back to the early 13th century description of the ditch as magnum fossatum. [
+
+# Leg
+
+- [7] Legend has it Nico Ditch was completed in a single night by the inhabitants of Manchester, as a protection against Viking invaders in 869–870; Manchester may have been sacked by the Danes in 870. [ 14][15] In 1997, a 150-yard (140 m) segment of the ditch in Platt Fields was protected as a Scheduled Ancient Monument.
