@@ -126,24 +126,76 @@ class Abstractive(TextSummarizer):
         print(results)
         return results
 
-# TODO: Find out why the model isn't working
-
 class Title(TextSummarizer):
     '''An internal class that will be used to generate slide titles, and combining the title with body results.
     '''
 
-    def __init__(self, file='../models/title-generator-t5-arxiv-16-4.pkl') -> None:
+    # def __init__(self, file='../models/title-generator-t5-arxiv-16-4.pkl') -> None:
+    #     '''Initialises the title summarizer.'''
+    #     self.__create_summarizer(file=file)
+    #     # self.__save_model(path=file, model=self.model, tokenizer=self.tokenizer)
+    #     pass
+
+    # # Local title generator
+    # def __create_summarizer(self, file: str):
+    #     '''Creates the summarizer.'''
+    #     self.model = pickle.load(open(file, 'rb'))
+    #     self.summarizer = self.model.predict
+    #     pass
+
+    # def summarize(self, results: 'list[dict]') -> 'list[dict]':
+    #     '''Summarizes from the result body to give a title, then combines these pairs together.'''
+
+    #     new_results = []
+
+    #     for i in range(len(results)):
+    #         body = results[i]['summary_text']
+    #         new_results.append({self.summarizer(body)[0]: body}) # Output is a list of dicts
+
+    #     print('new_results:', new_results)
+
+    #     return new_results
+
+    # T5 SUMMARIZER
+    def __init__(self, checkpoint='../models/title-generator/checkpoint-22500/') -> None:
         '''Initialises the title summarizer.'''
-        self.__create_summarizer(file=file)
-        # self.__save_model(path=file, model=self.model, tokenizer=self.tokenizer)
+        self.__create_summarizer(checkpoint=checkpoint)
         pass
 
-    # Local title generator
-    def __create_summarizer(self, file: str):
+    def __create_summarizer(self, checkpoint: str):
         '''Creates the summarizer.'''
-        self.model = pickle.load(open(file, 'rb'))
-        self.summarizer = self.model.predict
-        pass
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint).to('cuda')
+        self.tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+        self.summarizer = self.model.generate
+
+    def summarize(self, results: 'list[dict]') -> 'list[dict]':
+        '''Summarizes from the result body to give a title, then combines these pairs together.'''
+
+        new_results = []
+
+        for i in range(len(results)):
+            body = results[i]['summary_text']
+
+            # Tokenize
+            body_ids = self.tokenizer([body], max_length=512, return_tensors='pt')
+
+            # Summarize
+            title_ids = self.summarizer(
+                body_ids['input_ids'].to('cuda'),
+                num_beams=4,
+                temperature=0.9,
+                max_length=128,
+                early_stopping=True
+            )
+
+            # Detokenize
+            title = self.tokenizer.decode(title_ids[0].tolist(), skip_special_tokens=True, clean_up_tokenization_spaces=False)
+
+            new_results.append({title: body})
+
+        print('new_results:', new_results)
+
+        return new_results
 
     # PEGASUS SUMMARIZER
     # def __init__(self, checkpoint='sshleifer/distill-pegasus-xsum-16-4') -> None:
@@ -180,22 +232,22 @@ class Title(TextSummarizer):
     #     else:
     #         os.makedirs(path)
 
+    # def summarize(self, results: 'list[dict]') -> 'list[dict]':
+    #     '''Summarizes from the result body to give a title, then combines these pairs together.'''
+
+    #     new_results = []
+
+    #     for i in range(len(results)):
+    #         body = results[i]['summary_text']
+    #         new_results.append({self.summarizer(body)[0]: body}) # Output is a list of dicts
+
+    #     print('new_results:', new_results)
+
+    #     return new_results
+
     # def __transpose_dict(self, dict_: dict) -> dict:
     #     '''Transposes the keys and values of the dictionary object. Based on the assumption that all keys and values are unique.'''
     #     return {y:x for x, y in dict_.items()}
-
-    def summarize(self, results: 'list[dict]') -> 'list[dict]':
-        '''Summarizes from the result body to give a title, then combines these pairs together.'''
-
-        new_results = []
-
-        for i in range(len(results)):
-            body = results[i]['summary_text']
-            new_results.append({self.summarizer(body)[0]: body}) # Output is a list of dicts
-
-        print('new_results:', new_results)
-
-        return new_results
 
     # def summarize(self, results: 'list[dict]') -> 'list[dict]':
     #     '''Summarizes from the result body to give a title, then combines these pairs together.'''

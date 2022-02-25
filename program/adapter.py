@@ -1,5 +1,3 @@
-# TODO: Remove blank page
-
 class Adapter():
     '''Adapting plain string texts into markdown format specifically for Slidev.
     `slide_len`: number of characters in the slide body on the current slide.

@@ -23,8 +23,6 @@ api = Api(app)
 
 ALLOWED_EXTENSIONS = set(['txt', 'pdf'])
 
-# TODO: Load model on server start
-
 class Summarize(Resource):
 
     # text_summarizer_abs = ''
