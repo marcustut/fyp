@@ -10,8 +10,10 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/marcustut/fyp/backend/ent/instance"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
+	"github.com/marcustut/fyp/backend/ent/user"
 )
 
 // SlideCreate is the builder for creating a Slide entity.
@@ -24,6 +26,46 @@ type SlideCreate struct {
 // SetName sets the "name" field.
 func (sc *SlideCreate) SetName(s string) *SlideCreate {
 	sc.mutation.SetName(s)
+	return sc
+}
+
+// SetPathToken sets the "path_token" field.
+func (sc *SlideCreate) SetPathToken(s []string) *SlideCreate {
+	sc.mutation.SetPathToken(s)
+	return sc
+}
+
+// SetSize sets the "size" field.
+func (sc *SlideCreate) SetSize(i int64) *SlideCreate {
+	sc.mutation.SetSize(i)
+	return sc
+}
+
+// SetNillableSize sets the "size" field if the given value is not nil.
+func (sc *SlideCreate) SetNillableSize(i *int64) *SlideCreate {
+	if i != nil {
+		sc.SetSize(*i)
+	}
+	return sc
+}
+
+// SetAccessLevel sets the "access_level" field.
+func (sc *SlideCreate) SetAccessLevel(sl slide.AccessLevel) *SlideCreate {
+	sc.mutation.SetAccessLevel(sl)
+	return sc
+}
+
+// SetNillableAccessLevel sets the "access_level" field if the given value is not nil.
+func (sc *SlideCreate) SetNillableAccessLevel(sl *slide.AccessLevel) *SlideCreate {
+	if sl != nil {
+		sc.SetAccessLevel(*sl)
+	}
+	return sc
+}
+
+// SetSharedWith sets the "shared_with" field.
+func (sc *SlideCreate) SetSharedWith(s []string) *SlideCreate {
+	sc.mutation.SetSharedWith(s)
 	return sc
 }
 
@@ -67,6 +109,36 @@ func (sc *SlideCreate) SetNillableID(u *ulid.ID) *SlideCreate {
 		sc.SetID(*u)
 	}
 	return sc
+}
+
+// SetInstanceID sets the "instance" edge to the Instance entity by ID.
+func (sc *SlideCreate) SetInstanceID(id ulid.ID) *SlideCreate {
+	sc.mutation.SetInstanceID(id)
+	return sc
+}
+
+// SetNillableInstanceID sets the "instance" edge to the Instance entity by ID if the given value is not nil.
+func (sc *SlideCreate) SetNillableInstanceID(id *ulid.ID) *SlideCreate {
+	if id != nil {
+		sc = sc.SetInstanceID(*id)
+	}
+	return sc
+}
+
+// SetInstance sets the "instance" edge to the Instance entity.
+func (sc *SlideCreate) SetInstance(i *Instance) *SlideCreate {
+	return sc.SetInstanceID(i.ID)
+}
+
+// SetUserID sets the "user" edge to the User entity by ID.
+func (sc *SlideCreate) SetUserID(id ulid.ID) *SlideCreate {
+	sc.mutation.SetUserID(id)
+	return sc
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (sc *SlideCreate) SetUser(u *User) *SlideCreate {
+	return sc.SetUserID(u.ID)
 }
 
 // Mutation returns the SlideMutation object of the builder.
@@ -140,6 +212,10 @@ func (sc *SlideCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (sc *SlideCreate) defaults() {
+	if _, ok := sc.mutation.AccessLevel(); !ok {
+		v := slide.DefaultAccessLevel
+		sc.mutation.SetAccessLevel(v)
+	}
 	if _, ok := sc.mutation.CreatedAt(); !ok {
 		v := slide.DefaultCreatedAt()
 		sc.mutation.SetCreatedAt(v)
@@ -159,11 +235,25 @@ func (sc *SlideCreate) check() error {
 	if _, ok := sc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "name"`)}
 	}
+	if _, ok := sc.mutation.AccessLevel(); !ok {
+		return &ValidationError{Name: "access_level", err: errors.New(`ent: missing required field "access_level"`)}
+	}
+	if v, ok := sc.mutation.AccessLevel(); ok {
+		if err := slide.AccessLevelValidator(v); err != nil {
+			return &ValidationError{Name: "access_level", err: fmt.Errorf(`ent: validator failed for field "access_level": %w`, err)}
+		}
+	}
+	if _, ok := sc.mutation.SharedWith(); !ok {
+		return &ValidationError{Name: "shared_with", err: errors.New(`ent: missing required field "shared_with"`)}
+	}
 	if _, ok := sc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
 	}
 	if _, ok := sc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "updated_at"`)}
+	}
+	if _, ok := sc.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user", err: errors.New("ent: missing required edge \"user\"")}
 	}
 	return nil
 }
@@ -205,6 +295,38 @@ func (sc *SlideCreate) createSpec() (*Slide, *sqlgraph.CreateSpec) {
 		})
 		_node.Name = value
 	}
+	if value, ok := sc.mutation.PathToken(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: slide.FieldPathToken,
+		})
+		_node.PathToken = value
+	}
+	if value, ok := sc.mutation.Size(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeInt64,
+			Value:  value,
+			Column: slide.FieldSize,
+		})
+		_node.Size = &value
+	}
+	if value, ok := sc.mutation.AccessLevel(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Value:  value,
+			Column: slide.FieldAccessLevel,
+		})
+		_node.AccessLevel = value
+	}
+	if value, ok := sc.mutation.SharedWith(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeJSON,
+			Value:  value,
+			Column: slide.FieldSharedWith,
+		})
+		_node.SharedWith = value
+	}
 	if value, ok := sc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -220,6 +342,45 @@ func (sc *SlideCreate) createSpec() (*Slide, *sqlgraph.CreateSpec) {
 			Column: slide.FieldUpdatedAt,
 		})
 		_node.UpdatedAt = value
+	}
+	if nodes := sc.mutation.InstanceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   slide.InstanceTable,
+			Columns: []string{slide.InstanceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   slide.UserTable,
+			Columns: []string{slide.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.user_slides = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

@@ -40,7 +40,7 @@ type Error interface {
 func NewDBError(e error) error {
 	return newError(
 		DBError,
-		fmt.Sprintf("%s", e.Error()),
+		e.Error(),
 		map[string]interface{}{
 			"code": DBError,
 		},
@@ -52,7 +52,7 @@ func NewDBError(e error) error {
 func NewGraphQLError(e error) error {
 	return newError(
 		GraphQLError,
-		fmt.Sprintf("%s", e.Error()),
+		e.Error(),
 		map[string]interface{}{
 			"code": GraphQLError,
 		},
@@ -64,7 +64,7 @@ func NewGraphQLError(e error) error {
 func NewNotFoundError(e error, value interface{}) error {
 	return newError(
 		NotFoundError,
-		fmt.Sprintf("%s", e.Error()),
+		e.Error(),
 		map[string]interface{}{
 			"code":  NotFoundError,
 			"value": value,
@@ -77,10 +77,22 @@ func NewNotFoundError(e error, value interface{}) error {
 func NewInvalidParamError(e error, value interface{}) error {
 	return newError(
 		BadRequestError,
-		fmt.Sprintf("%s", e.Error()),
+		e.Error(),
 		map[string]interface{}{
 			"code":  BadRequestError,
 			"value": value,
+		},
+		e,
+	)
+}
+
+// NewInvalidRequestBodyError returns error message related request body
+func NewInvalidRequestBodyError(e error) error {
+	return newError(
+		BadRequestError,
+		e.Error(),
+		map[string]interface{}{
+			"code": BadRequestError,
 		},
 		e,
 	)
@@ -90,7 +102,7 @@ func NewInvalidParamError(e error, value interface{}) error {
 func NewValidationError(e error) error {
 	return newError(
 		ValidationError,
-		fmt.Sprintf("%s", e.Error()),
+		e.Error(),
 		map[string]interface{}{
 			"code": ValidationError,
 		},
@@ -102,7 +114,7 @@ func NewValidationError(e error) error {
 func NewInternalServerError(e error) error {
 	return newError(
 		InternalServerError,
-		fmt.Sprintf("%s", e.Error()),
+		e.Error(),
 		map[string]interface{}{
 			"code": InternalServerError,
 		},

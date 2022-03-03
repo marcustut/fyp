@@ -46,7 +46,7 @@ export const Dialog: React.FC<DialogProps> = ({
             leave="ease-in duration-200"
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
-            className="fixed top-1/2 left-1/2 z-10 flex min-w-[300px] -translate-x-1/2 -translate-y-1/2 transform flex-col items-center rounded-lg bg-slate-50 px-6 py-4 text-black shadow-2xl dark:bg-slate-700 dark:text-slate-100"
+            className="fixed top-1/2 left-1/2 z-10 flex min-w-[300px] -translate-x-1/2 -translate-y-1/2 transform flex-col items-center rounded-lg bg-slate-50 px-6 py-4 text-black shadow-2xl dark:bg-slate-700 dark:text-slate-100 lg:min-w-[550px]"
           >
             {render(open, setOpen)}
           </Transition.Child>

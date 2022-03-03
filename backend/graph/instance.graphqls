@@ -1,0 +1,80 @@
+enum InstanceOrderField {
+  CREATED_AT
+  UPDATED_AT
+}
+
+type Instance {
+  id: ID!
+  instance_id: String!
+  instance_type: String!
+  private_dns_name: String!
+  private_ip_address: String!
+  public_dns_name: String!
+  public_ip_address: String!
+  image_id: String!
+  architecture: String!
+  availability_zone: String!
+  created_at: Time!
+  updated_at: Time!
+}
+
+input CreateInstanceInput {
+  instance_id: String!
+  instance_type: String!
+  private_dns_name: String!
+  private_ip_address: String!
+  public_dns_name: String!
+  public_ip_address: String!
+  image_id: String!
+  architecture: String!
+  availability_zone: String!
+  user_id: ID!
+  slide_id: ID!
+}
+input UpdateInstanceInput {
+  id: ID!
+  instance_type: String
+  private_dns_name: String
+  private_ip_address: String
+  public_dns_name: String
+  public_ip_address: String
+  image_id: String
+  architecture: String
+  availability_zone: String
+  user_id: ID
+  clear_user: Boolean
+  slide_id: ID
+  clear_slide: Boolean
+}
+
+type InstanceConnection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [InstanceEdge!]!
+}
+type InstanceEdge {
+  node: Instance!
+  cursor: Cursor!
+}
+input InstanceOrder {
+  direction: OrderDirection!
+  field: InstanceOrderField
+}
+
+extend type Query {
+  Instance(id: ID!): Instance!
+  Instances(
+    after: Cursor
+    first: Int
+    before: Cursor
+    last: Int
+    where: InstanceWhereInput
+    orderBy: InstanceOrder
+  ): InstanceConnection!
+}
+
+extend type Mutation {
+  CreateInstance(input: CreateInstanceInput!): Instance!
+  UpdateInstance(input: UpdateInstanceInput!): Instance!
+  DeleteInstance(id: ID!): Instance!
+}

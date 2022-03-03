@@ -26,7 +26,12 @@ export const AvatarDropdown: React.FC<AvatarDropdownProps> = ({
         {
           render: () => <>Switch to {darkMode ? 'Light Mode' : 'Dark Mode'}</>,
           icon: (defaultClasses) => (
-            <Icon icon="heroicons-outline:moon" className={defaultClasses} />
+            <Icon
+              icon={
+                darkMode ? 'heroicons-outline:sun' : 'heroicons-outline:moon'
+              }
+              className={defaultClasses}
+            />
           ),
           onClick: () => setDarkMode(!darkMode),
         },

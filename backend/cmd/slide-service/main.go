@@ -5,9 +5,12 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/marcustut/fyp/backend/config"
 	"github.com/marcustut/fyp/backend/ent"
 	"github.com/marcustut/fyp/backend/internal/adapter/controller"
+	"github.com/marcustut/fyp/backend/internal/infrastructure/cloud"
 	"github.com/marcustut/fyp/backend/internal/infrastructure/datastore"
 	"github.com/marcustut/fyp/backend/internal/infrastructure/graphql"
 	"github.com/marcustut/fyp/backend/internal/infrastructure/router"
@@ -19,9 +22,11 @@ func main() {
 	config.ReadConfig(config.ReadConfigOption{})
 
 	client := newDBClient()
+	cfg := newAWSConfig()
+	s3 := newS3Client(cfg)
 	ctrl := newController(client)
 
-	srv := graphql.NewServer(client, ctrl)
+	srv := graphql.NewServer(client, ctrl, s3)
 	r := router.New(srv)
 
 	log.Printf("slide-service running on port %d\n", config.C.Services.Slide.Port)
@@ -39,4 +44,17 @@ func newDBClient() *ent.Client {
 func newController(client *ent.Client) controller.Controller {
 	r := registry.NewRegistry(client)
 	return r.NewController()
+}
+
+func newAWSConfig() aws.Config {
+	cfg, err := cloud.NewAWSConfig()
+	if err != nil {
+		log.Fatalf("failed getting aws config: %v", err)
+	}
+	return *cfg
+}
+
+func newS3Client(cfg aws.Config) *s3.Client {
+	client := cloud.NewS3Client(cfg)
+	return client
 }

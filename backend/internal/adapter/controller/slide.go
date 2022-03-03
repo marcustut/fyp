@@ -14,10 +14,11 @@ type slide struct {
 
 // Slide defines the interface of the slide controller.
 type Slide interface {
-	Get(ctx context.Context, id *model.ID) (*model.Slide, error)
+	Get(ctx context.Context, id model.ID) (*model.Slide, error)
 	List(ctx context.Context, after *model.Cursor, first *int, before *model.Cursor, last *int, where *model.SlideWhereInput, orderBy *ent.SlideOrder) (*model.SlideConnection, error)
 	Create(ctx context.Context, input model.CreateSlideInput) (*model.Slide, error)
 	Update(ctx context.Context, input model.UpdateSlideInput) (*model.Slide, error)
+	Delete(ctx context.Context, id model.ID) (*model.Slide, error)
 }
 
 // NewSlideController returns slide controller.
@@ -25,7 +26,7 @@ func NewSlideController(u usecase.Slide) Slide {
 	return &slide{slideUsecase: u}
 }
 
-func (s *slide) Get(ctx context.Context, id *model.ID) (*model.Slide, error) {
+func (s *slide) Get(ctx context.Context, id model.ID) (*model.Slide, error) {
 	return s.slideUsecase.Get(ctx, id)
 }
 
@@ -39,4 +40,8 @@ func (s *slide) Create(ctx context.Context, input model.CreateSlideInput) (*mode
 
 func (s *slide) Update(ctx context.Context, input model.UpdateSlideInput) (*model.Slide, error) {
 	return s.slideUsecase.Update(ctx, input)
+}
+
+func (s *slide) Delete(ctx context.Context, id model.ID) (*model.Slide, error) {
+	return s.slideUsecase.Delete(ctx, id)
 }

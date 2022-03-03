@@ -6,24 +6,158 @@ import (
 	"time"
 
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
+	"github.com/marcustut/fyp/backend/ent/slide"
 )
 
-// CreateSlideInput represents a mutation input for creating slides.
-type CreateSlideInput struct {
-	Name      string
-	CreatedAt *time.Time
-	UpdatedAt *time.Time
+// CreateInstanceInput represents a mutation input for creating instances.
+type CreateInstanceInput struct {
+	InstanceID       string
+	InstanceType     string
+	PrivateDNSName   string
+	PrivateIPAddress string
+	PublicDNSName    string
+	PublicIPAddress  string
+	ImageID          string
+	Architecture     string
+	AvailabilityZone string
+	CreatedAt        *time.Time
+	UpdatedAt        *time.Time
+	UserID           ulid.ID
+	SlideID          ulid.ID
 }
 
-// Mutate applies the CreateSlideInput on the SlideCreate builder.
-func (i *CreateSlideInput) Mutate(m *SlideCreate) {
-	m.SetName(i.Name)
+// Mutate applies the CreateInstanceInput on the InstanceCreate builder.
+func (i *CreateInstanceInput) Mutate(m *InstanceCreate) {
+	m.SetInstanceID(i.InstanceID)
+	m.SetInstanceType(i.InstanceType)
+	m.SetPrivateDNSName(i.PrivateDNSName)
+	m.SetPrivateIPAddress(i.PrivateIPAddress)
+	m.SetPublicDNSName(i.PublicDNSName)
+	m.SetPublicIPAddress(i.PublicIPAddress)
+	m.SetImageID(i.ImageID)
+	m.SetArchitecture(i.Architecture)
+	m.SetAvailabilityZone(i.AvailabilityZone)
 	if v := i.CreatedAt; v != nil {
 		m.SetCreatedAt(*v)
 	}
 	if v := i.UpdatedAt; v != nil {
 		m.SetUpdatedAt(*v)
 	}
+	m.SetUserID(i.UserID)
+	m.SetSlideID(i.SlideID)
+}
+
+// SetInput applies the change-set in the CreateInstanceInput on the create builder.
+func (c *InstanceCreate) SetInput(i CreateInstanceInput) *InstanceCreate {
+	i.Mutate(c)
+	return c
+}
+
+// UpdateInstanceInput represents a mutation input for updating instances.
+type UpdateInstanceInput struct {
+	ID               ulid.ID
+	InstanceType     *string
+	PrivateDNSName   *string
+	PrivateIPAddress *string
+	PublicDNSName    *string
+	PublicIPAddress  *string
+	ImageID          *string
+	Architecture     *string
+	AvailabilityZone *string
+	UserID           *ulid.ID
+	ClearUser        bool
+	SlideID          *ulid.ID
+	ClearSlide       bool
+}
+
+// Mutate applies the UpdateInstanceInput on the InstanceMutation.
+func (i *UpdateInstanceInput) Mutate(m *InstanceMutation) {
+	if v := i.InstanceType; v != nil {
+		m.SetInstanceType(*v)
+	}
+	if v := i.PrivateDNSName; v != nil {
+		m.SetPrivateDNSName(*v)
+	}
+	if v := i.PrivateIPAddress; v != nil {
+		m.SetPrivateIPAddress(*v)
+	}
+	if v := i.PublicDNSName; v != nil {
+		m.SetPublicDNSName(*v)
+	}
+	if v := i.PublicIPAddress; v != nil {
+		m.SetPublicIPAddress(*v)
+	}
+	if v := i.ImageID; v != nil {
+		m.SetImageID(*v)
+	}
+	if v := i.Architecture; v != nil {
+		m.SetArchitecture(*v)
+	}
+	if v := i.AvailabilityZone; v != nil {
+		m.SetAvailabilityZone(*v)
+	}
+	if i.ClearUser {
+		m.ClearUser()
+	}
+	if v := i.UserID; v != nil {
+		m.SetUserID(*v)
+	}
+	if i.ClearSlide {
+		m.ClearSlide()
+	}
+	if v := i.SlideID; v != nil {
+		m.SetSlideID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateInstanceInput on the update builder.
+func (u *InstanceUpdate) SetInput(i UpdateInstanceInput) *InstanceUpdate {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// SetInput applies the change-set in the UpdateInstanceInput on the update-one builder.
+func (u *InstanceUpdateOne) SetInput(i UpdateInstanceInput) *InstanceUpdateOne {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// CreateSlideInput represents a mutation input for creating slides.
+type CreateSlideInput struct {
+	Name        string
+	PathToken   *[]string
+	Size        *int64
+	AccessLevel *slide.AccessLevel
+	SharedWith  []string
+	CreatedAt   *time.Time
+	UpdatedAt   *time.Time
+	InstanceID  *ulid.ID
+	UserID      ulid.ID
+}
+
+// Mutate applies the CreateSlideInput on the SlideCreate builder.
+func (i *CreateSlideInput) Mutate(m *SlideCreate) {
+	m.SetName(i.Name)
+	if v := i.PathToken; v != nil {
+		m.SetPathToken(*v)
+	}
+	if v := i.Size; v != nil {
+		m.SetSize(*v)
+	}
+	if v := i.AccessLevel; v != nil {
+		m.SetAccessLevel(*v)
+	}
+	m.SetSharedWith(i.SharedWith)
+	if v := i.CreatedAt; v != nil {
+		m.SetCreatedAt(*v)
+	}
+	if v := i.UpdatedAt; v != nil {
+		m.SetUpdatedAt(*v)
+	}
+	if v := i.InstanceID; v != nil {
+		m.SetInstanceID(*v)
+	}
+	m.SetUserID(i.UserID)
 }
 
 // SetInput applies the change-set in the CreateSlideInput on the create builder.
@@ -34,14 +168,54 @@ func (c *SlideCreate) SetInput(i CreateSlideInput) *SlideCreate {
 
 // UpdateSlideInput represents a mutation input for updating slides.
 type UpdateSlideInput struct {
-	ID   ulid.ID
-	Name *string
+	ID             ulid.ID
+	Name           *string
+	PathToken      *[]string
+	ClearPathToken bool
+	Size           *int64
+	ClearSize      bool
+	AccessLevel    *slide.AccessLevel
+	SharedWith     *[]string
+	InstanceID     *ulid.ID
+	ClearInstance  bool
+	UserID         *ulid.ID
+	ClearUser      bool
 }
 
 // Mutate applies the UpdateSlideInput on the SlideMutation.
 func (i *UpdateSlideInput) Mutate(m *SlideMutation) {
 	if v := i.Name; v != nil {
 		m.SetName(*v)
+	}
+	if i.ClearPathToken {
+		m.ClearPathToken()
+	}
+	if v := i.PathToken; v != nil {
+		m.SetPathToken(*v)
+	}
+	if i.ClearSize {
+		m.ClearSize()
+	}
+	if v := i.Size; v != nil {
+		m.SetSize(*v)
+	}
+	if v := i.AccessLevel; v != nil {
+		m.SetAccessLevel(*v)
+	}
+	if v := i.SharedWith; v != nil {
+		m.SetSharedWith(*v)
+	}
+	if i.ClearInstance {
+		m.ClearInstance()
+	}
+	if v := i.InstanceID; v != nil {
+		m.SetInstanceID(*v)
+	}
+	if i.ClearUser {
+		m.ClearUser()
+	}
+	if v := i.UserID; v != nil {
+		m.SetUserID(*v)
 	}
 }
 
@@ -67,6 +241,8 @@ type CreateUserInput struct {
 	Bio          *string
 	CreatedAt    *time.Time
 	UpdatedAt    *time.Time
+	InstanceIDs  []ulid.ID
+	SlideIDs     []ulid.ID
 }
 
 // Mutate applies the CreateUserInput on the UserCreate builder.
@@ -89,6 +265,12 @@ func (i *CreateUserInput) Mutate(m *UserCreate) {
 	if v := i.UpdatedAt; v != nil {
 		m.SetUpdatedAt(*v)
 	}
+	if ids := i.InstanceIDs; len(ids) > 0 {
+		m.AddInstanceIDs(ids...)
+	}
+	if ids := i.SlideIDs; len(ids) > 0 {
+		m.AddSlideIDs(ids...)
+	}
 }
 
 // SetInput applies the change-set in the CreateUserInput on the create builder.
@@ -99,14 +281,18 @@ func (c *UserCreate) SetInput(i CreateUserInput) *UserCreate {
 
 // UpdateUserInput represents a mutation input for updating users.
 type UpdateUserInput struct {
-	ID             ulid.ID
-	Username       *string
-	FullName       *string
-	ClearFullName  bool
-	AvatarURL      *string
-	ClearAvatarURL bool
-	Bio            *string
-	ClearBio       bool
+	ID                ulid.ID
+	Username          *string
+	FullName          *string
+	ClearFullName     bool
+	AvatarURL         *string
+	ClearAvatarURL    bool
+	Bio               *string
+	ClearBio          bool
+	AddInstanceIDs    []ulid.ID
+	RemoveInstanceIDs []ulid.ID
+	AddSlideIDs       []ulid.ID
+	RemoveSlideIDs    []ulid.ID
 }
 
 // Mutate applies the UpdateUserInput on the UserMutation.
@@ -131,6 +317,18 @@ func (i *UpdateUserInput) Mutate(m *UserMutation) {
 	}
 	if v := i.Bio; v != nil {
 		m.SetBio(*v)
+	}
+	if ids := i.AddInstanceIDs; len(ids) > 0 {
+		m.AddInstanceIDs(ids...)
+	}
+	if ids := i.RemoveInstanceIDs; len(ids) > 0 {
+		m.RemoveInstanceIDs(ids...)
+	}
+	if ids := i.AddSlideIDs; len(ids) > 0 {
+		m.AddSlideIDs(ids...)
+	}
+	if ids := i.RemoveSlideIDs; len(ids) > 0 {
+		m.RemoveSlideIDs(ids...)
 	}
 }
 

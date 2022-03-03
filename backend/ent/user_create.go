@@ -10,7 +10,9 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/marcustut/fyp/backend/ent/instance"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
+	"github.com/marcustut/fyp/backend/ent/slide"
 	"github.com/marcustut/fyp/backend/ent/user"
 )
 
@@ -121,6 +123,36 @@ func (uc *UserCreate) SetNillableID(u *ulid.ID) *UserCreate {
 		uc.SetID(*u)
 	}
 	return uc
+}
+
+// AddInstanceIDs adds the "instances" edge to the Instance entity by IDs.
+func (uc *UserCreate) AddInstanceIDs(ids ...ulid.ID) *UserCreate {
+	uc.mutation.AddInstanceIDs(ids...)
+	return uc
+}
+
+// AddInstances adds the "instances" edges to the Instance entity.
+func (uc *UserCreate) AddInstances(i ...*Instance) *UserCreate {
+	ids := make([]ulid.ID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uc.AddInstanceIDs(ids...)
+}
+
+// AddSlideIDs adds the "slides" edge to the Slide entity by IDs.
+func (uc *UserCreate) AddSlideIDs(ids ...ulid.ID) *UserCreate {
+	uc.mutation.AddSlideIDs(ids...)
+	return uc
+}
+
+// AddSlides adds the "slides" edges to the Slide entity.
+func (uc *UserCreate) AddSlides(s ...*Slide) *UserCreate {
+	ids := make([]ulid.ID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uc.AddSlideIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -345,6 +377,44 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Column: user.FieldUpdatedAt,
 		})
 		_node.UpdatedAt = value
+	}
+	if nodes := uc.mutation.InstancesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.InstancesTable,
+			Columns: []string{user.InstancesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.SlidesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SlidesTable,
+			Columns: []string{user.SlidesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: slide.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

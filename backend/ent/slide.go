@@ -3,13 +3,16 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/marcustut/fyp/backend/ent/instance"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
+	"github.com/marcustut/fyp/backend/ent/user"
 )
 
 // Slide is the model entity for the Slide schema.
@@ -19,10 +22,61 @@ type Slide struct {
 	ID ulid.ID `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// PathToken holds the value of the "path_token" field.
+	PathToken []string `json:"path_token,omitempty"`
+	// Size holds the value of the "size" field.
+	Size *int64 `json:"size,omitempty"`
+	// AccessLevel holds the value of the "access_level" field.
+	AccessLevel slide.AccessLevel `json:"access_level,omitempty"`
+	// SharedWith holds the value of the "shared_with" field.
+	SharedWith []string `json:"shared_with,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the SlideQuery when eager-loading is set.
+	Edges       SlideEdges `json:"edges"`
+	user_slides *ulid.ID
+}
+
+// SlideEdges holds the relations/edges for other nodes in the graph.
+type SlideEdges struct {
+	// Instance holds the value of the instance edge.
+	Instance *Instance `json:"instance,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// InstanceOrErr returns the Instance value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SlideEdges) InstanceOrErr() (*Instance, error) {
+	if e.loadedTypes[0] {
+		if e.Instance == nil {
+			// The edge instance was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: instance.Label}
+		}
+		return e.Instance, nil
+	}
+	return nil, &NotLoadedError{edge: "instance"}
+}
+
+// UserOrErr returns the User value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SlideEdges) UserOrErr() (*User, error) {
+	if e.loadedTypes[1] {
+		if e.User == nil {
+			// The edge user was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: user.Label}
+		}
+		return e.User, nil
+	}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -30,12 +84,18 @@ func (*Slide) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case slide.FieldName:
+		case slide.FieldPathToken, slide.FieldSharedWith:
+			values[i] = new([]byte)
+		case slide.FieldSize:
+			values[i] = new(sql.NullInt64)
+		case slide.FieldName, slide.FieldAccessLevel:
 			values[i] = new(sql.NullString)
 		case slide.FieldCreatedAt, slide.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		case slide.FieldID:
 			values[i] = new(ulid.ID)
+		case slide.ForeignKeys[0]: // user_slides
+			values[i] = &sql.NullScanner{S: new(ulid.ID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Slide", columns[i])
 		}
@@ -63,6 +123,35 @@ func (s *Slide) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				s.Name = value.String
 			}
+		case slide.FieldPathToken:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field path_token", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &s.PathToken); err != nil {
+					return fmt.Errorf("unmarshal field path_token: %w", err)
+				}
+			}
+		case slide.FieldSize:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field size", values[i])
+			} else if value.Valid {
+				s.Size = new(int64)
+				*s.Size = value.Int64
+			}
+		case slide.FieldAccessLevel:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field access_level", values[i])
+			} else if value.Valid {
+				s.AccessLevel = slide.AccessLevel(value.String)
+			}
+		case slide.FieldSharedWith:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field shared_with", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &s.SharedWith); err != nil {
+					return fmt.Errorf("unmarshal field shared_with: %w", err)
+				}
+			}
 		case slide.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -75,9 +164,26 @@ func (s *Slide) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				s.UpdatedAt = value.Time
 			}
+		case slide.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field user_slides", values[i])
+			} else if value.Valid {
+				s.user_slides = new(ulid.ID)
+				*s.user_slides = *value.S.(*ulid.ID)
+			}
 		}
 	}
 	return nil
+}
+
+// QueryInstance queries the "instance" edge of the Slide entity.
+func (s *Slide) QueryInstance() *InstanceQuery {
+	return (&SlideClient{config: s.config}).QueryInstance(s)
+}
+
+// QueryUser queries the "user" edge of the Slide entity.
+func (s *Slide) QueryUser() *UserQuery {
+	return (&SlideClient{config: s.config}).QueryUser(s)
 }
 
 // Update returns a builder for updating this Slide.
@@ -105,6 +211,16 @@ func (s *Slide) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v", s.ID))
 	builder.WriteString(", name=")
 	builder.WriteString(s.Name)
+	builder.WriteString(", path_token=")
+	builder.WriteString(fmt.Sprintf("%v", s.PathToken))
+	if v := s.Size; v != nil {
+		builder.WriteString(", size=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", access_level=")
+	builder.WriteString(fmt.Sprintf("%v", s.AccessLevel))
+	builder.WriteString(", shared_with=")
+	builder.WriteString(fmt.Sprintf("%v", s.SharedWith))
 	builder.WriteString(", created_at=")
 	builder.WriteString(s.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", updated_at=")

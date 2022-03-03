@@ -3,27 +3,37 @@ import { Icon } from '@iconify/react'
 
 import { HalfCircleProgress } from '@/components/HalfCircleProgress'
 import { niceBytes } from '@/utils/formatting'
+import { useListSlideQuery, UserWithAuth } from '@/generated/graphql'
 
 type SummaryProps = {
+  user: UserWithAuth
   variant: 'detailed' | 'visual'
   className?: string
 }
 
 export const Summary: React.FC<SummaryProps> = ({
+  user,
   variant,
   className = '',
 }) => {
-  const [usage, setUsage] = useState<
-    {
-      type: 'images' | 'videos' | 'markdown'
-      totalFiles: number
-      totalSize: number
-    }[]
-  >([
-    { type: 'images', totalFiles: 123, totalSize: 2341234 },
-    { type: 'videos', totalFiles: 3, totalSize: 363211234 },
-    { type: 'markdown', totalFiles: 10, totalSize: 1231123 },
-  ])
+  const [slides] = useListSlideQuery({
+    variables: { where: { hasUserWith: [{ id: user.user.id }] } },
+  })
+  const usage = useMemo(() => {
+    if (!slides.data) return []
+    const x = slides.data.Slides.edges
+      .map((e) => e.node)
+      .map((s) => ({ type: 'markdown', size: s.size! }))
+
+    return [
+      {
+        type: 'markdown',
+        totalFiles: x.length,
+        totalSize: x.reduce((a, b) => a + b.size, 0),
+      },
+    ]
+  }, [slides])
+
   const storageUsed = useMemo(
     () => usage.reduce((a, b) => a + b.totalSize, 0),
     [usage]
@@ -71,10 +81,12 @@ export const Summary: React.FC<SummaryProps> = ({
             <h3 className="text-2xl font-medium">Storage</h3>
             <HalfCircleProgress
               className="my-8"
-              progress={(storageUsed / 1000000000) * 100}
+              progress={(storageUsed / 10000000) * 100}
             />
             <p className="text-3xl font-medium">{niceBytes(storageUsed)}</p>
-            <p className="mt-1 text-slate-400">of 1GB capacity</p>
+            <p className="mt-1 text-slate-400">
+              of {niceBytes(10240000)} capacity
+            </p>
           </>
         )
       }

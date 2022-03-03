@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/marcustut/fyp/backend/ent/instance"
 	"github.com/marcustut/fyp/backend/ent/predicate"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
@@ -25,23 +26,999 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeSlide = "Slide"
-	TypeUser  = "User"
+	TypeInstance = "Instance"
+	TypeSlide    = "Slide"
+	TypeUser     = "User"
 )
+
+// InstanceMutation represents an operation that mutates the Instance nodes in the graph.
+type InstanceMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *ulid.ID
+	instance_id        *string
+	instance_type      *string
+	private_dns_name   *string
+	private_ip_address *string
+	public_dns_name    *string
+	public_ip_address  *string
+	image_id           *string
+	architecture       *string
+	availability_zone  *string
+	created_at         *time.Time
+	updated_at         *time.Time
+	clearedFields      map[string]struct{}
+	user               *ulid.ID
+	cleareduser        bool
+	slide              *ulid.ID
+	clearedslide       bool
+	done               bool
+	oldValue           func(context.Context) (*Instance, error)
+	predicates         []predicate.Instance
+}
+
+var _ ent.Mutation = (*InstanceMutation)(nil)
+
+// instanceOption allows management of the mutation configuration using functional options.
+type instanceOption func(*InstanceMutation)
+
+// newInstanceMutation creates new mutation for the Instance entity.
+func newInstanceMutation(c config, op Op, opts ...instanceOption) *InstanceMutation {
+	m := &InstanceMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInstance,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInstanceID sets the ID field of the mutation.
+func withInstanceID(id ulid.ID) instanceOption {
+	return func(m *InstanceMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Instance
+		)
+		m.oldValue = func(ctx context.Context) (*Instance, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Instance.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInstance sets the old Instance of the mutation.
+func withInstance(node *Instance) instanceOption {
+	return func(m *InstanceMutation) {
+		m.oldValue = func(context.Context) (*Instance, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InstanceMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InstanceMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Instance entities.
+func (m *InstanceMutation) SetID(id ulid.ID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InstanceMutation) ID() (id ulid.ID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetInstanceID sets the "instance_id" field.
+func (m *InstanceMutation) SetInstanceID(s string) {
+	m.instance_id = &s
+}
+
+// InstanceID returns the value of the "instance_id" field in the mutation.
+func (m *InstanceMutation) InstanceID() (r string, exists bool) {
+	v := m.instance_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInstanceID returns the old "instance_id" field's value of the Instance entity.
+// If the Instance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMutation) OldInstanceID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldInstanceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldInstanceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInstanceID: %w", err)
+	}
+	return oldValue.InstanceID, nil
+}
+
+// ResetInstanceID resets all changes to the "instance_id" field.
+func (m *InstanceMutation) ResetInstanceID() {
+	m.instance_id = nil
+}
+
+// SetInstanceType sets the "instance_type" field.
+func (m *InstanceMutation) SetInstanceType(s string) {
+	m.instance_type = &s
+}
+
+// InstanceType returns the value of the "instance_type" field in the mutation.
+func (m *InstanceMutation) InstanceType() (r string, exists bool) {
+	v := m.instance_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInstanceType returns the old "instance_type" field's value of the Instance entity.
+// If the Instance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMutation) OldInstanceType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldInstanceType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldInstanceType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInstanceType: %w", err)
+	}
+	return oldValue.InstanceType, nil
+}
+
+// ResetInstanceType resets all changes to the "instance_type" field.
+func (m *InstanceMutation) ResetInstanceType() {
+	m.instance_type = nil
+}
+
+// SetPrivateDNSName sets the "private_dns_name" field.
+func (m *InstanceMutation) SetPrivateDNSName(s string) {
+	m.private_dns_name = &s
+}
+
+// PrivateDNSName returns the value of the "private_dns_name" field in the mutation.
+func (m *InstanceMutation) PrivateDNSName() (r string, exists bool) {
+	v := m.private_dns_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPrivateDNSName returns the old "private_dns_name" field's value of the Instance entity.
+// If the Instance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMutation) OldPrivateDNSName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldPrivateDNSName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldPrivateDNSName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPrivateDNSName: %w", err)
+	}
+	return oldValue.PrivateDNSName, nil
+}
+
+// ResetPrivateDNSName resets all changes to the "private_dns_name" field.
+func (m *InstanceMutation) ResetPrivateDNSName() {
+	m.private_dns_name = nil
+}
+
+// SetPrivateIPAddress sets the "private_ip_address" field.
+func (m *InstanceMutation) SetPrivateIPAddress(s string) {
+	m.private_ip_address = &s
+}
+
+// PrivateIPAddress returns the value of the "private_ip_address" field in the mutation.
+func (m *InstanceMutation) PrivateIPAddress() (r string, exists bool) {
+	v := m.private_ip_address
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPrivateIPAddress returns the old "private_ip_address" field's value of the Instance entity.
+// If the Instance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMutation) OldPrivateIPAddress(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldPrivateIPAddress is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldPrivateIPAddress requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPrivateIPAddress: %w", err)
+	}
+	return oldValue.PrivateIPAddress, nil
+}
+
+// ResetPrivateIPAddress resets all changes to the "private_ip_address" field.
+func (m *InstanceMutation) ResetPrivateIPAddress() {
+	m.private_ip_address = nil
+}
+
+// SetPublicDNSName sets the "public_dns_name" field.
+func (m *InstanceMutation) SetPublicDNSName(s string) {
+	m.public_dns_name = &s
+}
+
+// PublicDNSName returns the value of the "public_dns_name" field in the mutation.
+func (m *InstanceMutation) PublicDNSName() (r string, exists bool) {
+	v := m.public_dns_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublicDNSName returns the old "public_dns_name" field's value of the Instance entity.
+// If the Instance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMutation) OldPublicDNSName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldPublicDNSName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldPublicDNSName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublicDNSName: %w", err)
+	}
+	return oldValue.PublicDNSName, nil
+}
+
+// ResetPublicDNSName resets all changes to the "public_dns_name" field.
+func (m *InstanceMutation) ResetPublicDNSName() {
+	m.public_dns_name = nil
+}
+
+// SetPublicIPAddress sets the "public_ip_address" field.
+func (m *InstanceMutation) SetPublicIPAddress(s string) {
+	m.public_ip_address = &s
+}
+
+// PublicIPAddress returns the value of the "public_ip_address" field in the mutation.
+func (m *InstanceMutation) PublicIPAddress() (r string, exists bool) {
+	v := m.public_ip_address
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublicIPAddress returns the old "public_ip_address" field's value of the Instance entity.
+// If the Instance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMutation) OldPublicIPAddress(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldPublicIPAddress is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldPublicIPAddress requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublicIPAddress: %w", err)
+	}
+	return oldValue.PublicIPAddress, nil
+}
+
+// ResetPublicIPAddress resets all changes to the "public_ip_address" field.
+func (m *InstanceMutation) ResetPublicIPAddress() {
+	m.public_ip_address = nil
+}
+
+// SetImageID sets the "image_id" field.
+func (m *InstanceMutation) SetImageID(s string) {
+	m.image_id = &s
+}
+
+// ImageID returns the value of the "image_id" field in the mutation.
+func (m *InstanceMutation) ImageID() (r string, exists bool) {
+	v := m.image_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldImageID returns the old "image_id" field's value of the Instance entity.
+// If the Instance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMutation) OldImageID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldImageID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldImageID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldImageID: %w", err)
+	}
+	return oldValue.ImageID, nil
+}
+
+// ResetImageID resets all changes to the "image_id" field.
+func (m *InstanceMutation) ResetImageID() {
+	m.image_id = nil
+}
+
+// SetArchitecture sets the "architecture" field.
+func (m *InstanceMutation) SetArchitecture(s string) {
+	m.architecture = &s
+}
+
+// Architecture returns the value of the "architecture" field in the mutation.
+func (m *InstanceMutation) Architecture() (r string, exists bool) {
+	v := m.architecture
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldArchitecture returns the old "architecture" field's value of the Instance entity.
+// If the Instance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMutation) OldArchitecture(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldArchitecture is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldArchitecture requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldArchitecture: %w", err)
+	}
+	return oldValue.Architecture, nil
+}
+
+// ResetArchitecture resets all changes to the "architecture" field.
+func (m *InstanceMutation) ResetArchitecture() {
+	m.architecture = nil
+}
+
+// SetAvailabilityZone sets the "availability_zone" field.
+func (m *InstanceMutation) SetAvailabilityZone(s string) {
+	m.availability_zone = &s
+}
+
+// AvailabilityZone returns the value of the "availability_zone" field in the mutation.
+func (m *InstanceMutation) AvailabilityZone() (r string, exists bool) {
+	v := m.availability_zone
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAvailabilityZone returns the old "availability_zone" field's value of the Instance entity.
+// If the Instance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMutation) OldAvailabilityZone(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldAvailabilityZone is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldAvailabilityZone requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAvailabilityZone: %w", err)
+	}
+	return oldValue.AvailabilityZone, nil
+}
+
+// ResetAvailabilityZone resets all changes to the "availability_zone" field.
+func (m *InstanceMutation) ResetAvailabilityZone() {
+	m.availability_zone = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *InstanceMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *InstanceMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Instance entity.
+// If the Instance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *InstanceMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *InstanceMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *InstanceMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Instance entity.
+// If the Instance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InstanceMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *InstanceMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *InstanceMutation) SetUserID(id ulid.ID) {
+	m.user = &id
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *InstanceMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *InstanceMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserID returns the "user" edge ID in the mutation.
+func (m *InstanceMutation) UserID() (id ulid.ID, exists bool) {
+	if m.user != nil {
+		return *m.user, true
+	}
+	return
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *InstanceMutation) UserIDs() (ids []ulid.ID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *InstanceMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// SetSlideID sets the "slide" edge to the Slide entity by id.
+func (m *InstanceMutation) SetSlideID(id ulid.ID) {
+	m.slide = &id
+}
+
+// ClearSlide clears the "slide" edge to the Slide entity.
+func (m *InstanceMutation) ClearSlide() {
+	m.clearedslide = true
+}
+
+// SlideCleared reports if the "slide" edge to the Slide entity was cleared.
+func (m *InstanceMutation) SlideCleared() bool {
+	return m.clearedslide
+}
+
+// SlideID returns the "slide" edge ID in the mutation.
+func (m *InstanceMutation) SlideID() (id ulid.ID, exists bool) {
+	if m.slide != nil {
+		return *m.slide, true
+	}
+	return
+}
+
+// SlideIDs returns the "slide" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// SlideID instead. It exists only for internal usage by the builders.
+func (m *InstanceMutation) SlideIDs() (ids []ulid.ID) {
+	if id := m.slide; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetSlide resets all changes to the "slide" edge.
+func (m *InstanceMutation) ResetSlide() {
+	m.slide = nil
+	m.clearedslide = false
+}
+
+// Where appends a list predicates to the InstanceMutation builder.
+func (m *InstanceMutation) Where(ps ...predicate.Instance) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *InstanceMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Instance).
+func (m *InstanceMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InstanceMutation) Fields() []string {
+	fields := make([]string, 0, 11)
+	if m.instance_id != nil {
+		fields = append(fields, instance.FieldInstanceID)
+	}
+	if m.instance_type != nil {
+		fields = append(fields, instance.FieldInstanceType)
+	}
+	if m.private_dns_name != nil {
+		fields = append(fields, instance.FieldPrivateDNSName)
+	}
+	if m.private_ip_address != nil {
+		fields = append(fields, instance.FieldPrivateIPAddress)
+	}
+	if m.public_dns_name != nil {
+		fields = append(fields, instance.FieldPublicDNSName)
+	}
+	if m.public_ip_address != nil {
+		fields = append(fields, instance.FieldPublicIPAddress)
+	}
+	if m.image_id != nil {
+		fields = append(fields, instance.FieldImageID)
+	}
+	if m.architecture != nil {
+		fields = append(fields, instance.FieldArchitecture)
+	}
+	if m.availability_zone != nil {
+		fields = append(fields, instance.FieldAvailabilityZone)
+	}
+	if m.created_at != nil {
+		fields = append(fields, instance.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, instance.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InstanceMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case instance.FieldInstanceID:
+		return m.InstanceID()
+	case instance.FieldInstanceType:
+		return m.InstanceType()
+	case instance.FieldPrivateDNSName:
+		return m.PrivateDNSName()
+	case instance.FieldPrivateIPAddress:
+		return m.PrivateIPAddress()
+	case instance.FieldPublicDNSName:
+		return m.PublicDNSName()
+	case instance.FieldPublicIPAddress:
+		return m.PublicIPAddress()
+	case instance.FieldImageID:
+		return m.ImageID()
+	case instance.FieldArchitecture:
+		return m.Architecture()
+	case instance.FieldAvailabilityZone:
+		return m.AvailabilityZone()
+	case instance.FieldCreatedAt:
+		return m.CreatedAt()
+	case instance.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InstanceMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case instance.FieldInstanceID:
+		return m.OldInstanceID(ctx)
+	case instance.FieldInstanceType:
+		return m.OldInstanceType(ctx)
+	case instance.FieldPrivateDNSName:
+		return m.OldPrivateDNSName(ctx)
+	case instance.FieldPrivateIPAddress:
+		return m.OldPrivateIPAddress(ctx)
+	case instance.FieldPublicDNSName:
+		return m.OldPublicDNSName(ctx)
+	case instance.FieldPublicIPAddress:
+		return m.OldPublicIPAddress(ctx)
+	case instance.FieldImageID:
+		return m.OldImageID(ctx)
+	case instance.FieldArchitecture:
+		return m.OldArchitecture(ctx)
+	case instance.FieldAvailabilityZone:
+		return m.OldAvailabilityZone(ctx)
+	case instance.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case instance.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Instance field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InstanceMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case instance.FieldInstanceID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInstanceID(v)
+		return nil
+	case instance.FieldInstanceType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInstanceType(v)
+		return nil
+	case instance.FieldPrivateDNSName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPrivateDNSName(v)
+		return nil
+	case instance.FieldPrivateIPAddress:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPrivateIPAddress(v)
+		return nil
+	case instance.FieldPublicDNSName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublicDNSName(v)
+		return nil
+	case instance.FieldPublicIPAddress:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublicIPAddress(v)
+		return nil
+	case instance.FieldImageID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetImageID(v)
+		return nil
+	case instance.FieldArchitecture:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetArchitecture(v)
+		return nil
+	case instance.FieldAvailabilityZone:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAvailabilityZone(v)
+		return nil
+	case instance.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case instance.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Instance field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InstanceMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InstanceMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InstanceMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Instance numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InstanceMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InstanceMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InstanceMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Instance nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InstanceMutation) ResetField(name string) error {
+	switch name {
+	case instance.FieldInstanceID:
+		m.ResetInstanceID()
+		return nil
+	case instance.FieldInstanceType:
+		m.ResetInstanceType()
+		return nil
+	case instance.FieldPrivateDNSName:
+		m.ResetPrivateDNSName()
+		return nil
+	case instance.FieldPrivateIPAddress:
+		m.ResetPrivateIPAddress()
+		return nil
+	case instance.FieldPublicDNSName:
+		m.ResetPublicDNSName()
+		return nil
+	case instance.FieldPublicIPAddress:
+		m.ResetPublicIPAddress()
+		return nil
+	case instance.FieldImageID:
+		m.ResetImageID()
+		return nil
+	case instance.FieldArchitecture:
+		m.ResetArchitecture()
+		return nil
+	case instance.FieldAvailabilityZone:
+		m.ResetAvailabilityZone()
+		return nil
+	case instance.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case instance.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Instance field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InstanceMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.user != nil {
+		edges = append(edges, instance.EdgeUser)
+	}
+	if m.slide != nil {
+		edges = append(edges, instance.EdgeSlide)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InstanceMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case instance.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	case instance.EdgeSlide:
+		if id := m.slide; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InstanceMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InstanceMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InstanceMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.cleareduser {
+		edges = append(edges, instance.EdgeUser)
+	}
+	if m.clearedslide {
+		edges = append(edges, instance.EdgeSlide)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InstanceMutation) EdgeCleared(name string) bool {
+	switch name {
+	case instance.EdgeUser:
+		return m.cleareduser
+	case instance.EdgeSlide:
+		return m.clearedslide
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InstanceMutation) ClearEdge(name string) error {
+	switch name {
+	case instance.EdgeUser:
+		m.ClearUser()
+		return nil
+	case instance.EdgeSlide:
+		m.ClearSlide()
+		return nil
+	}
+	return fmt.Errorf("unknown Instance unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InstanceMutation) ResetEdge(name string) error {
+	switch name {
+	case instance.EdgeUser:
+		m.ResetUser()
+		return nil
+	case instance.EdgeSlide:
+		m.ResetSlide()
+		return nil
+	}
+	return fmt.Errorf("unknown Instance edge %s", name)
+}
 
 // SlideMutation represents an operation that mutates the Slide nodes in the graph.
 type SlideMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *ulid.ID
-	name          *string
-	created_at    *time.Time
-	updated_at    *time.Time
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Slide, error)
-	predicates    []predicate.Slide
+	op              Op
+	typ             string
+	id              *ulid.ID
+	name            *string
+	path_token      *[]string
+	size            *int64
+	addsize         *int64
+	access_level    *slide.AccessLevel
+	shared_with     *[]string
+	created_at      *time.Time
+	updated_at      *time.Time
+	clearedFields   map[string]struct{}
+	instance        *ulid.ID
+	clearedinstance bool
+	user            *ulid.ID
+	cleareduser     bool
+	done            bool
+	oldValue        func(context.Context) (*Slide, error)
+	predicates      []predicate.Slide
 }
 
 var _ ent.Mutation = (*SlideMutation)(nil)
@@ -165,6 +1142,197 @@ func (m *SlideMutation) ResetName() {
 	m.name = nil
 }
 
+// SetPathToken sets the "path_token" field.
+func (m *SlideMutation) SetPathToken(s []string) {
+	m.path_token = &s
+}
+
+// PathToken returns the value of the "path_token" field in the mutation.
+func (m *SlideMutation) PathToken() (r []string, exists bool) {
+	v := m.path_token
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPathToken returns the old "path_token" field's value of the Slide entity.
+// If the Slide object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SlideMutation) OldPathToken(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldPathToken is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldPathToken requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPathToken: %w", err)
+	}
+	return oldValue.PathToken, nil
+}
+
+// ClearPathToken clears the value of the "path_token" field.
+func (m *SlideMutation) ClearPathToken() {
+	m.path_token = nil
+	m.clearedFields[slide.FieldPathToken] = struct{}{}
+}
+
+// PathTokenCleared returns if the "path_token" field was cleared in this mutation.
+func (m *SlideMutation) PathTokenCleared() bool {
+	_, ok := m.clearedFields[slide.FieldPathToken]
+	return ok
+}
+
+// ResetPathToken resets all changes to the "path_token" field.
+func (m *SlideMutation) ResetPathToken() {
+	m.path_token = nil
+	delete(m.clearedFields, slide.FieldPathToken)
+}
+
+// SetSize sets the "size" field.
+func (m *SlideMutation) SetSize(i int64) {
+	m.size = &i
+	m.addsize = nil
+}
+
+// Size returns the value of the "size" field in the mutation.
+func (m *SlideMutation) Size() (r int64, exists bool) {
+	v := m.size
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSize returns the old "size" field's value of the Slide entity.
+// If the Slide object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SlideMutation) OldSize(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldSize is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldSize requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSize: %w", err)
+	}
+	return oldValue.Size, nil
+}
+
+// AddSize adds i to the "size" field.
+func (m *SlideMutation) AddSize(i int64) {
+	if m.addsize != nil {
+		*m.addsize += i
+	} else {
+		m.addsize = &i
+	}
+}
+
+// AddedSize returns the value that was added to the "size" field in this mutation.
+func (m *SlideMutation) AddedSize() (r int64, exists bool) {
+	v := m.addsize
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearSize clears the value of the "size" field.
+func (m *SlideMutation) ClearSize() {
+	m.size = nil
+	m.addsize = nil
+	m.clearedFields[slide.FieldSize] = struct{}{}
+}
+
+// SizeCleared returns if the "size" field was cleared in this mutation.
+func (m *SlideMutation) SizeCleared() bool {
+	_, ok := m.clearedFields[slide.FieldSize]
+	return ok
+}
+
+// ResetSize resets all changes to the "size" field.
+func (m *SlideMutation) ResetSize() {
+	m.size = nil
+	m.addsize = nil
+	delete(m.clearedFields, slide.FieldSize)
+}
+
+// SetAccessLevel sets the "access_level" field.
+func (m *SlideMutation) SetAccessLevel(sl slide.AccessLevel) {
+	m.access_level = &sl
+}
+
+// AccessLevel returns the value of the "access_level" field in the mutation.
+func (m *SlideMutation) AccessLevel() (r slide.AccessLevel, exists bool) {
+	v := m.access_level
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccessLevel returns the old "access_level" field's value of the Slide entity.
+// If the Slide object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SlideMutation) OldAccessLevel(ctx context.Context) (v slide.AccessLevel, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldAccessLevel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldAccessLevel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccessLevel: %w", err)
+	}
+	return oldValue.AccessLevel, nil
+}
+
+// ResetAccessLevel resets all changes to the "access_level" field.
+func (m *SlideMutation) ResetAccessLevel() {
+	m.access_level = nil
+}
+
+// SetSharedWith sets the "shared_with" field.
+func (m *SlideMutation) SetSharedWith(s []string) {
+	m.shared_with = &s
+}
+
+// SharedWith returns the value of the "shared_with" field in the mutation.
+func (m *SlideMutation) SharedWith() (r []string, exists bool) {
+	v := m.shared_with
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSharedWith returns the old "shared_with" field's value of the Slide entity.
+// If the Slide object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SlideMutation) OldSharedWith(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldSharedWith is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldSharedWith requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSharedWith: %w", err)
+	}
+	return oldValue.SharedWith, nil
+}
+
+// ResetSharedWith resets all changes to the "shared_with" field.
+func (m *SlideMutation) ResetSharedWith() {
+	m.shared_with = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *SlideMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -237,6 +1405,84 @@ func (m *SlideMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetInstanceID sets the "instance" edge to the Instance entity by id.
+func (m *SlideMutation) SetInstanceID(id ulid.ID) {
+	m.instance = &id
+}
+
+// ClearInstance clears the "instance" edge to the Instance entity.
+func (m *SlideMutation) ClearInstance() {
+	m.clearedinstance = true
+}
+
+// InstanceCleared reports if the "instance" edge to the Instance entity was cleared.
+func (m *SlideMutation) InstanceCleared() bool {
+	return m.clearedinstance
+}
+
+// InstanceID returns the "instance" edge ID in the mutation.
+func (m *SlideMutation) InstanceID() (id ulid.ID, exists bool) {
+	if m.instance != nil {
+		return *m.instance, true
+	}
+	return
+}
+
+// InstanceIDs returns the "instance" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InstanceID instead. It exists only for internal usage by the builders.
+func (m *SlideMutation) InstanceIDs() (ids []ulid.ID) {
+	if id := m.instance; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetInstance resets all changes to the "instance" edge.
+func (m *SlideMutation) ResetInstance() {
+	m.instance = nil
+	m.clearedinstance = false
+}
+
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *SlideMutation) SetUserID(id ulid.ID) {
+	m.user = &id
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *SlideMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *SlideMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserID returns the "user" edge ID in the mutation.
+func (m *SlideMutation) UserID() (id ulid.ID, exists bool) {
+	if m.user != nil {
+		return *m.user, true
+	}
+	return
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *SlideMutation) UserIDs() (ids []ulid.ID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *SlideMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
 // Where appends a list predicates to the SlideMutation builder.
 func (m *SlideMutation) Where(ps ...predicate.Slide) {
 	m.predicates = append(m.predicates, ps...)
@@ -256,9 +1502,21 @@ func (m *SlideMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SlideMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 7)
 	if m.name != nil {
 		fields = append(fields, slide.FieldName)
+	}
+	if m.path_token != nil {
+		fields = append(fields, slide.FieldPathToken)
+	}
+	if m.size != nil {
+		fields = append(fields, slide.FieldSize)
+	}
+	if m.access_level != nil {
+		fields = append(fields, slide.FieldAccessLevel)
+	}
+	if m.shared_with != nil {
+		fields = append(fields, slide.FieldSharedWith)
 	}
 	if m.created_at != nil {
 		fields = append(fields, slide.FieldCreatedAt)
@@ -276,6 +1534,14 @@ func (m *SlideMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case slide.FieldName:
 		return m.Name()
+	case slide.FieldPathToken:
+		return m.PathToken()
+	case slide.FieldSize:
+		return m.Size()
+	case slide.FieldAccessLevel:
+		return m.AccessLevel()
+	case slide.FieldSharedWith:
+		return m.SharedWith()
 	case slide.FieldCreatedAt:
 		return m.CreatedAt()
 	case slide.FieldUpdatedAt:
@@ -291,6 +1557,14 @@ func (m *SlideMutation) OldField(ctx context.Context, name string) (ent.Value, e
 	switch name {
 	case slide.FieldName:
 		return m.OldName(ctx)
+	case slide.FieldPathToken:
+		return m.OldPathToken(ctx)
+	case slide.FieldSize:
+		return m.OldSize(ctx)
+	case slide.FieldAccessLevel:
+		return m.OldAccessLevel(ctx)
+	case slide.FieldSharedWith:
+		return m.OldSharedWith(ctx)
 	case slide.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case slide.FieldUpdatedAt:
@@ -310,6 +1584,34 @@ func (m *SlideMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case slide.FieldPathToken:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPathToken(v)
+		return nil
+	case slide.FieldSize:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSize(v)
+		return nil
+	case slide.FieldAccessLevel:
+		v, ok := value.(slide.AccessLevel)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccessLevel(v)
+		return nil
+	case slide.FieldSharedWith:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSharedWith(v)
 		return nil
 	case slide.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -332,13 +1634,21 @@ func (m *SlideMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *SlideMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addsize != nil {
+		fields = append(fields, slide.FieldSize)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *SlideMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case slide.FieldSize:
+		return m.AddedSize()
+	}
 	return nil, false
 }
 
@@ -347,6 +1657,13 @@ func (m *SlideMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *SlideMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case slide.FieldSize:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddSize(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Slide numeric field %s", name)
 }
@@ -354,7 +1671,14 @@ func (m *SlideMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *SlideMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(slide.FieldPathToken) {
+		fields = append(fields, slide.FieldPathToken)
+	}
+	if m.FieldCleared(slide.FieldSize) {
+		fields = append(fields, slide.FieldSize)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -367,6 +1691,14 @@ func (m *SlideMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *SlideMutation) ClearField(name string) error {
+	switch name {
+	case slide.FieldPathToken:
+		m.ClearPathToken()
+		return nil
+	case slide.FieldSize:
+		m.ClearSize()
+		return nil
+	}
 	return fmt.Errorf("unknown Slide nullable field %s", name)
 }
 
@@ -376,6 +1708,18 @@ func (m *SlideMutation) ResetField(name string) error {
 	switch name {
 	case slide.FieldName:
 		m.ResetName()
+		return nil
+	case slide.FieldPathToken:
+		m.ResetPathToken()
+		return nil
+	case slide.FieldSize:
+		m.ResetSize()
+		return nil
+	case slide.FieldAccessLevel:
+		m.ResetAccessLevel()
+		return nil
+	case slide.FieldSharedWith:
+		m.ResetSharedWith()
 		return nil
 	case slide.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -389,70 +1733,122 @@ func (m *SlideMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SlideMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.instance != nil {
+		edges = append(edges, slide.EdgeInstance)
+	}
+	if m.user != nil {
+		edges = append(edges, slide.EdgeUser)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *SlideMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case slide.EdgeInstance:
+		if id := m.instance; id != nil {
+			return []ent.Value{*id}
+		}
+	case slide.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SlideMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *SlideMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SlideMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.clearedinstance {
+		edges = append(edges, slide.EdgeInstance)
+	}
+	if m.cleareduser {
+		edges = append(edges, slide.EdgeUser)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *SlideMutation) EdgeCleared(name string) bool {
+	switch name {
+	case slide.EdgeInstance:
+		return m.clearedinstance
+	case slide.EdgeUser:
+		return m.cleareduser
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *SlideMutation) ClearEdge(name string) error {
+	switch name {
+	case slide.EdgeInstance:
+		m.ClearInstance()
+		return nil
+	case slide.EdgeUser:
+		m.ClearUser()
+		return nil
+	}
 	return fmt.Errorf("unknown Slide unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *SlideMutation) ResetEdge(name string) error {
+	switch name {
+	case slide.EdgeInstance:
+		m.ResetInstance()
+		return nil
+	case slide.EdgeUser:
+		m.ResetUser()
+		return nil
+	}
 	return fmt.Errorf("unknown Slide edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *ulid.ID
-	username      *string
-	email         *string
-	full_name     *string
-	password_hash *string
-	avatar_url    *string
-	bio           *string
-	created_at    *time.Time
-	updated_at    *time.Time
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*User, error)
-	predicates    []predicate.User
+	op               Op
+	typ              string
+	id               *ulid.ID
+	username         *string
+	email            *string
+	full_name        *string
+	password_hash    *string
+	avatar_url       *string
+	bio              *string
+	created_at       *time.Time
+	updated_at       *time.Time
+	clearedFields    map[string]struct{}
+	instances        map[ulid.ID]struct{}
+	removedinstances map[ulid.ID]struct{}
+	clearedinstances bool
+	slides           map[ulid.ID]struct{}
+	removedslides    map[ulid.ID]struct{}
+	clearedslides    bool
+	done             bool
+	oldValue         func(context.Context) (*User, error)
+	predicates       []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -867,6 +2263,114 @@ func (m *UserMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// AddInstanceIDs adds the "instances" edge to the Instance entity by ids.
+func (m *UserMutation) AddInstanceIDs(ids ...ulid.ID) {
+	if m.instances == nil {
+		m.instances = make(map[ulid.ID]struct{})
+	}
+	for i := range ids {
+		m.instances[ids[i]] = struct{}{}
+	}
+}
+
+// ClearInstances clears the "instances" edge to the Instance entity.
+func (m *UserMutation) ClearInstances() {
+	m.clearedinstances = true
+}
+
+// InstancesCleared reports if the "instances" edge to the Instance entity was cleared.
+func (m *UserMutation) InstancesCleared() bool {
+	return m.clearedinstances
+}
+
+// RemoveInstanceIDs removes the "instances" edge to the Instance entity by IDs.
+func (m *UserMutation) RemoveInstanceIDs(ids ...ulid.ID) {
+	if m.removedinstances == nil {
+		m.removedinstances = make(map[ulid.ID]struct{})
+	}
+	for i := range ids {
+		delete(m.instances, ids[i])
+		m.removedinstances[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedInstances returns the removed IDs of the "instances" edge to the Instance entity.
+func (m *UserMutation) RemovedInstancesIDs() (ids []ulid.ID) {
+	for id := range m.removedinstances {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// InstancesIDs returns the "instances" edge IDs in the mutation.
+func (m *UserMutation) InstancesIDs() (ids []ulid.ID) {
+	for id := range m.instances {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetInstances resets all changes to the "instances" edge.
+func (m *UserMutation) ResetInstances() {
+	m.instances = nil
+	m.clearedinstances = false
+	m.removedinstances = nil
+}
+
+// AddSlideIDs adds the "slides" edge to the Slide entity by ids.
+func (m *UserMutation) AddSlideIDs(ids ...ulid.ID) {
+	if m.slides == nil {
+		m.slides = make(map[ulid.ID]struct{})
+	}
+	for i := range ids {
+		m.slides[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSlides clears the "slides" edge to the Slide entity.
+func (m *UserMutation) ClearSlides() {
+	m.clearedslides = true
+}
+
+// SlidesCleared reports if the "slides" edge to the Slide entity was cleared.
+func (m *UserMutation) SlidesCleared() bool {
+	return m.clearedslides
+}
+
+// RemoveSlideIDs removes the "slides" edge to the Slide entity by IDs.
+func (m *UserMutation) RemoveSlideIDs(ids ...ulid.ID) {
+	if m.removedslides == nil {
+		m.removedslides = make(map[ulid.ID]struct{})
+	}
+	for i := range ids {
+		delete(m.slides, ids[i])
+		m.removedslides[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSlides returns the removed IDs of the "slides" edge to the Slide entity.
+func (m *UserMutation) RemovedSlidesIDs() (ids []ulid.ID) {
+	for id := range m.removedslides {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SlidesIDs returns the "slides" edge IDs in the mutation.
+func (m *UserMutation) SlidesIDs() (ids []ulid.ID) {
+	for id := range m.slides {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSlides resets all changes to the "slides" edge.
+func (m *UserMutation) ResetSlides() {
+	m.slides = nil
+	m.clearedslides = false
+	m.removedslides = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -1125,48 +2629,110 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.instances != nil {
+		edges = append(edges, user.EdgeInstances)
+	}
+	if m.slides != nil {
+		edges = append(edges, user.EdgeSlides)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *UserMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case user.EdgeInstances:
+		ids := make([]ent.Value, 0, len(m.instances))
+		for id := range m.instances {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeSlides:
+		ids := make([]ent.Value, 0, len(m.slides))
+		for id := range m.slides {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.removedinstances != nil {
+		edges = append(edges, user.EdgeInstances)
+	}
+	if m.removedslides != nil {
+		edges = append(edges, user.EdgeSlides)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *UserMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case user.EdgeInstances:
+		ids := make([]ent.Value, 0, len(m.removedinstances))
+		for id := range m.removedinstances {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeSlides:
+		ids := make([]ent.Value, 0, len(m.removedslides))
+		for id := range m.removedslides {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.clearedinstances {
+		edges = append(edges, user.EdgeInstances)
+	}
+	if m.clearedslides {
+		edges = append(edges, user.EdgeSlides)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *UserMutation) EdgeCleared(name string) bool {
+	switch name {
+	case user.EdgeInstances:
+		return m.clearedinstances
+	case user.EdgeSlides:
+		return m.clearedslides
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *UserMutation) ResetEdge(name string) error {
+	switch name {
+	case user.EdgeInstances:
+		m.ResetInstances()
+		return nil
+	case user.EdgeSlides:
+		m.ResetSlides()
+		return nil
+	}
 	return fmt.Errorf("unknown User edge %s", name)
 }

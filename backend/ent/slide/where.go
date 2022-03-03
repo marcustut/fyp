@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/marcustut/fyp/backend/ent/predicate"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 )
@@ -97,6 +98,13 @@ func IDLTE(id ulid.ID) predicate.Slide {
 func Name(v string) predicate.Slide {
 	return predicate.Slide(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldName), v))
+	})
+}
+
+// Size applies equality check predicate on the "size" field. It's identical to SizeEQ.
+func Size(v int64) predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldSize), v))
 	})
 }
 
@@ -222,6 +230,158 @@ func NameEqualFold(v string) predicate.Slide {
 func NameContainsFold(v string) predicate.Slide {
 	return predicate.Slide(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldName), v))
+	})
+}
+
+// PathTokenIsNil applies the IsNil predicate on the "path_token" field.
+func PathTokenIsNil() predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldPathToken)))
+	})
+}
+
+// PathTokenNotNil applies the NotNil predicate on the "path_token" field.
+func PathTokenNotNil() predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldPathToken)))
+	})
+}
+
+// SizeEQ applies the EQ predicate on the "size" field.
+func SizeEQ(v int64) predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldSize), v))
+	})
+}
+
+// SizeNEQ applies the NEQ predicate on the "size" field.
+func SizeNEQ(v int64) predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldSize), v))
+	})
+}
+
+// SizeIn applies the In predicate on the "size" field.
+func SizeIn(vs ...int64) predicate.Slide {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Slide(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldSize), v...))
+	})
+}
+
+// SizeNotIn applies the NotIn predicate on the "size" field.
+func SizeNotIn(vs ...int64) predicate.Slide {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Slide(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldSize), v...))
+	})
+}
+
+// SizeGT applies the GT predicate on the "size" field.
+func SizeGT(v int64) predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldSize), v))
+	})
+}
+
+// SizeGTE applies the GTE predicate on the "size" field.
+func SizeGTE(v int64) predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldSize), v))
+	})
+}
+
+// SizeLT applies the LT predicate on the "size" field.
+func SizeLT(v int64) predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldSize), v))
+	})
+}
+
+// SizeLTE applies the LTE predicate on the "size" field.
+func SizeLTE(v int64) predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldSize), v))
+	})
+}
+
+// SizeIsNil applies the IsNil predicate on the "size" field.
+func SizeIsNil() predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldSize)))
+	})
+}
+
+// SizeNotNil applies the NotNil predicate on the "size" field.
+func SizeNotNil() predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldSize)))
+	})
+}
+
+// AccessLevelEQ applies the EQ predicate on the "access_level" field.
+func AccessLevelEQ(v AccessLevel) predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldAccessLevel), v))
+	})
+}
+
+// AccessLevelNEQ applies the NEQ predicate on the "access_level" field.
+func AccessLevelNEQ(v AccessLevel) predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldAccessLevel), v))
+	})
+}
+
+// AccessLevelIn applies the In predicate on the "access_level" field.
+func AccessLevelIn(vs ...AccessLevel) predicate.Slide {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Slide(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldAccessLevel), v...))
+	})
+}
+
+// AccessLevelNotIn applies the NotIn predicate on the "access_level" field.
+func AccessLevelNotIn(vs ...AccessLevel) predicate.Slide {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Slide(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldAccessLevel), v...))
 	})
 }
 
@@ -374,6 +534,62 @@ func UpdatedAtLT(v time.Time) predicate.Slide {
 func UpdatedAtLTE(v time.Time) predicate.Slide {
 	return predicate.Slide(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldUpdatedAt), v))
+	})
+}
+
+// HasInstance applies the HasEdge predicate on the "instance" edge.
+func HasInstance() predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(InstanceTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, InstanceTable, InstanceColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasInstanceWith applies the HasEdge predicate on the "instance" edge with a given conditions (other predicates).
+func HasInstanceWith(preds ...predicate.Instance) predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(InstanceInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, InstanceTable, InstanceColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasUser applies the HasEdge predicate on the "user" edge.
+func HasUser() predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(UserTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
+func HasUserWith(preds ...predicate.User) predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(UserInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 

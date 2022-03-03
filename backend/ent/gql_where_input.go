@@ -6,11 +6,721 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/marcustut/fyp/backend/ent/instance"
 	"github.com/marcustut/fyp/backend/ent/predicate"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
 	"github.com/marcustut/fyp/backend/ent/user"
 )
+
+// InstanceWhereInput represents a where input for filtering Instance queries.
+type InstanceWhereInput struct {
+	Not *InstanceWhereInput   `json:"not,omitempty"`
+	Or  []*InstanceWhereInput `json:"or,omitempty"`
+	And []*InstanceWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *ulid.ID  `json:"id,omitempty"`
+	IDNEQ   *ulid.ID  `json:"idNEQ,omitempty"`
+	IDIn    []ulid.ID `json:"idIn,omitempty"`
+	IDNotIn []ulid.ID `json:"idNotIn,omitempty"`
+	IDGT    *ulid.ID  `json:"idGT,omitempty"`
+	IDGTE   *ulid.ID  `json:"idGTE,omitempty"`
+	IDLT    *ulid.ID  `json:"idLT,omitempty"`
+	IDLTE   *ulid.ID  `json:"idLTE,omitempty"`
+
+	// "instance_id" field predicates.
+	InstanceID             *string  `json:"instanceID,omitempty"`
+	InstanceIDNEQ          *string  `json:"instanceIDNEQ,omitempty"`
+	InstanceIDIn           []string `json:"instanceIDIn,omitempty"`
+	InstanceIDNotIn        []string `json:"instanceIDNotIn,omitempty"`
+	InstanceIDGT           *string  `json:"instanceIDGT,omitempty"`
+	InstanceIDGTE          *string  `json:"instanceIDGTE,omitempty"`
+	InstanceIDLT           *string  `json:"instanceIDLT,omitempty"`
+	InstanceIDLTE          *string  `json:"instanceIDLTE,omitempty"`
+	InstanceIDContains     *string  `json:"instanceIDContains,omitempty"`
+	InstanceIDHasPrefix    *string  `json:"instanceIDHasPrefix,omitempty"`
+	InstanceIDHasSuffix    *string  `json:"instanceIDHasSuffix,omitempty"`
+	InstanceIDEqualFold    *string  `json:"instanceIDEqualFold,omitempty"`
+	InstanceIDContainsFold *string  `json:"instanceIDContainsFold,omitempty"`
+
+	// "instance_type" field predicates.
+	InstanceType             *string  `json:"instanceType,omitempty"`
+	InstanceTypeNEQ          *string  `json:"instanceTypeNEQ,omitempty"`
+	InstanceTypeIn           []string `json:"instanceTypeIn,omitempty"`
+	InstanceTypeNotIn        []string `json:"instanceTypeNotIn,omitempty"`
+	InstanceTypeGT           *string  `json:"instanceTypeGT,omitempty"`
+	InstanceTypeGTE          *string  `json:"instanceTypeGTE,omitempty"`
+	InstanceTypeLT           *string  `json:"instanceTypeLT,omitempty"`
+	InstanceTypeLTE          *string  `json:"instanceTypeLTE,omitempty"`
+	InstanceTypeContains     *string  `json:"instanceTypeContains,omitempty"`
+	InstanceTypeHasPrefix    *string  `json:"instanceTypeHasPrefix,omitempty"`
+	InstanceTypeHasSuffix    *string  `json:"instanceTypeHasSuffix,omitempty"`
+	InstanceTypeEqualFold    *string  `json:"instanceTypeEqualFold,omitempty"`
+	InstanceTypeContainsFold *string  `json:"instanceTypeContainsFold,omitempty"`
+
+	// "private_dns_name" field predicates.
+	PrivateDNSName             *string  `json:"privateDNSName,omitempty"`
+	PrivateDNSNameNEQ          *string  `json:"privateDNSNameNEQ,omitempty"`
+	PrivateDNSNameIn           []string `json:"privateDNSNameIn,omitempty"`
+	PrivateDNSNameNotIn        []string `json:"privateDNSNameNotIn,omitempty"`
+	PrivateDNSNameGT           *string  `json:"privateDNSNameGT,omitempty"`
+	PrivateDNSNameGTE          *string  `json:"privateDNSNameGTE,omitempty"`
+	PrivateDNSNameLT           *string  `json:"privateDNSNameLT,omitempty"`
+	PrivateDNSNameLTE          *string  `json:"privateDNSNameLTE,omitempty"`
+	PrivateDNSNameContains     *string  `json:"privateDNSNameContains,omitempty"`
+	PrivateDNSNameHasPrefix    *string  `json:"privateDNSNameHasPrefix,omitempty"`
+	PrivateDNSNameHasSuffix    *string  `json:"privateDNSNameHasSuffix,omitempty"`
+	PrivateDNSNameEqualFold    *string  `json:"privateDNSNameEqualFold,omitempty"`
+	PrivateDNSNameContainsFold *string  `json:"privateDNSNameContainsFold,omitempty"`
+
+	// "private_ip_address" field predicates.
+	PrivateIPAddress             *string  `json:"privateIPAddress,omitempty"`
+	PrivateIPAddressNEQ          *string  `json:"privateIPAddressNEQ,omitempty"`
+	PrivateIPAddressIn           []string `json:"privateIPAddressIn,omitempty"`
+	PrivateIPAddressNotIn        []string `json:"privateIPAddressNotIn,omitempty"`
+	PrivateIPAddressGT           *string  `json:"privateIPAddressGT,omitempty"`
+	PrivateIPAddressGTE          *string  `json:"privateIPAddressGTE,omitempty"`
+	PrivateIPAddressLT           *string  `json:"privateIPAddressLT,omitempty"`
+	PrivateIPAddressLTE          *string  `json:"privateIPAddressLTE,omitempty"`
+	PrivateIPAddressContains     *string  `json:"privateIPAddressContains,omitempty"`
+	PrivateIPAddressHasPrefix    *string  `json:"privateIPAddressHasPrefix,omitempty"`
+	PrivateIPAddressHasSuffix    *string  `json:"privateIPAddressHasSuffix,omitempty"`
+	PrivateIPAddressEqualFold    *string  `json:"privateIPAddressEqualFold,omitempty"`
+	PrivateIPAddressContainsFold *string  `json:"privateIPAddressContainsFold,omitempty"`
+
+	// "public_dns_name" field predicates.
+	PublicDNSName             *string  `json:"publicDNSName,omitempty"`
+	PublicDNSNameNEQ          *string  `json:"publicDNSNameNEQ,omitempty"`
+	PublicDNSNameIn           []string `json:"publicDNSNameIn,omitempty"`
+	PublicDNSNameNotIn        []string `json:"publicDNSNameNotIn,omitempty"`
+	PublicDNSNameGT           *string  `json:"publicDNSNameGT,omitempty"`
+	PublicDNSNameGTE          *string  `json:"publicDNSNameGTE,omitempty"`
+	PublicDNSNameLT           *string  `json:"publicDNSNameLT,omitempty"`
+	PublicDNSNameLTE          *string  `json:"publicDNSNameLTE,omitempty"`
+	PublicDNSNameContains     *string  `json:"publicDNSNameContains,omitempty"`
+	PublicDNSNameHasPrefix    *string  `json:"publicDNSNameHasPrefix,omitempty"`
+	PublicDNSNameHasSuffix    *string  `json:"publicDNSNameHasSuffix,omitempty"`
+	PublicDNSNameEqualFold    *string  `json:"publicDNSNameEqualFold,omitempty"`
+	PublicDNSNameContainsFold *string  `json:"publicDNSNameContainsFold,omitempty"`
+
+	// "public_ip_address" field predicates.
+	PublicIPAddress             *string  `json:"publicIPAddress,omitempty"`
+	PublicIPAddressNEQ          *string  `json:"publicIPAddressNEQ,omitempty"`
+	PublicIPAddressIn           []string `json:"publicIPAddressIn,omitempty"`
+	PublicIPAddressNotIn        []string `json:"publicIPAddressNotIn,omitempty"`
+	PublicIPAddressGT           *string  `json:"publicIPAddressGT,omitempty"`
+	PublicIPAddressGTE          *string  `json:"publicIPAddressGTE,omitempty"`
+	PublicIPAddressLT           *string  `json:"publicIPAddressLT,omitempty"`
+	PublicIPAddressLTE          *string  `json:"publicIPAddressLTE,omitempty"`
+	PublicIPAddressContains     *string  `json:"publicIPAddressContains,omitempty"`
+	PublicIPAddressHasPrefix    *string  `json:"publicIPAddressHasPrefix,omitempty"`
+	PublicIPAddressHasSuffix    *string  `json:"publicIPAddressHasSuffix,omitempty"`
+	PublicIPAddressEqualFold    *string  `json:"publicIPAddressEqualFold,omitempty"`
+	PublicIPAddressContainsFold *string  `json:"publicIPAddressContainsFold,omitempty"`
+
+	// "image_id" field predicates.
+	ImageID             *string  `json:"imageID,omitempty"`
+	ImageIDNEQ          *string  `json:"imageIDNEQ,omitempty"`
+	ImageIDIn           []string `json:"imageIDIn,omitempty"`
+	ImageIDNotIn        []string `json:"imageIDNotIn,omitempty"`
+	ImageIDGT           *string  `json:"imageIDGT,omitempty"`
+	ImageIDGTE          *string  `json:"imageIDGTE,omitempty"`
+	ImageIDLT           *string  `json:"imageIDLT,omitempty"`
+	ImageIDLTE          *string  `json:"imageIDLTE,omitempty"`
+	ImageIDContains     *string  `json:"imageIDContains,omitempty"`
+	ImageIDHasPrefix    *string  `json:"imageIDHasPrefix,omitempty"`
+	ImageIDHasSuffix    *string  `json:"imageIDHasSuffix,omitempty"`
+	ImageIDEqualFold    *string  `json:"imageIDEqualFold,omitempty"`
+	ImageIDContainsFold *string  `json:"imageIDContainsFold,omitempty"`
+
+	// "architecture" field predicates.
+	Architecture             *string  `json:"architecture,omitempty"`
+	ArchitectureNEQ          *string  `json:"architectureNEQ,omitempty"`
+	ArchitectureIn           []string `json:"architectureIn,omitempty"`
+	ArchitectureNotIn        []string `json:"architectureNotIn,omitempty"`
+	ArchitectureGT           *string  `json:"architectureGT,omitempty"`
+	ArchitectureGTE          *string  `json:"architectureGTE,omitempty"`
+	ArchitectureLT           *string  `json:"architectureLT,omitempty"`
+	ArchitectureLTE          *string  `json:"architectureLTE,omitempty"`
+	ArchitectureContains     *string  `json:"architectureContains,omitempty"`
+	ArchitectureHasPrefix    *string  `json:"architectureHasPrefix,omitempty"`
+	ArchitectureHasSuffix    *string  `json:"architectureHasSuffix,omitempty"`
+	ArchitectureEqualFold    *string  `json:"architectureEqualFold,omitempty"`
+	ArchitectureContainsFold *string  `json:"architectureContainsFold,omitempty"`
+
+	// "availability_zone" field predicates.
+	AvailabilityZone             *string  `json:"availabilityZone,omitempty"`
+	AvailabilityZoneNEQ          *string  `json:"availabilityZoneNEQ,omitempty"`
+	AvailabilityZoneIn           []string `json:"availabilityZoneIn,omitempty"`
+	AvailabilityZoneNotIn        []string `json:"availabilityZoneNotIn,omitempty"`
+	AvailabilityZoneGT           *string  `json:"availabilityZoneGT,omitempty"`
+	AvailabilityZoneGTE          *string  `json:"availabilityZoneGTE,omitempty"`
+	AvailabilityZoneLT           *string  `json:"availabilityZoneLT,omitempty"`
+	AvailabilityZoneLTE          *string  `json:"availabilityZoneLTE,omitempty"`
+	AvailabilityZoneContains     *string  `json:"availabilityZoneContains,omitempty"`
+	AvailabilityZoneHasPrefix    *string  `json:"availabilityZoneHasPrefix,omitempty"`
+	AvailabilityZoneHasSuffix    *string  `json:"availabilityZoneHasSuffix,omitempty"`
+	AvailabilityZoneEqualFold    *string  `json:"availabilityZoneEqualFold,omitempty"`
+	AvailabilityZoneContainsFold *string  `json:"availabilityZoneContainsFold,omitempty"`
+
+	// "created_at" field predicates.
+	CreatedAt      *time.Time  `json:"createdAt,omitempty"`
+	CreatedAtNEQ   *time.Time  `json:"createdAtNEQ,omitempty"`
+	CreatedAtIn    []time.Time `json:"createdAtIn,omitempty"`
+	CreatedAtNotIn []time.Time `json:"createdAtNotIn,omitempty"`
+	CreatedAtGT    *time.Time  `json:"createdAtGT,omitempty"`
+	CreatedAtGTE   *time.Time  `json:"createdAtGTE,omitempty"`
+	CreatedAtLT    *time.Time  `json:"createdAtLT,omitempty"`
+	CreatedAtLTE   *time.Time  `json:"createdAtLTE,omitempty"`
+
+	// "updated_at" field predicates.
+	UpdatedAt      *time.Time  `json:"updatedAt,omitempty"`
+	UpdatedAtNEQ   *time.Time  `json:"updatedAtNEQ,omitempty"`
+	UpdatedAtIn    []time.Time `json:"updatedAtIn,omitempty"`
+	UpdatedAtNotIn []time.Time `json:"updatedAtNotIn,omitempty"`
+	UpdatedAtGT    *time.Time  `json:"updatedAtGT,omitempty"`
+	UpdatedAtGTE   *time.Time  `json:"updatedAtGTE,omitempty"`
+	UpdatedAtLT    *time.Time  `json:"updatedAtLT,omitempty"`
+	UpdatedAtLTE   *time.Time  `json:"updatedAtLTE,omitempty"`
+
+	// "user" edge predicates.
+	HasUser     *bool             `json:"hasUser,omitempty"`
+	HasUserWith []*UserWhereInput `json:"hasUserWith,omitempty"`
+
+	// "slide" edge predicates.
+	HasSlide     *bool              `json:"hasSlide,omitempty"`
+	HasSlideWith []*SlideWhereInput `json:"hasSlideWith,omitempty"`
+}
+
+// Filter applies the InstanceWhereInput filter on the InstanceQuery builder.
+func (i *InstanceWhereInput) Filter(q *InstanceQuery) (*InstanceQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// P returns a predicate for filtering instances.
+// An error is returned if the input is empty or invalid.
+func (i *InstanceWhereInput) P() (predicate.Instance, error) {
+	var predicates []predicate.Instance
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, instance.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.Instance, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, instance.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.Instance, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, instance.And(and...))
+	}
+	if i.ID != nil {
+		predicates = append(predicates, instance.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, instance.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, instance.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, instance.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, instance.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, instance.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, instance.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, instance.IDLTE(*i.IDLTE))
+	}
+	if i.InstanceID != nil {
+		predicates = append(predicates, instance.InstanceIDEQ(*i.InstanceID))
+	}
+	if i.InstanceIDNEQ != nil {
+		predicates = append(predicates, instance.InstanceIDNEQ(*i.InstanceIDNEQ))
+	}
+	if len(i.InstanceIDIn) > 0 {
+		predicates = append(predicates, instance.InstanceIDIn(i.InstanceIDIn...))
+	}
+	if len(i.InstanceIDNotIn) > 0 {
+		predicates = append(predicates, instance.InstanceIDNotIn(i.InstanceIDNotIn...))
+	}
+	if i.InstanceIDGT != nil {
+		predicates = append(predicates, instance.InstanceIDGT(*i.InstanceIDGT))
+	}
+	if i.InstanceIDGTE != nil {
+		predicates = append(predicates, instance.InstanceIDGTE(*i.InstanceIDGTE))
+	}
+	if i.InstanceIDLT != nil {
+		predicates = append(predicates, instance.InstanceIDLT(*i.InstanceIDLT))
+	}
+	if i.InstanceIDLTE != nil {
+		predicates = append(predicates, instance.InstanceIDLTE(*i.InstanceIDLTE))
+	}
+	if i.InstanceIDContains != nil {
+		predicates = append(predicates, instance.InstanceIDContains(*i.InstanceIDContains))
+	}
+	if i.InstanceIDHasPrefix != nil {
+		predicates = append(predicates, instance.InstanceIDHasPrefix(*i.InstanceIDHasPrefix))
+	}
+	if i.InstanceIDHasSuffix != nil {
+		predicates = append(predicates, instance.InstanceIDHasSuffix(*i.InstanceIDHasSuffix))
+	}
+	if i.InstanceIDEqualFold != nil {
+		predicates = append(predicates, instance.InstanceIDEqualFold(*i.InstanceIDEqualFold))
+	}
+	if i.InstanceIDContainsFold != nil {
+		predicates = append(predicates, instance.InstanceIDContainsFold(*i.InstanceIDContainsFold))
+	}
+	if i.InstanceType != nil {
+		predicates = append(predicates, instance.InstanceTypeEQ(*i.InstanceType))
+	}
+	if i.InstanceTypeNEQ != nil {
+		predicates = append(predicates, instance.InstanceTypeNEQ(*i.InstanceTypeNEQ))
+	}
+	if len(i.InstanceTypeIn) > 0 {
+		predicates = append(predicates, instance.InstanceTypeIn(i.InstanceTypeIn...))
+	}
+	if len(i.InstanceTypeNotIn) > 0 {
+		predicates = append(predicates, instance.InstanceTypeNotIn(i.InstanceTypeNotIn...))
+	}
+	if i.InstanceTypeGT != nil {
+		predicates = append(predicates, instance.InstanceTypeGT(*i.InstanceTypeGT))
+	}
+	if i.InstanceTypeGTE != nil {
+		predicates = append(predicates, instance.InstanceTypeGTE(*i.InstanceTypeGTE))
+	}
+	if i.InstanceTypeLT != nil {
+		predicates = append(predicates, instance.InstanceTypeLT(*i.InstanceTypeLT))
+	}
+	if i.InstanceTypeLTE != nil {
+		predicates = append(predicates, instance.InstanceTypeLTE(*i.InstanceTypeLTE))
+	}
+	if i.InstanceTypeContains != nil {
+		predicates = append(predicates, instance.InstanceTypeContains(*i.InstanceTypeContains))
+	}
+	if i.InstanceTypeHasPrefix != nil {
+		predicates = append(predicates, instance.InstanceTypeHasPrefix(*i.InstanceTypeHasPrefix))
+	}
+	if i.InstanceTypeHasSuffix != nil {
+		predicates = append(predicates, instance.InstanceTypeHasSuffix(*i.InstanceTypeHasSuffix))
+	}
+	if i.InstanceTypeEqualFold != nil {
+		predicates = append(predicates, instance.InstanceTypeEqualFold(*i.InstanceTypeEqualFold))
+	}
+	if i.InstanceTypeContainsFold != nil {
+		predicates = append(predicates, instance.InstanceTypeContainsFold(*i.InstanceTypeContainsFold))
+	}
+	if i.PrivateDNSName != nil {
+		predicates = append(predicates, instance.PrivateDNSNameEQ(*i.PrivateDNSName))
+	}
+	if i.PrivateDNSNameNEQ != nil {
+		predicates = append(predicates, instance.PrivateDNSNameNEQ(*i.PrivateDNSNameNEQ))
+	}
+	if len(i.PrivateDNSNameIn) > 0 {
+		predicates = append(predicates, instance.PrivateDNSNameIn(i.PrivateDNSNameIn...))
+	}
+	if len(i.PrivateDNSNameNotIn) > 0 {
+		predicates = append(predicates, instance.PrivateDNSNameNotIn(i.PrivateDNSNameNotIn...))
+	}
+	if i.PrivateDNSNameGT != nil {
+		predicates = append(predicates, instance.PrivateDNSNameGT(*i.PrivateDNSNameGT))
+	}
+	if i.PrivateDNSNameGTE != nil {
+		predicates = append(predicates, instance.PrivateDNSNameGTE(*i.PrivateDNSNameGTE))
+	}
+	if i.PrivateDNSNameLT != nil {
+		predicates = append(predicates, instance.PrivateDNSNameLT(*i.PrivateDNSNameLT))
+	}
+	if i.PrivateDNSNameLTE != nil {
+		predicates = append(predicates, instance.PrivateDNSNameLTE(*i.PrivateDNSNameLTE))
+	}
+	if i.PrivateDNSNameContains != nil {
+		predicates = append(predicates, instance.PrivateDNSNameContains(*i.PrivateDNSNameContains))
+	}
+	if i.PrivateDNSNameHasPrefix != nil {
+		predicates = append(predicates, instance.PrivateDNSNameHasPrefix(*i.PrivateDNSNameHasPrefix))
+	}
+	if i.PrivateDNSNameHasSuffix != nil {
+		predicates = append(predicates, instance.PrivateDNSNameHasSuffix(*i.PrivateDNSNameHasSuffix))
+	}
+	if i.PrivateDNSNameEqualFold != nil {
+		predicates = append(predicates, instance.PrivateDNSNameEqualFold(*i.PrivateDNSNameEqualFold))
+	}
+	if i.PrivateDNSNameContainsFold != nil {
+		predicates = append(predicates, instance.PrivateDNSNameContainsFold(*i.PrivateDNSNameContainsFold))
+	}
+	if i.PrivateIPAddress != nil {
+		predicates = append(predicates, instance.PrivateIPAddressEQ(*i.PrivateIPAddress))
+	}
+	if i.PrivateIPAddressNEQ != nil {
+		predicates = append(predicates, instance.PrivateIPAddressNEQ(*i.PrivateIPAddressNEQ))
+	}
+	if len(i.PrivateIPAddressIn) > 0 {
+		predicates = append(predicates, instance.PrivateIPAddressIn(i.PrivateIPAddressIn...))
+	}
+	if len(i.PrivateIPAddressNotIn) > 0 {
+		predicates = append(predicates, instance.PrivateIPAddressNotIn(i.PrivateIPAddressNotIn...))
+	}
+	if i.PrivateIPAddressGT != nil {
+		predicates = append(predicates, instance.PrivateIPAddressGT(*i.PrivateIPAddressGT))
+	}
+	if i.PrivateIPAddressGTE != nil {
+		predicates = append(predicates, instance.PrivateIPAddressGTE(*i.PrivateIPAddressGTE))
+	}
+	if i.PrivateIPAddressLT != nil {
+		predicates = append(predicates, instance.PrivateIPAddressLT(*i.PrivateIPAddressLT))
+	}
+	if i.PrivateIPAddressLTE != nil {
+		predicates = append(predicates, instance.PrivateIPAddressLTE(*i.PrivateIPAddressLTE))
+	}
+	if i.PrivateIPAddressContains != nil {
+		predicates = append(predicates, instance.PrivateIPAddressContains(*i.PrivateIPAddressContains))
+	}
+	if i.PrivateIPAddressHasPrefix != nil {
+		predicates = append(predicates, instance.PrivateIPAddressHasPrefix(*i.PrivateIPAddressHasPrefix))
+	}
+	if i.PrivateIPAddressHasSuffix != nil {
+		predicates = append(predicates, instance.PrivateIPAddressHasSuffix(*i.PrivateIPAddressHasSuffix))
+	}
+	if i.PrivateIPAddressEqualFold != nil {
+		predicates = append(predicates, instance.PrivateIPAddressEqualFold(*i.PrivateIPAddressEqualFold))
+	}
+	if i.PrivateIPAddressContainsFold != nil {
+		predicates = append(predicates, instance.PrivateIPAddressContainsFold(*i.PrivateIPAddressContainsFold))
+	}
+	if i.PublicDNSName != nil {
+		predicates = append(predicates, instance.PublicDNSNameEQ(*i.PublicDNSName))
+	}
+	if i.PublicDNSNameNEQ != nil {
+		predicates = append(predicates, instance.PublicDNSNameNEQ(*i.PublicDNSNameNEQ))
+	}
+	if len(i.PublicDNSNameIn) > 0 {
+		predicates = append(predicates, instance.PublicDNSNameIn(i.PublicDNSNameIn...))
+	}
+	if len(i.PublicDNSNameNotIn) > 0 {
+		predicates = append(predicates, instance.PublicDNSNameNotIn(i.PublicDNSNameNotIn...))
+	}
+	if i.PublicDNSNameGT != nil {
+		predicates = append(predicates, instance.PublicDNSNameGT(*i.PublicDNSNameGT))
+	}
+	if i.PublicDNSNameGTE != nil {
+		predicates = append(predicates, instance.PublicDNSNameGTE(*i.PublicDNSNameGTE))
+	}
+	if i.PublicDNSNameLT != nil {
+		predicates = append(predicates, instance.PublicDNSNameLT(*i.PublicDNSNameLT))
+	}
+	if i.PublicDNSNameLTE != nil {
+		predicates = append(predicates, instance.PublicDNSNameLTE(*i.PublicDNSNameLTE))
+	}
+	if i.PublicDNSNameContains != nil {
+		predicates = append(predicates, instance.PublicDNSNameContains(*i.PublicDNSNameContains))
+	}
+	if i.PublicDNSNameHasPrefix != nil {
+		predicates = append(predicates, instance.PublicDNSNameHasPrefix(*i.PublicDNSNameHasPrefix))
+	}
+	if i.PublicDNSNameHasSuffix != nil {
+		predicates = append(predicates, instance.PublicDNSNameHasSuffix(*i.PublicDNSNameHasSuffix))
+	}
+	if i.PublicDNSNameEqualFold != nil {
+		predicates = append(predicates, instance.PublicDNSNameEqualFold(*i.PublicDNSNameEqualFold))
+	}
+	if i.PublicDNSNameContainsFold != nil {
+		predicates = append(predicates, instance.PublicDNSNameContainsFold(*i.PublicDNSNameContainsFold))
+	}
+	if i.PublicIPAddress != nil {
+		predicates = append(predicates, instance.PublicIPAddressEQ(*i.PublicIPAddress))
+	}
+	if i.PublicIPAddressNEQ != nil {
+		predicates = append(predicates, instance.PublicIPAddressNEQ(*i.PublicIPAddressNEQ))
+	}
+	if len(i.PublicIPAddressIn) > 0 {
+		predicates = append(predicates, instance.PublicIPAddressIn(i.PublicIPAddressIn...))
+	}
+	if len(i.PublicIPAddressNotIn) > 0 {
+		predicates = append(predicates, instance.PublicIPAddressNotIn(i.PublicIPAddressNotIn...))
+	}
+	if i.PublicIPAddressGT != nil {
+		predicates = append(predicates, instance.PublicIPAddressGT(*i.PublicIPAddressGT))
+	}
+	if i.PublicIPAddressGTE != nil {
+		predicates = append(predicates, instance.PublicIPAddressGTE(*i.PublicIPAddressGTE))
+	}
+	if i.PublicIPAddressLT != nil {
+		predicates = append(predicates, instance.PublicIPAddressLT(*i.PublicIPAddressLT))
+	}
+	if i.PublicIPAddressLTE != nil {
+		predicates = append(predicates, instance.PublicIPAddressLTE(*i.PublicIPAddressLTE))
+	}
+	if i.PublicIPAddressContains != nil {
+		predicates = append(predicates, instance.PublicIPAddressContains(*i.PublicIPAddressContains))
+	}
+	if i.PublicIPAddressHasPrefix != nil {
+		predicates = append(predicates, instance.PublicIPAddressHasPrefix(*i.PublicIPAddressHasPrefix))
+	}
+	if i.PublicIPAddressHasSuffix != nil {
+		predicates = append(predicates, instance.PublicIPAddressHasSuffix(*i.PublicIPAddressHasSuffix))
+	}
+	if i.PublicIPAddressEqualFold != nil {
+		predicates = append(predicates, instance.PublicIPAddressEqualFold(*i.PublicIPAddressEqualFold))
+	}
+	if i.PublicIPAddressContainsFold != nil {
+		predicates = append(predicates, instance.PublicIPAddressContainsFold(*i.PublicIPAddressContainsFold))
+	}
+	if i.ImageID != nil {
+		predicates = append(predicates, instance.ImageIDEQ(*i.ImageID))
+	}
+	if i.ImageIDNEQ != nil {
+		predicates = append(predicates, instance.ImageIDNEQ(*i.ImageIDNEQ))
+	}
+	if len(i.ImageIDIn) > 0 {
+		predicates = append(predicates, instance.ImageIDIn(i.ImageIDIn...))
+	}
+	if len(i.ImageIDNotIn) > 0 {
+		predicates = append(predicates, instance.ImageIDNotIn(i.ImageIDNotIn...))
+	}
+	if i.ImageIDGT != nil {
+		predicates = append(predicates, instance.ImageIDGT(*i.ImageIDGT))
+	}
+	if i.ImageIDGTE != nil {
+		predicates = append(predicates, instance.ImageIDGTE(*i.ImageIDGTE))
+	}
+	if i.ImageIDLT != nil {
+		predicates = append(predicates, instance.ImageIDLT(*i.ImageIDLT))
+	}
+	if i.ImageIDLTE != nil {
+		predicates = append(predicates, instance.ImageIDLTE(*i.ImageIDLTE))
+	}
+	if i.ImageIDContains != nil {
+		predicates = append(predicates, instance.ImageIDContains(*i.ImageIDContains))
+	}
+	if i.ImageIDHasPrefix != nil {
+		predicates = append(predicates, instance.ImageIDHasPrefix(*i.ImageIDHasPrefix))
+	}
+	if i.ImageIDHasSuffix != nil {
+		predicates = append(predicates, instance.ImageIDHasSuffix(*i.ImageIDHasSuffix))
+	}
+	if i.ImageIDEqualFold != nil {
+		predicates = append(predicates, instance.ImageIDEqualFold(*i.ImageIDEqualFold))
+	}
+	if i.ImageIDContainsFold != nil {
+		predicates = append(predicates, instance.ImageIDContainsFold(*i.ImageIDContainsFold))
+	}
+	if i.Architecture != nil {
+		predicates = append(predicates, instance.ArchitectureEQ(*i.Architecture))
+	}
+	if i.ArchitectureNEQ != nil {
+		predicates = append(predicates, instance.ArchitectureNEQ(*i.ArchitectureNEQ))
+	}
+	if len(i.ArchitectureIn) > 0 {
+		predicates = append(predicates, instance.ArchitectureIn(i.ArchitectureIn...))
+	}
+	if len(i.ArchitectureNotIn) > 0 {
+		predicates = append(predicates, instance.ArchitectureNotIn(i.ArchitectureNotIn...))
+	}
+	if i.ArchitectureGT != nil {
+		predicates = append(predicates, instance.ArchitectureGT(*i.ArchitectureGT))
+	}
+	if i.ArchitectureGTE != nil {
+		predicates = append(predicates, instance.ArchitectureGTE(*i.ArchitectureGTE))
+	}
+	if i.ArchitectureLT != nil {
+		predicates = append(predicates, instance.ArchitectureLT(*i.ArchitectureLT))
+	}
+	if i.ArchitectureLTE != nil {
+		predicates = append(predicates, instance.ArchitectureLTE(*i.ArchitectureLTE))
+	}
+	if i.ArchitectureContains != nil {
+		predicates = append(predicates, instance.ArchitectureContains(*i.ArchitectureContains))
+	}
+	if i.ArchitectureHasPrefix != nil {
+		predicates = append(predicates, instance.ArchitectureHasPrefix(*i.ArchitectureHasPrefix))
+	}
+	if i.ArchitectureHasSuffix != nil {
+		predicates = append(predicates, instance.ArchitectureHasSuffix(*i.ArchitectureHasSuffix))
+	}
+	if i.ArchitectureEqualFold != nil {
+		predicates = append(predicates, instance.ArchitectureEqualFold(*i.ArchitectureEqualFold))
+	}
+	if i.ArchitectureContainsFold != nil {
+		predicates = append(predicates, instance.ArchitectureContainsFold(*i.ArchitectureContainsFold))
+	}
+	if i.AvailabilityZone != nil {
+		predicates = append(predicates, instance.AvailabilityZoneEQ(*i.AvailabilityZone))
+	}
+	if i.AvailabilityZoneNEQ != nil {
+		predicates = append(predicates, instance.AvailabilityZoneNEQ(*i.AvailabilityZoneNEQ))
+	}
+	if len(i.AvailabilityZoneIn) > 0 {
+		predicates = append(predicates, instance.AvailabilityZoneIn(i.AvailabilityZoneIn...))
+	}
+	if len(i.AvailabilityZoneNotIn) > 0 {
+		predicates = append(predicates, instance.AvailabilityZoneNotIn(i.AvailabilityZoneNotIn...))
+	}
+	if i.AvailabilityZoneGT != nil {
+		predicates = append(predicates, instance.AvailabilityZoneGT(*i.AvailabilityZoneGT))
+	}
+	if i.AvailabilityZoneGTE != nil {
+		predicates = append(predicates, instance.AvailabilityZoneGTE(*i.AvailabilityZoneGTE))
+	}
+	if i.AvailabilityZoneLT != nil {
+		predicates = append(predicates, instance.AvailabilityZoneLT(*i.AvailabilityZoneLT))
+	}
+	if i.AvailabilityZoneLTE != nil {
+		predicates = append(predicates, instance.AvailabilityZoneLTE(*i.AvailabilityZoneLTE))
+	}
+	if i.AvailabilityZoneContains != nil {
+		predicates = append(predicates, instance.AvailabilityZoneContains(*i.AvailabilityZoneContains))
+	}
+	if i.AvailabilityZoneHasPrefix != nil {
+		predicates = append(predicates, instance.AvailabilityZoneHasPrefix(*i.AvailabilityZoneHasPrefix))
+	}
+	if i.AvailabilityZoneHasSuffix != nil {
+		predicates = append(predicates, instance.AvailabilityZoneHasSuffix(*i.AvailabilityZoneHasSuffix))
+	}
+	if i.AvailabilityZoneEqualFold != nil {
+		predicates = append(predicates, instance.AvailabilityZoneEqualFold(*i.AvailabilityZoneEqualFold))
+	}
+	if i.AvailabilityZoneContainsFold != nil {
+		predicates = append(predicates, instance.AvailabilityZoneContainsFold(*i.AvailabilityZoneContainsFold))
+	}
+	if i.CreatedAt != nil {
+		predicates = append(predicates, instance.CreatedAtEQ(*i.CreatedAt))
+	}
+	if i.CreatedAtNEQ != nil {
+		predicates = append(predicates, instance.CreatedAtNEQ(*i.CreatedAtNEQ))
+	}
+	if len(i.CreatedAtIn) > 0 {
+		predicates = append(predicates, instance.CreatedAtIn(i.CreatedAtIn...))
+	}
+	if len(i.CreatedAtNotIn) > 0 {
+		predicates = append(predicates, instance.CreatedAtNotIn(i.CreatedAtNotIn...))
+	}
+	if i.CreatedAtGT != nil {
+		predicates = append(predicates, instance.CreatedAtGT(*i.CreatedAtGT))
+	}
+	if i.CreatedAtGTE != nil {
+		predicates = append(predicates, instance.CreatedAtGTE(*i.CreatedAtGTE))
+	}
+	if i.CreatedAtLT != nil {
+		predicates = append(predicates, instance.CreatedAtLT(*i.CreatedAtLT))
+	}
+	if i.CreatedAtLTE != nil {
+		predicates = append(predicates, instance.CreatedAtLTE(*i.CreatedAtLTE))
+	}
+	if i.UpdatedAt != nil {
+		predicates = append(predicates, instance.UpdatedAtEQ(*i.UpdatedAt))
+	}
+	if i.UpdatedAtNEQ != nil {
+		predicates = append(predicates, instance.UpdatedAtNEQ(*i.UpdatedAtNEQ))
+	}
+	if len(i.UpdatedAtIn) > 0 {
+		predicates = append(predicates, instance.UpdatedAtIn(i.UpdatedAtIn...))
+	}
+	if len(i.UpdatedAtNotIn) > 0 {
+		predicates = append(predicates, instance.UpdatedAtNotIn(i.UpdatedAtNotIn...))
+	}
+	if i.UpdatedAtGT != nil {
+		predicates = append(predicates, instance.UpdatedAtGT(*i.UpdatedAtGT))
+	}
+	if i.UpdatedAtGTE != nil {
+		predicates = append(predicates, instance.UpdatedAtGTE(*i.UpdatedAtGTE))
+	}
+	if i.UpdatedAtLT != nil {
+		predicates = append(predicates, instance.UpdatedAtLT(*i.UpdatedAtLT))
+	}
+	if i.UpdatedAtLTE != nil {
+		predicates = append(predicates, instance.UpdatedAtLTE(*i.UpdatedAtLTE))
+	}
+
+	if i.HasUser != nil {
+		p := instance.HasUser()
+		if !*i.HasUser {
+			p = instance.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasUserWith) > 0 {
+		with := make([]predicate.User, 0, len(i.HasUserWith))
+		for _, w := range i.HasUserWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, instance.HasUserWith(with...))
+	}
+	if i.HasSlide != nil {
+		p := instance.HasSlide()
+		if !*i.HasSlide {
+			p = instance.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasSlideWith) > 0 {
+		with := make([]predicate.Slide, 0, len(i.HasSlideWith))
+		for _, w := range i.HasSlideWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, instance.HasSlideWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, fmt.Errorf("github.com/marcustut/fyp/backend/ent: empty predicate InstanceWhereInput")
+	case 1:
+		return predicates[0], nil
+	default:
+		return instance.And(predicates...), nil
+	}
+}
 
 // SlideWhereInput represents a where input for filtering Slide queries.
 type SlideWhereInput struct {
@@ -43,6 +753,24 @@ type SlideWhereInput struct {
 	NameEqualFold    *string  `json:"nameEqualFold,omitempty"`
 	NameContainsFold *string  `json:"nameContainsFold,omitempty"`
 
+	// "size" field predicates.
+	Size       *int64  `json:"size,omitempty"`
+	SizeNEQ    *int64  `json:"sizeNEQ,omitempty"`
+	SizeIn     []int64 `json:"sizeIn,omitempty"`
+	SizeNotIn  []int64 `json:"sizeNotIn,omitempty"`
+	SizeGT     *int64  `json:"sizeGT,omitempty"`
+	SizeGTE    *int64  `json:"sizeGTE,omitempty"`
+	SizeLT     *int64  `json:"sizeLT,omitempty"`
+	SizeLTE    *int64  `json:"sizeLTE,omitempty"`
+	SizeIsNil  bool    `json:"sizeIsNil,omitempty"`
+	SizeNotNil bool    `json:"sizeNotNil,omitempty"`
+
+	// "access_level" field predicates.
+	AccessLevel      *slide.AccessLevel  `json:"accessLevel,omitempty"`
+	AccessLevelNEQ   *slide.AccessLevel  `json:"accessLevelNEQ,omitempty"`
+	AccessLevelIn    []slide.AccessLevel `json:"accessLevelIn,omitempty"`
+	AccessLevelNotIn []slide.AccessLevel `json:"accessLevelNotIn,omitempty"`
+
 	// "created_at" field predicates.
 	CreatedAt      *time.Time  `json:"createdAt,omitempty"`
 	CreatedAtNEQ   *time.Time  `json:"createdAtNEQ,omitempty"`
@@ -62,6 +790,14 @@ type SlideWhereInput struct {
 	UpdatedAtGTE   *time.Time  `json:"updatedAtGTE,omitempty"`
 	UpdatedAtLT    *time.Time  `json:"updatedAtLT,omitempty"`
 	UpdatedAtLTE   *time.Time  `json:"updatedAtLTE,omitempty"`
+
+	// "instance" edge predicates.
+	HasInstance     *bool                 `json:"hasInstance,omitempty"`
+	HasInstanceWith []*InstanceWhereInput `json:"hasInstanceWith,omitempty"`
+
+	// "user" edge predicates.
+	HasUser     *bool             `json:"hasUser,omitempty"`
+	HasUserWith []*UserWhereInput `json:"hasUserWith,omitempty"`
 }
 
 // Filter applies the SlideWhereInput filter on the SlideQuery builder.
@@ -186,6 +922,48 @@ func (i *SlideWhereInput) P() (predicate.Slide, error) {
 	if i.NameContainsFold != nil {
 		predicates = append(predicates, slide.NameContainsFold(*i.NameContainsFold))
 	}
+	if i.Size != nil {
+		predicates = append(predicates, slide.SizeEQ(*i.Size))
+	}
+	if i.SizeNEQ != nil {
+		predicates = append(predicates, slide.SizeNEQ(*i.SizeNEQ))
+	}
+	if len(i.SizeIn) > 0 {
+		predicates = append(predicates, slide.SizeIn(i.SizeIn...))
+	}
+	if len(i.SizeNotIn) > 0 {
+		predicates = append(predicates, slide.SizeNotIn(i.SizeNotIn...))
+	}
+	if i.SizeGT != nil {
+		predicates = append(predicates, slide.SizeGT(*i.SizeGT))
+	}
+	if i.SizeGTE != nil {
+		predicates = append(predicates, slide.SizeGTE(*i.SizeGTE))
+	}
+	if i.SizeLT != nil {
+		predicates = append(predicates, slide.SizeLT(*i.SizeLT))
+	}
+	if i.SizeLTE != nil {
+		predicates = append(predicates, slide.SizeLTE(*i.SizeLTE))
+	}
+	if i.SizeIsNil {
+		predicates = append(predicates, slide.SizeIsNil())
+	}
+	if i.SizeNotNil {
+		predicates = append(predicates, slide.SizeNotNil())
+	}
+	if i.AccessLevel != nil {
+		predicates = append(predicates, slide.AccessLevelEQ(*i.AccessLevel))
+	}
+	if i.AccessLevelNEQ != nil {
+		predicates = append(predicates, slide.AccessLevelNEQ(*i.AccessLevelNEQ))
+	}
+	if len(i.AccessLevelIn) > 0 {
+		predicates = append(predicates, slide.AccessLevelIn(i.AccessLevelIn...))
+	}
+	if len(i.AccessLevelNotIn) > 0 {
+		predicates = append(predicates, slide.AccessLevelNotIn(i.AccessLevelNotIn...))
+	}
 	if i.CreatedAt != nil {
 		predicates = append(predicates, slide.CreatedAtEQ(*i.CreatedAt))
 	}
@@ -235,6 +1013,42 @@ func (i *SlideWhereInput) P() (predicate.Slide, error) {
 		predicates = append(predicates, slide.UpdatedAtLTE(*i.UpdatedAtLTE))
 	}
 
+	if i.HasInstance != nil {
+		p := slide.HasInstance()
+		if !*i.HasInstance {
+			p = slide.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasInstanceWith) > 0 {
+		with := make([]predicate.Instance, 0, len(i.HasInstanceWith))
+		for _, w := range i.HasInstanceWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, slide.HasInstanceWith(with...))
+	}
+	if i.HasUser != nil {
+		p := slide.HasUser()
+		if !*i.HasUser {
+			p = slide.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasUserWith) > 0 {
+		with := make([]predicate.User, 0, len(i.HasUserWith))
+		for _, w := range i.HasUserWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, slide.HasUserWith(with...))
+	}
 	switch len(predicates) {
 	case 0:
 		return nil, fmt.Errorf("github.com/marcustut/fyp/backend/ent: empty predicate SlideWhereInput")
@@ -376,6 +1190,14 @@ type UserWhereInput struct {
 	UpdatedAtGTE   *time.Time  `json:"updatedAtGTE,omitempty"`
 	UpdatedAtLT    *time.Time  `json:"updatedAtLT,omitempty"`
 	UpdatedAtLTE   *time.Time  `json:"updatedAtLTE,omitempty"`
+
+	// "instances" edge predicates.
+	HasInstances     *bool                 `json:"hasInstances,omitempty"`
+	HasInstancesWith []*InstanceWhereInput `json:"hasInstancesWith,omitempty"`
+
+	// "slides" edge predicates.
+	HasSlides     *bool              `json:"hasSlides,omitempty"`
+	HasSlidesWith []*SlideWhereInput `json:"hasSlidesWith,omitempty"`
 }
 
 // Filter applies the UserWhereInput filter on the UserQuery builder.
@@ -762,6 +1584,42 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 		predicates = append(predicates, user.UpdatedAtLTE(*i.UpdatedAtLTE))
 	}
 
+	if i.HasInstances != nil {
+		p := user.HasInstances()
+		if !*i.HasInstances {
+			p = user.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasInstancesWith) > 0 {
+		with := make([]predicate.Instance, 0, len(i.HasInstancesWith))
+		for _, w := range i.HasInstancesWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, user.HasInstancesWith(with...))
+	}
+	if i.HasSlides != nil {
+		p := user.HasSlides()
+		if !*i.HasSlides {
+			p = user.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasSlidesWith) > 0 {
+		with := make([]predicate.Slide, 0, len(i.HasSlidesWith))
+		for _, w := range i.HasSlidesWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, user.HasSlidesWith(with...))
+	}
 	switch len(predicates) {
 	case 0:
 		return nil, fmt.Errorf("github.com/marcustut/fyp/backend/ent: empty predicate UserWhereInput")

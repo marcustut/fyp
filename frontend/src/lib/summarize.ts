@@ -1,16 +1,21 @@
-type SummarizeOptions = {
+export type SummarizeOptions = {
   mode: 'abs' | 'ext'
   type: 'txt' | 'url' | 'pdf'
   input: string
+  outputName: string
   maxChunk?: number
   maxCharPerSlide?: number
+  theme?: 'apple-basic' | 'seriph' | 'default'
 }
 
 type SummarizeResponse = {
-  fileName: string
-  wordsAfter: number
-  wordsBefore: number
-  reducedByPercentage: number
+  data?: {
+    fileName: string
+    wordsAfter: number
+    wordsBefore: number
+    reducedByPercentage: number
+  }
+  error?: Error
 }
 
 // config to setup SummarizeClient
@@ -43,27 +48,40 @@ export class SummarizeClient {
   private summarizeURL = async (
     opts: SummarizeOptions
   ): Promise<SummarizeResponse> => {
-    return (await (
-      await fetch(`${this.ServerURL}/summarize`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(opts),
-      })
-    ).json()) as SummarizeResponse
+    const res = await fetch(`${this.ServerURL}/summarize`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(opts),
+    })
+    if (!res.ok) return { error: new Error('failed to summarize') }
+    return { data: await res.json() }
   }
 
   public summarize = async (opts: SummarizeOptions): Promise<string> => {
-    switch (opts.type) {
-      case 'url':
-        const res = await this.summarizeURL(opts)
-        return await this.getSlideMDText(res.fileName)
-      case 'txt':
-        throw new Error('not implemented')
-      case 'pdf':
-        throw new Error('not implemented')
+    const { data, error } = await this.summarizeURL(opts)
+    if (error || !data) {
+      throw error
     }
+    return await this.getSlideMDText(data.fileName)
+  }
+
+  public uploadFile = async (
+    blob: Blob,
+    fileName: string
+  ): Promise<{ message: string }> => {
+    const formData = new FormData()
+
+    formData.append('file', blob, fileName)
+
+    const response = await fetch(`${this.ServerURL}/uploads`, {
+      method: 'POST',
+      body: formData,
+    })
+    const resp = await response.json()
+
+    return resp
   }
 }

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -11,9 +12,11 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/marcustut/fyp/backend/ent/instance"
 	"github.com/marcustut/fyp/backend/ent/predicate"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
+	"github.com/marcustut/fyp/backend/ent/user"
 )
 
 // SlideQuery is the builder for querying Slide entities.
@@ -25,6 +28,10 @@ type SlideQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Slide
+	// eager-loading edges.
+	withInstance *InstanceQuery
+	withUser     *UserQuery
+	withFKs      bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -59,6 +66,50 @@ func (sq *SlideQuery) Unique(unique bool) *SlideQuery {
 func (sq *SlideQuery) Order(o ...OrderFunc) *SlideQuery {
 	sq.order = append(sq.order, o...)
 	return sq
+}
+
+// QueryInstance chains the current query on the "instance" edge.
+func (sq *SlideQuery) QueryInstance() *InstanceQuery {
+	query := &InstanceQuery{config: sq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(slide.Table, slide.FieldID, selector),
+			sqlgraph.To(instance.Table, instance.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, slide.InstanceTable, slide.InstanceColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUser chains the current query on the "user" edge.
+func (sq *SlideQuery) QueryUser() *UserQuery {
+	query := &UserQuery{config: sq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(slide.Table, slide.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, slide.UserTable, slide.UserColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Slide entity from the query.
@@ -237,15 +288,39 @@ func (sq *SlideQuery) Clone() *SlideQuery {
 		return nil
 	}
 	return &SlideQuery{
-		config:     sq.config,
-		limit:      sq.limit,
-		offset:     sq.offset,
-		order:      append([]OrderFunc{}, sq.order...),
-		predicates: append([]predicate.Slide{}, sq.predicates...),
+		config:       sq.config,
+		limit:        sq.limit,
+		offset:       sq.offset,
+		order:        append([]OrderFunc{}, sq.order...),
+		predicates:   append([]predicate.Slide{}, sq.predicates...),
+		withInstance: sq.withInstance.Clone(),
+		withUser:     sq.withUser.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
 	}
+}
+
+// WithInstance tells the query-builder to eager-load the nodes that are connected to
+// the "instance" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *SlideQuery) WithInstance(opts ...func(*InstanceQuery)) *SlideQuery {
+	query := &InstanceQuery{config: sq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	sq.withInstance = query
+	return sq
+}
+
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *SlideQuery) WithUser(opts ...func(*UserQuery)) *SlideQuery {
+	query := &UserQuery{config: sq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	sq.withUser = query
+	return sq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -311,9 +386,20 @@ func (sq *SlideQuery) prepareQuery(ctx context.Context) error {
 
 func (sq *SlideQuery) sqlAll(ctx context.Context) ([]*Slide, error) {
 	var (
-		nodes = []*Slide{}
-		_spec = sq.querySpec()
+		nodes       = []*Slide{}
+		withFKs     = sq.withFKs
+		_spec       = sq.querySpec()
+		loadedTypes = [2]bool{
+			sq.withInstance != nil,
+			sq.withUser != nil,
+		}
 	)
+	if sq.withUser != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, slide.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Slide{config: sq.config}
 		nodes = append(nodes, node)
@@ -324,6 +410,7 @@ func (sq *SlideQuery) sqlAll(ctx context.Context) ([]*Slide, error) {
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, sq.driver, _spec); err != nil {
@@ -332,6 +419,64 @@ func (sq *SlideQuery) sqlAll(ctx context.Context) ([]*Slide, error) {
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+
+	if query := sq.withInstance; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[ulid.ID]*Slide)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+		}
+		query.withFKs = true
+		query.Where(predicate.Instance(func(s *sql.Selector) {
+			s.Where(sql.InValues(slide.InstanceColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.slide_instance
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "slide_instance" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "slide_instance" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Instance = n
+		}
+	}
+
+	if query := sq.withUser; query != nil {
+		ids := make([]ulid.ID, 0, len(nodes))
+		nodeids := make(map[ulid.ID][]*Slide)
+		for i := range nodes {
+			if nodes[i].user_slides == nil {
+				continue
+			}
+			fk := *nodes[i].user_slides
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
+		}
+		query.Where(user.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "user_slides" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.User = n
+			}
+		}
+	}
+
 	return nodes, nil
 }
 

@@ -10,6 +10,7 @@ import (
 	"entgo.io/contrib/entgql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/hashicorp/go-multierror"
+	"github.com/marcustut/fyp/backend/ent/instance"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
 	"github.com/marcustut/fyp/backend/ent/user"
@@ -42,12 +43,131 @@ type Edge struct {
 	IDs  []ulid.ID `json:"ids,omitempty"`  // node ids (where this edge point to).
 }
 
+func (i *Instance) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     i.ID,
+		Type:   "Instance",
+		Fields: make([]*Field, 11),
+		Edges:  make([]*Edge, 2),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(i.InstanceID); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "instance_id",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.InstanceType); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "instance_type",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.PrivateDNSName); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "string",
+		Name:  "private_dns_name",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.PrivateIPAddress); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "string",
+		Name:  "private_ip_address",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.PublicDNSName); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "string",
+		Name:  "public_dns_name",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.PublicIPAddress); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
+		Type:  "string",
+		Name:  "public_ip_address",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.ImageID); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
+		Type:  "string",
+		Name:  "image_id",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.Architecture); err != nil {
+		return nil, err
+	}
+	node.Fields[7] = &Field{
+		Type:  "string",
+		Name:  "architecture",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.AvailabilityZone); err != nil {
+		return nil, err
+	}
+	node.Fields[8] = &Field{
+		Type:  "string",
+		Name:  "availability_zone",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.CreatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[9] = &Field{
+		Type:  "time.Time",
+		Name:  "created_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(i.UpdatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[10] = &Field{
+		Type:  "time.Time",
+		Name:  "updated_at",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "User",
+		Name: "user",
+	}
+	err = i.QueryUser().
+		Select(user.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Slide",
+		Name: "slide",
+	}
+	err = i.QuerySlide().
+		Select(slide.FieldID).
+		Scan(ctx, &node.Edges[1].IDs)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
 func (s *Slide) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     s.ID,
 		Type:   "Slide",
-		Fields: make([]*Field, 3),
-		Edges:  make([]*Edge, 0),
+		Fields: make([]*Field, 7),
+		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(s.Name); err != nil {
@@ -58,10 +178,42 @@ func (s *Slide) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "name",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(s.CreatedAt); err != nil {
+	if buf, err = json.Marshal(s.PathToken); err != nil {
 		return nil, err
 	}
 	node.Fields[1] = &Field{
+		Type:  "[]string",
+		Name:  "path_token",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(s.Size); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "int64",
+		Name:  "size",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(s.AccessLevel); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "slide.AccessLevel",
+		Name:  "access_level",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(s.SharedWith); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "[]string",
+		Name:  "shared_with",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(s.CreatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
 		Type:  "time.Time",
 		Name:  "created_at",
 		Value: string(buf),
@@ -69,10 +221,30 @@ func (s *Slide) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(s.UpdatedAt); err != nil {
 		return nil, err
 	}
-	node.Fields[2] = &Field{
+	node.Fields[6] = &Field{
 		Type:  "time.Time",
 		Name:  "updated_at",
 		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Instance",
+		Name: "instance",
+	}
+	err = s.QueryInstance().
+		Select(instance.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "User",
+		Name: "user",
+	}
+	err = s.QueryUser().
+		Select(user.FieldID).
+		Scan(ctx, &node.Edges[1].IDs)
+	if err != nil {
+		return nil, err
 	}
 	return node, nil
 }
@@ -82,7 +254,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 		ID:     u.ID,
 		Type:   "User",
 		Fields: make([]*Field, 8),
-		Edges:  make([]*Edge, 0),
+		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(u.Username); err != nil {
@@ -148,6 +320,26 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 		Type:  "time.Time",
 		Name:  "updated_at",
 		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Instance",
+		Name: "instances",
+	}
+	err = u.QueryInstances().
+		Select(instance.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Slide",
+		Name: "slides",
+	}
+	err = u.QuerySlides().
+		Select(slide.FieldID).
+		Scan(ctx, &node.Edges[1].IDs)
+	if err != nil {
+		return nil, err
 	}
 	return node, nil
 }
@@ -219,6 +411,15 @@ func (c *Client) Noder(ctx context.Context, id ulid.ID, opts ...NodeOption) (_ N
 
 func (c *Client) noder(ctx context.Context, table string, id ulid.ID) (Noder, error) {
 	switch table {
+	case instance.Table:
+		n, err := c.Instance.Query().
+			Where(instance.ID(id)).
+			CollectFields(ctx, "Instance").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
 	case slide.Table:
 		n, err := c.Slide.Query().
 			Where(slide.ID(id)).
@@ -310,6 +511,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []ulid.ID) ([]Nod
 		idmap[id] = append(idmap[id], &noders[i])
 	}
 	switch table {
+	case instance.Table:
+		nodes, err := c.Instance.Query().
+			Where(instance.IDIn(ids...)).
+			CollectFields(ctx, "Instance").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
 	case slide.Table:
 		nodes, err := c.Slide.Query().
 			Where(slide.IDIn(ids...)).

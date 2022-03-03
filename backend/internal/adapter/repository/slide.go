@@ -18,8 +18,8 @@ func NewSlideRepository(client *ent.Client) usecaseRepository.Slide {
 	return &slideRepository{client}
 }
 
-func (sr *slideRepository) Get(ctx context.Context, id *model.ID) (*model.Slide, error) {
-	s, err := sr.client.Slide.Query().Where(slide.IDEQ(*id)).Only(ctx)
+func (sr *slideRepository) Get(ctx context.Context, id model.ID) (*model.Slide, error) {
+	s, err := sr.client.Slide.Query().Where(slide.IDEQ(id)).Only(ctx)
 	if err != nil {
 		return nil, model.NewDBError(err)
 	}
@@ -47,6 +47,18 @@ func (sr *slideRepository) Create(ctx context.Context, input model.CreateSlideIn
 
 func (sr *slideRepository) Update(ctx context.Context, input model.UpdateSlideInput) (*model.Slide, error) {
 	s, err := sr.client.Slide.UpdateOneID(input.ID).SetInput(input).Save(ctx)
+	if err != nil {
+		return nil, model.NewDBError(err)
+	}
+	return s, nil
+}
+
+func (sr *slideRepository) Delete(ctx context.Context, id model.ID) (*model.Slide, error) {
+	s, err := sr.Get(ctx, id)
+	if err != nil {
+		return nil, model.NewDBError(err)
+	}
+	err = sr.client.Slide.DeleteOneID(id).Exec(ctx)
 	if err != nil {
 		return nil, model.NewDBError(err)
 	}

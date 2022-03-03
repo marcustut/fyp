@@ -9,6 +9,19 @@ import (
 	"github.com/marcustut/fyp/backend/ent"
 )
 
+// The InstanceFunc type is an adapter to allow the use of ordinary
+// function as Instance mutator.
+type InstanceFunc func(context.Context, *ent.InstanceMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f InstanceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.InstanceMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InstanceMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The SlideFunc type is an adapter to allow the use of ordinary
 // function as Slide mutator.
 type SlideFunc func(context.Context, *ent.SlideMutation) (ent.Value, error)

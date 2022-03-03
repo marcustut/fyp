@@ -40,6 +40,11 @@ type config struct {
 		Slide struct {
 			Port int
 		}
+		Compute struct {
+			Port               int
+			AwsAccessKeyID     string
+			AwsSecretAccessKey string
+		}
 	}
 }
 

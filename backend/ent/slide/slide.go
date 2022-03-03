@@ -3,6 +3,9 @@
 package slide
 
 import (
+	"fmt"
+	"io"
+	"strconv"
 	"time"
 
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
@@ -15,26 +18,67 @@ const (
 	FieldID = "id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldPathToken holds the string denoting the path_token field in the database.
+	FieldPathToken = "path_token"
+	// FieldSize holds the string denoting the size field in the database.
+	FieldSize = "size"
+	// FieldAccessLevel holds the string denoting the access_level field in the database.
+	FieldAccessLevel = "access_level"
+	// FieldSharedWith holds the string denoting the shared_with field in the database.
+	FieldSharedWith = "shared_with"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeInstance holds the string denoting the instance edge name in mutations.
+	EdgeInstance = "instance"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
 	// Table holds the table name of the slide in the database.
 	Table = "slides"
+	// InstanceTable is the table that holds the instance relation/edge.
+	InstanceTable = "instances"
+	// InstanceInverseTable is the table name for the Instance entity.
+	// It exists in this package in order to avoid circular dependency with the "instance" package.
+	InstanceInverseTable = "instances"
+	// InstanceColumn is the table column denoting the instance relation/edge.
+	InstanceColumn = "slide_instance"
+	// UserTable is the table that holds the user relation/edge.
+	UserTable = "slides"
+	// UserInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	UserInverseTable = "users"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "user_slides"
 )
 
 // Columns holds all SQL columns for slide fields.
 var Columns = []string{
 	FieldID,
 	FieldName,
+	FieldPathToken,
+	FieldSize,
+	FieldAccessLevel,
+	FieldSharedWith,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+}
+
+// ForeignKeys holds the SQL foreign-keys that are owned by the "slides"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"user_slides",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -49,3 +93,48 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() ulid.ID
 )
+
+// AccessLevel defines the type for the "access_level" enum field.
+type AccessLevel string
+
+// AccessLevelPrivate is the default value of the AccessLevel enum.
+const DefaultAccessLevel = AccessLevelPrivate
+
+// AccessLevel values.
+const (
+	AccessLevelPrivate AccessLevel = "PRIVATE"
+	AccessLevelPublic  AccessLevel = "PUBLIC"
+	AccessLevelView    AccessLevel = "VIEW"
+)
+
+func (al AccessLevel) String() string {
+	return string(al)
+}
+
+// AccessLevelValidator is a validator for the "access_level" field enum values. It is called by the builders before save.
+func AccessLevelValidator(al AccessLevel) error {
+	switch al {
+	case AccessLevelPrivate, AccessLevelPublic, AccessLevelView:
+		return nil
+	default:
+		return fmt.Errorf("slide: invalid enum value for access_level field: %q", al)
+	}
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (al AccessLevel) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(al.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (al *AccessLevel) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*al = AccessLevel(str)
+	if err := AccessLevelValidator(*al); err != nil {
+		return fmt.Errorf("%s is not a valid AccessLevel", str)
+	}
+	return nil
+}

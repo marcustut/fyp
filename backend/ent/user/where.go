@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/marcustut/fyp/backend/ent/predicate"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 )
@@ -1006,6 +1007,62 @@ func UpdatedAtLT(v time.Time) predicate.User {
 func UpdatedAtLTE(v time.Time) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldUpdatedAt), v))
+	})
+}
+
+// HasInstances applies the HasEdge predicate on the "instances" edge.
+func HasInstances() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(InstancesTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, InstancesTable, InstancesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasInstancesWith applies the HasEdge predicate on the "instances" edge with a given conditions (other predicates).
+func HasInstancesWith(preds ...predicate.Instance) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(InstancesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, InstancesTable, InstancesColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSlides applies the HasEdge predicate on the "slides" edge.
+func HasSlides() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(SlidesTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, SlidesTable, SlidesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSlidesWith applies the HasEdge predicate on the "slides" edge with a given conditions (other predicates).
+func HasSlidesWith(preds ...predicate.Slide) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(SlidesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, SlidesTable, SlidesColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 

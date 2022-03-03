@@ -1,0 +1,75 @@
+query GetSlide($id: ID!) {
+  Slide(id: $id) {
+    ...SlideFields
+  }
+}
+
+query ListSlide(
+  $after: Cursor
+  $first: Int
+  $before: Cursor
+  $last: Int
+  $where: SlideWhereInput
+  $orderBy: SlideOrder
+) {
+  Slides(
+    after: $after
+    first: $first
+    before: $before
+    last: $last
+    where: $where
+    orderBy: $orderBy
+  ) {
+    totalCount
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+    edges {
+      node {
+        ...SlideFields
+      }
+      cursor
+    }
+  }
+}
+
+mutation CreateSlide($input: CreateSlideInput!) {
+  CreateSlide(input: $input) {
+    ...SlideFields
+  }
+}
+
+mutation CreateSlideWithText(
+  $createSlideWithTextInput: CreateSlideWithTextInput!
+  $text: String!
+) {
+  CreateSlideWithText(input: $createSlideWithTextInput, text: $text) {
+    ...SlideFields
+  }
+}
+
+mutation UpdateSlideWithText($id: ID!, $text: String!) {
+  UpdateSlideWithText(id: $id, text: $text) {
+    ...SlideFields
+  }
+}
+
+mutation DeleteSlide($id: ID!, $user_id: ID!) {
+  DeleteSlide(id: $id, user_id: $user_id) {
+    ...SlideFields
+  }
+}
+
+fragment SlideFields on Slide {
+  id
+  name
+  path_token
+  size
+  access_level
+  shared_with
+  created_at
+  updated_at
+}

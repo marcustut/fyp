@@ -29,8 +29,26 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeInstances holds the string denoting the instances edge name in mutations.
+	EdgeInstances = "instances"
+	// EdgeSlides holds the string denoting the slides edge name in mutations.
+	EdgeSlides = "slides"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// InstancesTable is the table that holds the instances relation/edge.
+	InstancesTable = "instances"
+	// InstancesInverseTable is the table name for the Instance entity.
+	// It exists in this package in order to avoid circular dependency with the "instance" package.
+	InstancesInverseTable = "instances"
+	// InstancesColumn is the table column denoting the instances relation/edge.
+	InstancesColumn = "user_instances"
+	// SlidesTable is the table that holds the slides relation/edge.
+	SlidesTable = "slides"
+	// SlidesInverseTable is the table name for the Slide entity.
+	// It exists in this package in order to avoid circular dependency with the "slide" package.
+	SlidesInverseTable = "slides"
+	// SlidesColumn is the table column denoting the slides relation/edge.
+	SlidesColumn = "user_slides"
 )
 
 // Columns holds all SQL columns for user fields.

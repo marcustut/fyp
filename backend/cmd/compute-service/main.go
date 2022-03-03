@@ -20,13 +20,13 @@ func main() {
 	config.ReadConfig(config.ReadConfigOption{})
 
 	client := newDBClient()
+	cfg := newAWSConfig()
 	ctrl := newController(client)
-	cfg := newAWsConfig()
 
 	r := router.NewCompute(ctrl, cfg)
 
-	log.Printf("compute-service running on port %d\n", config.C.Services.Slide.Port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.C.Services.Slide.Port), cors.Default().Handler(r)))
+	log.Printf("compute-service running on port %d\n", config.C.Services.Compute.Port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.C.Services.Compute.Port), cors.Default().Handler(r)))
 }
 
 func newDBClient() *ent.Client {
@@ -42,7 +42,7 @@ func newController(client *ent.Client) controller.Controller {
 	return r.NewController()
 }
 
-func newAWsConfig() aws.Config {
+func newAWSConfig() aws.Config {
 	cfg, err := cloud.NewAWSConfig()
 	if err != nil {
 		log.Fatalf("failed getting aws config: %v", err)

@@ -26,8 +26,9 @@ func NewRegistry(client *ent.Client) Registry {
 // NewController implements Registry for registry
 func (r *registry) NewController() controller.Controller {
 	return controller.Controller{
-		User:  r.NewUserController(),
-		Slide: r.NewSlideController(),
+		User:     r.NewUserController(),
+		Slide:    r.NewSlideController(),
+		Instance: r.NewInstanceController(),
 	}
 }
 
@@ -43,4 +44,11 @@ func (r *registry) NewSlideController() controller.Slide {
 	repo := repository.NewSlideRepository(r.client)
 	u := usecase.NewSlideUsecase(repo)
 	return controller.NewSlideController(u)
+}
+
+// NewInstanceController conforms to interface
+func (r *registry) NewInstanceController() controller.Instance {
+	repo := repository.NewInstanceRepository(r.client)
+	u := usecase.NewInstanceUsecase(repo)
+	return controller.NewInstanceController(u)
 }

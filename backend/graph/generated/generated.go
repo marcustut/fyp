@@ -16,6 +16,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/marcustut/fyp/backend/ent"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
+	"github.com/marcustut/fyp/backend/ent/slide"
 	"github.com/marcustut/fyp/backend/graph"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -47,9 +48,39 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	Instance struct {
+		Architecture     func(childComplexity int) int
+		AvailabilityZone func(childComplexity int) int
+		CreatedAt        func(childComplexity int) int
+		ID               func(childComplexity int) int
+		ImageID          func(childComplexity int) int
+		InstanceID       func(childComplexity int) int
+		InstanceType     func(childComplexity int) int
+		PrivateDNSName   func(childComplexity int) int
+		PrivateIPAddress func(childComplexity int) int
+		PublicDNSName    func(childComplexity int) int
+		PublicIPAddress  func(childComplexity int) int
+		UpdatedAt        func(childComplexity int) int
+	}
+
+	InstanceConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	InstanceEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
 	Mutation struct {
+		CreateInstance       func(childComplexity int, input ent.CreateInstanceInput) int
 		CreateSlide          func(childComplexity int, input ent.CreateSlideInput) int
+		CreateSlideWithText  func(childComplexity int, input graph.CreateSlideWithTextInput, text string) int
 		CreateUser           func(childComplexity int, input ent.CreateUserInput) int
+		DeleteInstance       func(childComplexity int, id ulid.ID) int
+		DeleteSlide          func(childComplexity int, id ulid.ID, userID ulid.ID) int
 		DeleteUser           func(childComplexity int, id ulid.ID) int
 		DeleteUserByEmail    func(childComplexity int, email string) int
 		DeleteUserByUsername func(childComplexity int, username string) int
@@ -57,7 +88,9 @@ type ComplexityRoot struct {
 		SignInWithGithub     func(childComplexity int, token string) int
 		SignInWithUsername   func(childComplexity int, input graph.SignInWithUsername) int
 		SignUp               func(childComplexity int, input ent.CreateUserInput) int
+		UpdateInstance       func(childComplexity int, input ent.UpdateInstanceInput) int
 		UpdateSlide          func(childComplexity int, input ent.UpdateSlideInput) int
+		UpdateSlideWithText  func(childComplexity int, id ulid.ID, text string) int
 		UpdateUser           func(childComplexity int, input ent.UpdateUserInput) int
 	}
 
@@ -69,6 +102,8 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		Instance            func(childComplexity int, id ulid.ID) int
+		Instances           func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, where *ent.InstanceWhereInput, orderBy *ent.InstanceOrder) int
 		Node                func(childComplexity int, id ulid.ID) int
 		Slide               func(childComplexity int, id ulid.ID) int
 		Slides              func(childComplexity int, after *ent.Cursor, first *int, before *ent.Cursor, last *int, where *ent.SlideWhereInput, orderBy *ent.SlideOrder) int
@@ -81,10 +116,14 @@ type ComplexityRoot struct {
 	}
 
 	Slide struct {
-		CreatedAt func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Name      func(childComplexity int) int
-		UpdatedAt func(childComplexity int) int
+		AccessLevel func(childComplexity int) int
+		CreatedAt   func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Name        func(childComplexity int) int
+		PathToken   func(childComplexity int) int
+		SharedWith  func(childComplexity int) int
+		Size        func(childComplexity int) int
+		UpdatedAt   func(childComplexity int) int
 	}
 
 	SlideConnection struct {
@@ -132,8 +171,14 @@ type MutationResolver interface {
 	SignInWithEmail(ctx context.Context, input graph.SignInWithEmail) (*graph.UserWithAuth, error)
 	SignInWithGithub(ctx context.Context, token string) (*graph.UserWithAuth, error)
 	SignUp(ctx context.Context, input ent.CreateUserInput) (*graph.UserWithAuth, error)
+	CreateInstance(ctx context.Context, input ent.CreateInstanceInput) (*ent.Instance, error)
+	UpdateInstance(ctx context.Context, input ent.UpdateInstanceInput) (*ent.Instance, error)
+	DeleteInstance(ctx context.Context, id ulid.ID) (*ent.Instance, error)
 	CreateSlide(ctx context.Context, input ent.CreateSlideInput) (*ent.Slide, error)
+	CreateSlideWithText(ctx context.Context, input graph.CreateSlideWithTextInput, text string) (*ent.Slide, error)
 	UpdateSlide(ctx context.Context, input ent.UpdateSlideInput) (*ent.Slide, error)
+	UpdateSlideWithText(ctx context.Context, id ulid.ID, text string) (*ent.Slide, error)
+	DeleteSlide(ctx context.Context, id ulid.ID, userID ulid.ID) (*ent.Slide, error)
 	CreateUser(ctx context.Context, input ent.CreateUserInput) (*ent.User, error)
 	UpdateUser(ctx context.Context, input ent.UpdateUserInput) (*ent.User, error)
 	DeleteUser(ctx context.Context, id ulid.ID) (*ent.User, error)
@@ -144,6 +189,8 @@ type QueryResolver interface {
 	Node(ctx context.Context, id ulid.ID) (ent.Noder, error)
 	ValidateAccessToken(ctx context.Context, token string) (bool, error)
 	UserByAccessToken(ctx context.Context, token string) (*graph.UserWithAuth, error)
+	Instance(ctx context.Context, id ulid.ID) (*ent.Instance, error)
+	Instances(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, where *ent.InstanceWhereInput, orderBy *ent.InstanceOrder) (*ent.InstanceConnection, error)
 	Slide(ctx context.Context, id ulid.ID) (*ent.Slide, error)
 	Slides(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, where *ent.SlideWhereInput, orderBy *ent.SlideOrder) (*ent.SlideConnection, error)
 	User(ctx context.Context, id ulid.ID) (*ent.User, error)
@@ -167,6 +214,137 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
+	case "Instance.architecture":
+		if e.complexity.Instance.Architecture == nil {
+			break
+		}
+
+		return e.complexity.Instance.Architecture(childComplexity), true
+
+	case "Instance.availability_zone":
+		if e.complexity.Instance.AvailabilityZone == nil {
+			break
+		}
+
+		return e.complexity.Instance.AvailabilityZone(childComplexity), true
+
+	case "Instance.created_at":
+		if e.complexity.Instance.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Instance.CreatedAt(childComplexity), true
+
+	case "Instance.id":
+		if e.complexity.Instance.ID == nil {
+			break
+		}
+
+		return e.complexity.Instance.ID(childComplexity), true
+
+	case "Instance.image_id":
+		if e.complexity.Instance.ImageID == nil {
+			break
+		}
+
+		return e.complexity.Instance.ImageID(childComplexity), true
+
+	case "Instance.instance_id":
+		if e.complexity.Instance.InstanceID == nil {
+			break
+		}
+
+		return e.complexity.Instance.InstanceID(childComplexity), true
+
+	case "Instance.instance_type":
+		if e.complexity.Instance.InstanceType == nil {
+			break
+		}
+
+		return e.complexity.Instance.InstanceType(childComplexity), true
+
+	case "Instance.private_dns_name":
+		if e.complexity.Instance.PrivateDNSName == nil {
+			break
+		}
+
+		return e.complexity.Instance.PrivateDNSName(childComplexity), true
+
+	case "Instance.private_ip_address":
+		if e.complexity.Instance.PrivateIPAddress == nil {
+			break
+		}
+
+		return e.complexity.Instance.PrivateIPAddress(childComplexity), true
+
+	case "Instance.public_dns_name":
+		if e.complexity.Instance.PublicDNSName == nil {
+			break
+		}
+
+		return e.complexity.Instance.PublicDNSName(childComplexity), true
+
+	case "Instance.public_ip_address":
+		if e.complexity.Instance.PublicIPAddress == nil {
+			break
+		}
+
+		return e.complexity.Instance.PublicIPAddress(childComplexity), true
+
+	case "Instance.updated_at":
+		if e.complexity.Instance.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Instance.UpdatedAt(childComplexity), true
+
+	case "InstanceConnection.edges":
+		if e.complexity.InstanceConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.InstanceConnection.Edges(childComplexity), true
+
+	case "InstanceConnection.pageInfo":
+		if e.complexity.InstanceConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.InstanceConnection.PageInfo(childComplexity), true
+
+	case "InstanceConnection.totalCount":
+		if e.complexity.InstanceConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.InstanceConnection.TotalCount(childComplexity), true
+
+	case "InstanceEdge.cursor":
+		if e.complexity.InstanceEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.InstanceEdge.Cursor(childComplexity), true
+
+	case "InstanceEdge.node":
+		if e.complexity.InstanceEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.InstanceEdge.Node(childComplexity), true
+
+	case "Mutation.CreateInstance":
+		if e.complexity.Mutation.CreateInstance == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_CreateInstance_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateInstance(childComplexity, args["input"].(ent.CreateInstanceInput)), true
+
 	case "Mutation.CreateSlide":
 		if e.complexity.Mutation.CreateSlide == nil {
 			break
@@ -179,6 +357,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateSlide(childComplexity, args["input"].(ent.CreateSlideInput)), true
 
+	case "Mutation.CreateSlideWithText":
+		if e.complexity.Mutation.CreateSlideWithText == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_CreateSlideWithText_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateSlideWithText(childComplexity, args["input"].(graph.CreateSlideWithTextInput), args["text"].(string)), true
+
 	case "Mutation.CreateUser":
 		if e.complexity.Mutation.CreateUser == nil {
 			break
@@ -190,6 +380,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(ent.CreateUserInput)), true
+
+	case "Mutation.DeleteInstance":
+		if e.complexity.Mutation.DeleteInstance == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_DeleteInstance_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteInstance(childComplexity, args["id"].(ulid.ID)), true
+
+	case "Mutation.DeleteSlide":
+		if e.complexity.Mutation.DeleteSlide == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_DeleteSlide_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteSlide(childComplexity, args["id"].(ulid.ID), args["user_id"].(ulid.ID)), true
 
 	case "Mutation.DeleteUser":
 		if e.complexity.Mutation.DeleteUser == nil {
@@ -275,6 +489,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SignUp(childComplexity, args["input"].(ent.CreateUserInput)), true
 
+	case "Mutation.UpdateInstance":
+		if e.complexity.Mutation.UpdateInstance == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_UpdateInstance_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateInstance(childComplexity, args["input"].(ent.UpdateInstanceInput)), true
+
 	case "Mutation.UpdateSlide":
 		if e.complexity.Mutation.UpdateSlide == nil {
 			break
@@ -286,6 +512,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateSlide(childComplexity, args["input"].(ent.UpdateSlideInput)), true
+
+	case "Mutation.UpdateSlideWithText":
+		if e.complexity.Mutation.UpdateSlideWithText == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_UpdateSlideWithText_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateSlideWithText(childComplexity, args["id"].(ulid.ID), args["text"].(string)), true
 
 	case "Mutation.UpdateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -326,6 +564,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PageInfo.StartCursor(childComplexity), true
+
+	case "Query.Instance":
+		if e.complexity.Query.Instance == nil {
+			break
+		}
+
+		args, err := ec.field_Query_Instance_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Instance(childComplexity, args["id"].(ulid.ID)), true
+
+	case "Query.Instances":
+		if e.complexity.Query.Instances == nil {
+			break
+		}
+
+		args, err := ec.field_Query_Instances_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Instances(childComplexity, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["where"].(*ent.InstanceWhereInput), args["orderBy"].(*ent.InstanceOrder)), true
 
 	case "Query.Node":
 		if e.complexity.Query.Node == nil {
@@ -435,6 +697,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.ValidateAccessToken(childComplexity, args["token"].(string)), true
 
+	case "Slide.access_level":
+		if e.complexity.Slide.AccessLevel == nil {
+			break
+		}
+
+		return e.complexity.Slide.AccessLevel(childComplexity), true
+
 	case "Slide.created_at":
 		if e.complexity.Slide.CreatedAt == nil {
 			break
@@ -455,6 +724,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Slide.Name(childComplexity), true
+
+	case "Slide.path_token":
+		if e.complexity.Slide.PathToken == nil {
+			break
+		}
+
+		return e.complexity.Slide.PathToken(childComplexity), true
+
+	case "Slide.shared_with":
+		if e.complexity.Slide.SharedWith == nil {
+			break
+		}
+
+		return e.complexity.Slide.SharedWith(childComplexity), true
+
+	case "Slide.size":
+		if e.complexity.Slide.Size == nil {
+			break
+		}
+
+		return e.complexity.Slide.Size(childComplexity), true
 
 	case "Slide.updated_at":
 		if e.complexity.Slide.UpdatedAt == nil {
@@ -725,6 +1015,24 @@ input SlideWhereInput {
   nameEqualFold: String
   nameContainsFold: String
   
+  """size field predicates"""
+  size: Int
+  sizeNEQ: Int
+  sizeIn: [Int!]
+  sizeNotIn: [Int!]
+  sizeGT: Int
+  sizeGTE: Int
+  sizeLT: Int
+  sizeLTE: Int
+  sizeIsNil: Boolean
+  sizeNotNil: Boolean
+  
+  """access_level field predicates"""
+  accessLevel: AccessLevel
+  accessLevelNEQ: AccessLevel
+  accessLevelIn: [AccessLevel!]
+  accessLevelNotIn: [AccessLevel!]
+  
   """created_at field predicates"""
   createdAt: Time
   createdAtNEQ: Time
@@ -754,6 +1062,14 @@ input SlideWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  
+  """instance edge predicates"""
+  hasInstance: Boolean
+  hasInstanceWith: [InstanceWhereInput!]
+  
+  """user edge predicates"""
+  hasUser: Boolean
+  hasUserWith: [UserWhereInput!]
 }
 
 """
@@ -890,6 +1206,278 @@ input UserWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  
+  """instances edge predicates"""
+  hasInstances: Boolean
+  hasInstancesWith: [InstanceWhereInput!]
+  
+  """slides edge predicates"""
+  hasSlides: Boolean
+  hasSlidesWith: [SlideWhereInput!]
+}
+
+"""
+InstanceWhereInput is used for filtering Instance objects.
+Input was generated by ent.
+"""
+input InstanceWhereInput {
+  not: InstanceWhereInput
+  and: [InstanceWhereInput!]
+  or: [InstanceWhereInput!]
+  
+  """instance_id field predicates"""
+  instanceID: String
+  instanceIDNEQ: String
+  instanceIDIn: [String!]
+  instanceIDNotIn: [String!]
+  instanceIDGT: String
+  instanceIDGTE: String
+  instanceIDLT: String
+  instanceIDLTE: String
+  instanceIDContains: String
+  instanceIDHasPrefix: String
+  instanceIDHasSuffix: String
+  instanceIDEqualFold: String
+  instanceIDContainsFold: String
+  
+  """instance_type field predicates"""
+  instanceType: String
+  instanceTypeNEQ: String
+  instanceTypeIn: [String!]
+  instanceTypeNotIn: [String!]
+  instanceTypeGT: String
+  instanceTypeGTE: String
+  instanceTypeLT: String
+  instanceTypeLTE: String
+  instanceTypeContains: String
+  instanceTypeHasPrefix: String
+  instanceTypeHasSuffix: String
+  instanceTypeEqualFold: String
+  instanceTypeContainsFold: String
+  
+  """private_dns_name field predicates"""
+  privateDNSName: String
+  privateDNSNameNEQ: String
+  privateDNSNameIn: [String!]
+  privateDNSNameNotIn: [String!]
+  privateDNSNameGT: String
+  privateDNSNameGTE: String
+  privateDNSNameLT: String
+  privateDNSNameLTE: String
+  privateDNSNameContains: String
+  privateDNSNameHasPrefix: String
+  privateDNSNameHasSuffix: String
+  privateDNSNameEqualFold: String
+  privateDNSNameContainsFold: String
+  
+  """private_ip_address field predicates"""
+  privateIPAddress: String
+  privateIPAddressNEQ: String
+  privateIPAddressIn: [String!]
+  privateIPAddressNotIn: [String!]
+  privateIPAddressGT: String
+  privateIPAddressGTE: String
+  privateIPAddressLT: String
+  privateIPAddressLTE: String
+  privateIPAddressContains: String
+  privateIPAddressHasPrefix: String
+  privateIPAddressHasSuffix: String
+  privateIPAddressEqualFold: String
+  privateIPAddressContainsFold: String
+  
+  """public_dns_name field predicates"""
+  publicDNSName: String
+  publicDNSNameNEQ: String
+  publicDNSNameIn: [String!]
+  publicDNSNameNotIn: [String!]
+  publicDNSNameGT: String
+  publicDNSNameGTE: String
+  publicDNSNameLT: String
+  publicDNSNameLTE: String
+  publicDNSNameContains: String
+  publicDNSNameHasPrefix: String
+  publicDNSNameHasSuffix: String
+  publicDNSNameEqualFold: String
+  publicDNSNameContainsFold: String
+  
+  """public_ip_address field predicates"""
+  publicIPAddress: String
+  publicIPAddressNEQ: String
+  publicIPAddressIn: [String!]
+  publicIPAddressNotIn: [String!]
+  publicIPAddressGT: String
+  publicIPAddressGTE: String
+  publicIPAddressLT: String
+  publicIPAddressLTE: String
+  publicIPAddressContains: String
+  publicIPAddressHasPrefix: String
+  publicIPAddressHasSuffix: String
+  publicIPAddressEqualFold: String
+  publicIPAddressContainsFold: String
+  
+  """image_id field predicates"""
+  imageID: String
+  imageIDNEQ: String
+  imageIDIn: [String!]
+  imageIDNotIn: [String!]
+  imageIDGT: String
+  imageIDGTE: String
+  imageIDLT: String
+  imageIDLTE: String
+  imageIDContains: String
+  imageIDHasPrefix: String
+  imageIDHasSuffix: String
+  imageIDEqualFold: String
+  imageIDContainsFold: String
+  
+  """architecture field predicates"""
+  architecture: String
+  architectureNEQ: String
+  architectureIn: [String!]
+  architectureNotIn: [String!]
+  architectureGT: String
+  architectureGTE: String
+  architectureLT: String
+  architectureLTE: String
+  architectureContains: String
+  architectureHasPrefix: String
+  architectureHasSuffix: String
+  architectureEqualFold: String
+  architectureContainsFold: String
+  
+  """availability_zone field predicates"""
+  availabilityZone: String
+  availabilityZoneNEQ: String
+  availabilityZoneIn: [String!]
+  availabilityZoneNotIn: [String!]
+  availabilityZoneGT: String
+  availabilityZoneGTE: String
+  availabilityZoneLT: String
+  availabilityZoneLTE: String
+  availabilityZoneContains: String
+  availabilityZoneHasPrefix: String
+  availabilityZoneHasSuffix: String
+  availabilityZoneEqualFold: String
+  availabilityZoneContainsFold: String
+  
+  """created_at field predicates"""
+  createdAt: Time
+  createdAtNEQ: Time
+  createdAtIn: [Time!]
+  createdAtNotIn: [Time!]
+  createdAtGT: Time
+  createdAtGTE: Time
+  createdAtLT: Time
+  createdAtLTE: Time
+  
+  """updated_at field predicates"""
+  updatedAt: Time
+  updatedAtNEQ: Time
+  updatedAtIn: [Time!]
+  updatedAtNotIn: [Time!]
+  updatedAtGT: Time
+  updatedAtGTE: Time
+  updatedAtLT: Time
+  updatedAtLTE: Time
+  
+  """id field predicates"""
+  id: ID
+  idNEQ: ID
+  idIn: [ID!]
+  idNotIn: [ID!]
+  idGT: ID
+  idGTE: ID
+  idLT: ID
+  idLTE: ID
+  
+  """user edge predicates"""
+  hasUser: Boolean
+  hasUserWith: [UserWhereInput!]
+  
+  """slide edge predicates"""
+  hasSlide: Boolean
+  hasSlideWith: [SlideWhereInput!]
+}
+`, BuiltIn: false},
+	{Name: "graph/instance.graphqls", Input: `enum InstanceOrderField {
+  CREATED_AT
+  UPDATED_AT
+}
+
+type Instance {
+  id: ID!
+  instance_id: String!
+  instance_type: String!
+  private_dns_name: String!
+  private_ip_address: String!
+  public_dns_name: String!
+  public_ip_address: String!
+  image_id: String!
+  architecture: String!
+  availability_zone: String!
+  created_at: Time!
+  updated_at: Time!
+}
+
+input CreateInstanceInput {
+  instance_id: String!
+  instance_type: String!
+  private_dns_name: String!
+  private_ip_address: String!
+  public_dns_name: String!
+  public_ip_address: String!
+  image_id: String!
+  architecture: String!
+  availability_zone: String!
+  user_id: ID!
+  slide_id: ID!
+}
+input UpdateInstanceInput {
+  id: ID!
+  instance_type: String
+  private_dns_name: String
+  private_ip_address: String
+  public_dns_name: String
+  public_ip_address: String
+  image_id: String
+  architecture: String
+  availability_zone: String
+  user_id: ID
+  clear_user: Boolean
+  slide_id: ID
+  clear_slide: Boolean
+}
+
+type InstanceConnection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [InstanceEdge!]!
+}
+type InstanceEdge {
+  node: Instance!
+  cursor: Cursor!
+}
+input InstanceOrder {
+  direction: OrderDirection!
+  field: InstanceOrderField
+}
+
+extend type Query {
+  Instance(id: ID!): Instance!
+  Instances(
+    after: Cursor
+    first: Int
+    before: Cursor
+    last: Int
+    where: InstanceWhereInput
+    orderBy: InstanceOrder
+  ): InstanceConnection!
+}
+
+extend type Mutation {
+  CreateInstance(input: CreateInstanceInput!): Instance!
+  UpdateInstance(input: UpdateInstanceInput!): Instance!
+  DeleteInstance(id: ID!): Instance!
 }
 `, BuiltIn: false},
 	{Name: "graph/schema.graphqls", Input: `# GraphQL schema example
@@ -927,33 +1515,64 @@ type Query {
 
 type Mutation
 `, BuiltIn: false},
-	{Name: "graph/slide.graphqls", Input: `enum SlideOrderField {
+	{Name: "graph/slide.graphqls", Input: `enum AccessLevel {
+  PRIVATE
+  PUBLIC
+  VIEW
+}
+
+enum SlideOrderField {
   CREATED_AT
   UPDATED_AT
 }
 
 type Slide {
   id: ID!
-  name: String
+  name: String!
+  path_token: [String!]
+  size: Int
+  access_level: AccessLevel!
+  shared_with: [String!]!
   created_at: Time!
   updated_at: Time!
 }
 
 input CreateSlideInput {
-  name: String
+  name: String!
+  path_token: [String!]
+  size: Int
+  access_level: AccessLevel
+  shared_with: [String!]!
+  instance_id: ID
+  user_id: ID!
+}
+input CreateSlideWithTextInput {
+  name: String!
+  access_level: AccessLevel
+  shared_with: [String!]
+  user_id: ID!
 }
 input UpdateSlideInput {
   id: ID!
   name: String
+  path_token: [String!]
+  clear_path_token: Boolean
+  size: Int
+  access_level: AccessLevel
+  shared_with: [String!]
+  instance_id: ID
+  clear_instance: Boolean
+  user_id: ID
+  clear_user: Boolean
 }
 
 type SlideConnection {
   totalCount: Int!
   pageInfo: PageInfo!
-  edges: [SlideEdge]
+  edges: [SlideEdge!]!
 }
 type SlideEdge {
-  node: Slide
+  node: Slide!
   cursor: Cursor!
 }
 input SlideOrder {
@@ -975,7 +1594,10 @@ extend type Query {
 
 extend type Mutation {
   CreateSlide(input: CreateSlideInput!): Slide!
+  CreateSlideWithText(input: CreateSlideWithTextInput!, text: String!): Slide!
   UpdateSlide(input: UpdateSlideInput!): Slide!
+  UpdateSlideWithText(id: ID!, text: String!): Slide!
+  DeleteSlide(id: ID!, user_id: ID!): Slide!
 }
 `, BuiltIn: false},
 	{Name: "graph/user.graphqls", Input: `enum UserOrderField {
@@ -1055,6 +1677,45 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
+func (ec *executionContext) field_Mutation_CreateInstance_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ent.CreateInstanceInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateInstanceInput2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐCreateInstanceInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_CreateSlideWithText_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 graph.CreateSlideWithTextInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateSlideWithTextInput2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋgraphᚐCreateSlideWithTextInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["text"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("text"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["text"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_CreateSlide_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1082,6 +1743,45 @@ func (ec *executionContext) field_Mutation_CreateUser_args(ctx context.Context, 
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_DeleteInstance_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ulid.ID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_DeleteSlide_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ulid.ID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ulid.ID
+	if tmp, ok := rawArgs["user_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+		arg1, err = ec.unmarshalNID2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["user_id"] = arg1
 	return args, nil
 }
 
@@ -1190,6 +1890,45 @@ func (ec *executionContext) field_Mutation_SignUp_args(ctx context.Context, rawA
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_UpdateInstance_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ent.UpdateInstanceInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNUpdateInstanceInput2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUpdateInstanceInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_UpdateSlideWithText_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ulid.ID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["text"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("text"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["text"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_UpdateSlide_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1217,6 +1956,81 @@ func (ec *executionContext) field_Mutation_UpdateUser_args(ctx context.Context, 
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_Instance_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ulid.ID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_Instances_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *ent.Cursor
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *ent.Cursor
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *ent.InstanceWhereInput
+	if tmp, ok := rawArgs["where"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+		arg4, err = ec.unmarshalOInstanceWhereInput2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceWhereInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["where"] = arg4
+	var arg5 *ent.InstanceOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg5, err = ec.unmarshalOInstanceOrder2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg5
 	return args, nil
 }
 
@@ -1498,6 +2312,601 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
+func (ec *executionContext) _Instance_id(ctx context.Context, field graphql.CollectedField, obj *ent.Instance) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Instance",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ulid.ID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Instance_instance_id(ctx context.Context, field graphql.CollectedField, obj *ent.Instance) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Instance",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.InstanceID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Instance_instance_type(ctx context.Context, field graphql.CollectedField, obj *ent.Instance) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Instance",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.InstanceType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Instance_private_dns_name(ctx context.Context, field graphql.CollectedField, obj *ent.Instance) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Instance",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PrivateDNSName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Instance_private_ip_address(ctx context.Context, field graphql.CollectedField, obj *ent.Instance) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Instance",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PrivateIPAddress, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Instance_public_dns_name(ctx context.Context, field graphql.CollectedField, obj *ent.Instance) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Instance",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PublicDNSName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Instance_public_ip_address(ctx context.Context, field graphql.CollectedField, obj *ent.Instance) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Instance",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PublicIPAddress, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Instance_image_id(ctx context.Context, field graphql.CollectedField, obj *ent.Instance) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Instance",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ImageID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Instance_architecture(ctx context.Context, field graphql.CollectedField, obj *ent.Instance) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Instance",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Architecture, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Instance_availability_zone(ctx context.Context, field graphql.CollectedField, obj *ent.Instance) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Instance",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AvailabilityZone, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Instance_created_at(ctx context.Context, field graphql.CollectedField, obj *ent.Instance) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Instance",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Instance_updated_at(ctx context.Context, field graphql.CollectedField, obj *ent.Instance) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Instance",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _InstanceConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.InstanceConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "InstanceConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _InstanceConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.InstanceConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "InstanceConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.PageInfo)
+	fc.Result = res
+	return ec.marshalNPageInfo2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _InstanceConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.InstanceConnection) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "InstanceConnection",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.InstanceEdge)
+	fc.Result = res
+	return ec.marshalNInstanceEdge2ᚕᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceEdgeᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _InstanceEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.InstanceEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "InstanceEdge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Instance)
+	fc.Result = res
+	return ec.marshalNInstance2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstance(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _InstanceEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.InstanceEdge) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "InstanceEdge",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ent.Cursor)
+	fc.Result = res
+	return ec.marshalNCursor2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐCursor(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_SignInWithUsername(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1666,6 +3075,132 @@ func (ec *executionContext) _Mutation_SignUp(ctx context.Context, field graphql.
 	return ec.marshalNUserWithAuth2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋgraphᚐUserWithAuth(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_CreateInstance(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_CreateInstance_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateInstance(rctx, args["input"].(ent.CreateInstanceInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Instance)
+	fc.Result = res
+	return ec.marshalNInstance2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstance(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_UpdateInstance(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_UpdateInstance_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateInstance(rctx, args["input"].(ent.UpdateInstanceInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Instance)
+	fc.Result = res
+	return ec.marshalNInstance2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstance(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_DeleteInstance(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_DeleteInstance_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteInstance(rctx, args["id"].(ulid.ID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Instance)
+	fc.Result = res
+	return ec.marshalNInstance2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstance(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_CreateSlide(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1708,6 +3243,48 @@ func (ec *executionContext) _Mutation_CreateSlide(ctx context.Context, field gra
 	return ec.marshalNSlide2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlide(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_CreateSlideWithText(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_CreateSlideWithText_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateSlideWithText(rctx, args["input"].(graph.CreateSlideWithTextInput), args["text"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Slide)
+	fc.Result = res
+	return ec.marshalNSlide2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlide(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_UpdateSlide(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1734,6 +3311,90 @@ func (ec *executionContext) _Mutation_UpdateSlide(ctx context.Context, field gra
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().UpdateSlide(rctx, args["input"].(ent.UpdateSlideInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Slide)
+	fc.Result = res
+	return ec.marshalNSlide2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlide(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_UpdateSlideWithText(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_UpdateSlideWithText_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateSlideWithText(rctx, args["id"].(ulid.ID), args["text"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Slide)
+	fc.Result = res
+	return ec.marshalNSlide2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlide(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_DeleteSlide(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_DeleteSlide_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteSlide(rctx, args["id"].(ulid.ID), args["user_id"].(ulid.ID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2217,6 +3878,90 @@ func (ec *executionContext) _Query_UserByAccessToken(ctx context.Context, field 
 	return ec.marshalNUserWithAuth2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋgraphᚐUserWithAuth(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_Instance(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_Instance_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Instance(rctx, args["id"].(ulid.ID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Instance)
+	fc.Result = res
+	return ec.marshalNInstance2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstance(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_Instances(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_Instances_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Instances(rctx, args["after"].(*ent.Cursor), args["first"].(*int), args["before"].(*ent.Cursor), args["last"].(*int), args["where"].(*ent.InstanceWhereInput), args["orderBy"].(*ent.InstanceOrder))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.InstanceConnection)
+	fc.Result = res
+	return ec.marshalNInstanceConnection2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceConnection(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_Slide(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -2600,11 +4345,148 @@ func (ec *executionContext) _Slide_name(ctx context.Context, field graphql.Colle
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Slide_path_token(ctx context.Context, field graphql.CollectedField, obj *ent.Slide) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Slide",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PathToken, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Slide_size(ctx context.Context, field graphql.CollectedField, obj *ent.Slide) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Slide",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Size, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int64)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Slide_access_level(ctx context.Context, field graphql.CollectedField, obj *ent.Slide) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Slide",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AccessLevel, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(slide.AccessLevel)
+	fc.Result = res
+	return ec.marshalNAccessLevel2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋslideᚐAccessLevel(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Slide_shared_with(ctx context.Context, field graphql.CollectedField, obj *ent.Slide) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Slide",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SharedWith, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Slide_created_at(ctx context.Context, field graphql.CollectedField, obj *ent.Slide) (ret graphql.Marshaler) {
@@ -2772,11 +4654,14 @@ func (ec *executionContext) _SlideConnection_edges(ctx context.Context, field gr
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.([]*ent.SlideEdge)
 	fc.Result = res
-	return ec.marshalOSlideEdge2ᚕᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideEdge(ctx, field.Selections, res)
+	return ec.marshalNSlideEdge2ᚕᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideEdgeᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _SlideEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.SlideEdge) (ret graphql.Marshaler) {
@@ -2804,11 +4689,14 @@ func (ec *executionContext) _SlideEdge_node(ctx context.Context, field graphql.C
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.Slide)
 	fc.Result = res
-	return ec.marshalOSlide2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlide(ctx, field.Selections, res)
+	return ec.marshalNSlide2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlide(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _SlideEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.SlideEdge) (ret graphql.Marshaler) {
@@ -4513,6 +6401,109 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputCreateInstanceInput(ctx context.Context, obj interface{}) (ent.CreateInstanceInput, error) {
+	var it ent.CreateInstanceInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "instance_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instance_id"))
+			it.InstanceID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instance_type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instance_type"))
+			it.InstanceType, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "private_dns_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("private_dns_name"))
+			it.PrivateDNSName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "private_ip_address":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("private_ip_address"))
+			it.PrivateIPAddress, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "public_dns_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("public_dns_name"))
+			it.PublicDNSName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "public_ip_address":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("public_ip_address"))
+			it.PublicIPAddress, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "image_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image_id"))
+			it.ImageID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "architecture":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("architecture"))
+			it.Architecture, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "availability_zone":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availability_zone"))
+			it.AvailabilityZone, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "user_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+			it.UserID, err = ec.unmarshalNID2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "slide_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("slide_id"))
+			it.SlideID, err = ec.unmarshalNID2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateSlideInput(ctx context.Context, obj interface{}) (ent.CreateSlideInput, error) {
 	var it ent.CreateSlideInput
 	asMap := map[string]interface{}{}
@@ -4526,7 +6517,102 @@ func (ec *executionContext) unmarshalInputCreateSlideInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-			it.Name, err = ec.unmarshalOString2string(ctx, v)
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "path_token":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("path_token"))
+			it.PathToken, err = ec.unmarshalOString2ᚖᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "size":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("size"))
+			it.Size, err = ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "access_level":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("access_level"))
+			it.AccessLevel, err = ec.unmarshalOAccessLevel2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋslideᚐAccessLevel(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "shared_with":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shared_with"))
+			it.SharedWith, err = ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instance_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instance_id"))
+			it.InstanceID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "user_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+			it.UserID, err = ec.unmarshalNID2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateSlideWithTextInput(ctx context.Context, obj interface{}) (graph.CreateSlideWithTextInput, error) {
+	var it graph.CreateSlideWithTextInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "access_level":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("access_level"))
+			it.AccessLevel, err = ec.unmarshalOAccessLevel2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋslideᚐAccessLevel(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "shared_with":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shared_with"))
+			it.SharedWith, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "user_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+			it.UserID, err = ec.unmarshalNID2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4590,6 +6676,1236 @@ func (ec *executionContext) unmarshalInputCreateUserInput(ctx context.Context, o
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("bio"))
 			it.Bio, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputInstanceOrder(ctx context.Context, obj interface{}) (ent.InstanceOrder, error) {
+	var it ent.InstanceOrder
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "direction":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			it.Direction, err = ec.unmarshalNOrderDirection2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "field":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			it.Field, err = ec.unmarshalOInstanceOrderField2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputInstanceWhereInput(ctx context.Context, obj interface{}) (ent.InstanceWhereInput, error) {
+	var it ent.InstanceWhereInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "not":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
+			it.Not, err = ec.unmarshalOInstanceWhereInput2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceWhereInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "and":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
+			it.And, err = ec.unmarshalOInstanceWhereInput2ᚕᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "or":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
+			it.Or, err = ec.unmarshalOInstanceWhereInput2ᚕᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceID"))
+			it.InstanceID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceIDNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceIDNEQ"))
+			it.InstanceIDNEQ, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceIDIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceIDIn"))
+			it.InstanceIDIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceIDNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceIDNotIn"))
+			it.InstanceIDNotIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceIDGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceIDGT"))
+			it.InstanceIDGT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceIDGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceIDGTE"))
+			it.InstanceIDGTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceIDLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceIDLT"))
+			it.InstanceIDLT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceIDLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceIDLTE"))
+			it.InstanceIDLTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceIDContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceIDContains"))
+			it.InstanceIDContains, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceIDHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceIDHasPrefix"))
+			it.InstanceIDHasPrefix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceIDHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceIDHasSuffix"))
+			it.InstanceIDHasSuffix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceIDEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceIDEqualFold"))
+			it.InstanceIDEqualFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceIDContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceIDContainsFold"))
+			it.InstanceIDContainsFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceType":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceType"))
+			it.InstanceType, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceTypeNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceTypeNEQ"))
+			it.InstanceTypeNEQ, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceTypeIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceTypeIn"))
+			it.InstanceTypeIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceTypeNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceTypeNotIn"))
+			it.InstanceTypeNotIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceTypeGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceTypeGT"))
+			it.InstanceTypeGT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceTypeGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceTypeGTE"))
+			it.InstanceTypeGTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceTypeLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceTypeLT"))
+			it.InstanceTypeLT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceTypeLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceTypeLTE"))
+			it.InstanceTypeLTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceTypeContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceTypeContains"))
+			it.InstanceTypeContains, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceTypeHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceTypeHasPrefix"))
+			it.InstanceTypeHasPrefix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceTypeHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceTypeHasSuffix"))
+			it.InstanceTypeHasSuffix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceTypeEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceTypeEqualFold"))
+			it.InstanceTypeEqualFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instanceTypeContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instanceTypeContainsFold"))
+			it.InstanceTypeContainsFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateDNSName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateDNSName"))
+			it.PrivateDNSName, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateDNSNameNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateDNSNameNEQ"))
+			it.PrivateDNSNameNEQ, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateDNSNameIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateDNSNameIn"))
+			it.PrivateDNSNameIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateDNSNameNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateDNSNameNotIn"))
+			it.PrivateDNSNameNotIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateDNSNameGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateDNSNameGT"))
+			it.PrivateDNSNameGT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateDNSNameGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateDNSNameGTE"))
+			it.PrivateDNSNameGTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateDNSNameLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateDNSNameLT"))
+			it.PrivateDNSNameLT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateDNSNameLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateDNSNameLTE"))
+			it.PrivateDNSNameLTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateDNSNameContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateDNSNameContains"))
+			it.PrivateDNSNameContains, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateDNSNameHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateDNSNameHasPrefix"))
+			it.PrivateDNSNameHasPrefix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateDNSNameHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateDNSNameHasSuffix"))
+			it.PrivateDNSNameHasSuffix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateDNSNameEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateDNSNameEqualFold"))
+			it.PrivateDNSNameEqualFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateDNSNameContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateDNSNameContainsFold"))
+			it.PrivateDNSNameContainsFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateIPAddress":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateIPAddress"))
+			it.PrivateIPAddress, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateIPAddressNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateIPAddressNEQ"))
+			it.PrivateIPAddressNEQ, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateIPAddressIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateIPAddressIn"))
+			it.PrivateIPAddressIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateIPAddressNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateIPAddressNotIn"))
+			it.PrivateIPAddressNotIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateIPAddressGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateIPAddressGT"))
+			it.PrivateIPAddressGT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateIPAddressGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateIPAddressGTE"))
+			it.PrivateIPAddressGTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateIPAddressLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateIPAddressLT"))
+			it.PrivateIPAddressLT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateIPAddressLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateIPAddressLTE"))
+			it.PrivateIPAddressLTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateIPAddressContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateIPAddressContains"))
+			it.PrivateIPAddressContains, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateIPAddressHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateIPAddressHasPrefix"))
+			it.PrivateIPAddressHasPrefix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateIPAddressHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateIPAddressHasSuffix"))
+			it.PrivateIPAddressHasSuffix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateIPAddressEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateIPAddressEqualFold"))
+			it.PrivateIPAddressEqualFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "privateIPAddressContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("privateIPAddressContainsFold"))
+			it.PrivateIPAddressContainsFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicDNSName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicDNSName"))
+			it.PublicDNSName, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicDNSNameNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicDNSNameNEQ"))
+			it.PublicDNSNameNEQ, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicDNSNameIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicDNSNameIn"))
+			it.PublicDNSNameIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicDNSNameNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicDNSNameNotIn"))
+			it.PublicDNSNameNotIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicDNSNameGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicDNSNameGT"))
+			it.PublicDNSNameGT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicDNSNameGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicDNSNameGTE"))
+			it.PublicDNSNameGTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicDNSNameLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicDNSNameLT"))
+			it.PublicDNSNameLT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicDNSNameLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicDNSNameLTE"))
+			it.PublicDNSNameLTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicDNSNameContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicDNSNameContains"))
+			it.PublicDNSNameContains, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicDNSNameHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicDNSNameHasPrefix"))
+			it.PublicDNSNameHasPrefix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicDNSNameHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicDNSNameHasSuffix"))
+			it.PublicDNSNameHasSuffix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicDNSNameEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicDNSNameEqualFold"))
+			it.PublicDNSNameEqualFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicDNSNameContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicDNSNameContainsFold"))
+			it.PublicDNSNameContainsFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicIPAddress":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicIPAddress"))
+			it.PublicIPAddress, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicIPAddressNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicIPAddressNEQ"))
+			it.PublicIPAddressNEQ, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicIPAddressIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicIPAddressIn"))
+			it.PublicIPAddressIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicIPAddressNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicIPAddressNotIn"))
+			it.PublicIPAddressNotIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicIPAddressGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicIPAddressGT"))
+			it.PublicIPAddressGT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicIPAddressGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicIPAddressGTE"))
+			it.PublicIPAddressGTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicIPAddressLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicIPAddressLT"))
+			it.PublicIPAddressLT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicIPAddressLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicIPAddressLTE"))
+			it.PublicIPAddressLTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicIPAddressContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicIPAddressContains"))
+			it.PublicIPAddressContains, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicIPAddressHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicIPAddressHasPrefix"))
+			it.PublicIPAddressHasPrefix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicIPAddressHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicIPAddressHasSuffix"))
+			it.PublicIPAddressHasSuffix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicIPAddressEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicIPAddressEqualFold"))
+			it.PublicIPAddressEqualFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "publicIPAddressContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicIPAddressContainsFold"))
+			it.PublicIPAddressContainsFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "imageID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageID"))
+			it.ImageID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "imageIDNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageIDNEQ"))
+			it.ImageIDNEQ, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "imageIDIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageIDIn"))
+			it.ImageIDIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "imageIDNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageIDNotIn"))
+			it.ImageIDNotIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "imageIDGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageIDGT"))
+			it.ImageIDGT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "imageIDGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageIDGTE"))
+			it.ImageIDGTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "imageIDLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageIDLT"))
+			it.ImageIDLT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "imageIDLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageIDLTE"))
+			it.ImageIDLTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "imageIDContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageIDContains"))
+			it.ImageIDContains, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "imageIDHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageIDHasPrefix"))
+			it.ImageIDHasPrefix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "imageIDHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageIDHasSuffix"))
+			it.ImageIDHasSuffix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "imageIDEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageIDEqualFold"))
+			it.ImageIDEqualFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "imageIDContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("imageIDContainsFold"))
+			it.ImageIDContainsFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "architecture":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("architecture"))
+			it.Architecture, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "architectureNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("architectureNEQ"))
+			it.ArchitectureNEQ, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "architectureIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("architectureIn"))
+			it.ArchitectureIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "architectureNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("architectureNotIn"))
+			it.ArchitectureNotIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "architectureGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("architectureGT"))
+			it.ArchitectureGT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "architectureGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("architectureGTE"))
+			it.ArchitectureGTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "architectureLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("architectureLT"))
+			it.ArchitectureLT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "architectureLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("architectureLTE"))
+			it.ArchitectureLTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "architectureContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("architectureContains"))
+			it.ArchitectureContains, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "architectureHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("architectureHasPrefix"))
+			it.ArchitectureHasPrefix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "architectureHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("architectureHasSuffix"))
+			it.ArchitectureHasSuffix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "architectureEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("architectureEqualFold"))
+			it.ArchitectureEqualFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "architectureContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("architectureContainsFold"))
+			it.ArchitectureContainsFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "availabilityZone":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availabilityZone"))
+			it.AvailabilityZone, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "availabilityZoneNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availabilityZoneNEQ"))
+			it.AvailabilityZoneNEQ, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "availabilityZoneIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availabilityZoneIn"))
+			it.AvailabilityZoneIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "availabilityZoneNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availabilityZoneNotIn"))
+			it.AvailabilityZoneNotIn, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "availabilityZoneGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availabilityZoneGT"))
+			it.AvailabilityZoneGT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "availabilityZoneGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availabilityZoneGTE"))
+			it.AvailabilityZoneGTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "availabilityZoneLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availabilityZoneLT"))
+			it.AvailabilityZoneLT, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "availabilityZoneLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availabilityZoneLTE"))
+			it.AvailabilityZoneLTE, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "availabilityZoneContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availabilityZoneContains"))
+			it.AvailabilityZoneContains, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "availabilityZoneHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availabilityZoneHasPrefix"))
+			it.AvailabilityZoneHasPrefix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "availabilityZoneHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availabilityZoneHasSuffix"))
+			it.AvailabilityZoneHasSuffix, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "availabilityZoneEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availabilityZoneEqualFold"))
+			it.AvailabilityZoneEqualFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "availabilityZoneContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availabilityZoneContainsFold"))
+			it.AvailabilityZoneContainsFold, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "createdAt":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAt"))
+			it.CreatedAt, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "createdAtNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtNEQ"))
+			it.CreatedAtNEQ, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "createdAtIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtIn"))
+			it.CreatedAtIn, err = ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "createdAtNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtNotIn"))
+			it.CreatedAtNotIn, err = ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "createdAtGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtGT"))
+			it.CreatedAtGT, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "createdAtGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtGTE"))
+			it.CreatedAtGTE, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "createdAtLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtLT"))
+			it.CreatedAtLT, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "createdAtLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtLTE"))
+			it.CreatedAtLTE, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "updatedAt":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAt"))
+			it.UpdatedAt, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "updatedAtNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtNEQ"))
+			it.UpdatedAtNEQ, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "updatedAtIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtIn"))
+			it.UpdatedAtIn, err = ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "updatedAtNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtNotIn"))
+			it.UpdatedAtNotIn, err = ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "updatedAtGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtGT"))
+			it.UpdatedAtGT, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "updatedAtGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtGTE"))
+			it.UpdatedAtGTE, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "updatedAtLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtLT"))
+			it.UpdatedAtLT, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "updatedAtLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtLTE"))
+			it.UpdatedAtLTE, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNEQ"))
+			it.IDNEQ, err = ec.unmarshalOID2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idIn"))
+			it.IDIn, err = ec.unmarshalOID2ᚕgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idNotIn"))
+			it.IDNotIn, err = ec.unmarshalOID2ᚕgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGT"))
+			it.IDGT, err = ec.unmarshalOID2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idGTE"))
+			it.IDGTE, err = ec.unmarshalOID2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLT"))
+			it.IDLT, err = ec.unmarshalOID2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "idLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("idLTE"))
+			it.IDLTE, err = ec.unmarshalOID2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasUser":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUser"))
+			it.HasUser, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasUserWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUserWith"))
+			it.HasUserWith, err = ec.unmarshalOUserWhereInput2ᚕᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUserWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasSlide":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSlide"))
+			it.HasSlide, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasSlideWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSlideWith"))
+			it.HasSlideWith, err = ec.unmarshalOSlideWhereInput2ᚕᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4829,6 +8145,118 @@ func (ec *executionContext) unmarshalInputSlideWhereInput(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
+		case "size":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("size"))
+			it.Size, err = ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sizeNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeNEQ"))
+			it.SizeNEQ, err = ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sizeIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeIn"))
+			it.SizeIn, err = ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sizeNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeNotIn"))
+			it.SizeNotIn, err = ec.unmarshalOInt2ᚕint64ᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sizeGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeGT"))
+			it.SizeGT, err = ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sizeGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeGTE"))
+			it.SizeGTE, err = ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sizeLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeLT"))
+			it.SizeLT, err = ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sizeLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeLTE"))
+			it.SizeLTE, err = ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sizeIsNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeIsNil"))
+			it.SizeIsNil, err = ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sizeNotNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sizeNotNil"))
+			it.SizeNotNil, err = ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "accessLevel":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("accessLevel"))
+			it.AccessLevel, err = ec.unmarshalOAccessLevel2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋslideᚐAccessLevel(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "accessLevelNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("accessLevelNEQ"))
+			it.AccessLevelNEQ, err = ec.unmarshalOAccessLevel2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋslideᚐAccessLevel(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "accessLevelIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("accessLevelIn"))
+			it.AccessLevelIn, err = ec.unmarshalOAccessLevel2ᚕgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋslideᚐAccessLevelᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "accessLevelNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("accessLevelNotIn"))
+			it.AccessLevelNotIn, err = ec.unmarshalOAccessLevel2ᚕgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋslideᚐAccessLevelᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "createdAt":
 			var err error
 
@@ -5021,6 +8449,157 @@ func (ec *executionContext) unmarshalInputSlideWhereInput(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
+		case "hasInstance":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasInstance"))
+			it.HasInstance, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasInstanceWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasInstanceWith"))
+			it.HasInstanceWith, err = ec.unmarshalOInstanceWhereInput2ᚕᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasUser":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUser"))
+			it.HasUser, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasUserWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUserWith"))
+			it.HasUserWith, err = ec.unmarshalOUserWhereInput2ᚕᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUserWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateInstanceInput(ctx context.Context, obj interface{}) (ent.UpdateInstanceInput, error) {
+	var it ent.UpdateInstanceInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNID2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instance_type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instance_type"))
+			it.InstanceType, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "private_dns_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("private_dns_name"))
+			it.PrivateDNSName, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "private_ip_address":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("private_ip_address"))
+			it.PrivateIPAddress, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "public_dns_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("public_dns_name"))
+			it.PublicDNSName, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "public_ip_address":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("public_ip_address"))
+			it.PublicIPAddress, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "image_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image_id"))
+			it.ImageID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "architecture":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("architecture"))
+			it.Architecture, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "availability_zone":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availability_zone"))
+			it.AvailabilityZone, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "user_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+			it.UserID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "clear_user":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clear_user"))
+			it.ClearUser, err = ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "slide_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("slide_id"))
+			it.SlideID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "clear_slide":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clear_slide"))
+			it.ClearSlide, err = ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -5049,6 +8628,78 @@ func (ec *executionContext) unmarshalInputUpdateSlideInput(ctx context.Context, 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "path_token":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("path_token"))
+			it.PathToken, err = ec.unmarshalOString2ᚖᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "clear_path_token":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clear_path_token"))
+			it.ClearPathToken, err = ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "size":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("size"))
+			it.Size, err = ec.unmarshalOInt2ᚖint64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "access_level":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("access_level"))
+			it.AccessLevel, err = ec.unmarshalOAccessLevel2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋslideᚐAccessLevel(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "shared_with":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shared_with"))
+			it.SharedWith, err = ec.unmarshalOString2ᚖᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "instance_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("instance_id"))
+			it.InstanceID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "clear_instance":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clear_instance"))
+			it.ClearInstance, err = ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "user_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+			it.UserID, err = ec.unmarshalOID2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "clear_user":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clear_user"))
+			it.ClearUser, err = ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6057,6 +9708,38 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 			if err != nil {
 				return it, err
 			}
+		case "hasInstances":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasInstances"))
+			it.HasInstances, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasInstancesWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasInstancesWith"))
+			it.HasInstancesWith, err = ec.unmarshalOInstanceWhereInput2ᚕᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasSlides":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSlides"))
+			it.HasSlides, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hasSlidesWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasSlidesWith"))
+			it.HasSlidesWith, err = ec.unmarshalOSlideWhereInput2ᚕᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -6079,6 +9762,157 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var instanceImplementors = []string{"Instance"}
+
+func (ec *executionContext) _Instance(ctx context.Context, sel ast.SelectionSet, obj *ent.Instance) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, instanceImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Instance")
+		case "id":
+			out.Values[i] = ec._Instance_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "instance_id":
+			out.Values[i] = ec._Instance_instance_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "instance_type":
+			out.Values[i] = ec._Instance_instance_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "private_dns_name":
+			out.Values[i] = ec._Instance_private_dns_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "private_ip_address":
+			out.Values[i] = ec._Instance_private_ip_address(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "public_dns_name":
+			out.Values[i] = ec._Instance_public_dns_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "public_ip_address":
+			out.Values[i] = ec._Instance_public_ip_address(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "image_id":
+			out.Values[i] = ec._Instance_image_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "architecture":
+			out.Values[i] = ec._Instance_architecture(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "availability_zone":
+			out.Values[i] = ec._Instance_availability_zone(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "created_at":
+			out.Values[i] = ec._Instance_created_at(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updated_at":
+			out.Values[i] = ec._Instance_updated_at(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var instanceConnectionImplementors = []string{"InstanceConnection"}
+
+func (ec *executionContext) _InstanceConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.InstanceConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, instanceConnectionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("InstanceConnection")
+		case "totalCount":
+			out.Values[i] = ec._InstanceConnection_totalCount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "pageInfo":
+			out.Values[i] = ec._InstanceConnection_pageInfo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "edges":
+			out.Values[i] = ec._InstanceConnection_edges(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var instanceEdgeImplementors = []string{"InstanceEdge"}
+
+func (ec *executionContext) _InstanceEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.InstanceEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, instanceEdgeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("InstanceEdge")
+		case "node":
+			out.Values[i] = ec._InstanceEdge_node(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "cursor":
+			out.Values[i] = ec._InstanceEdge_cursor(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
 
 var mutationImplementors = []string{"Mutation"}
 
@@ -6115,13 +9949,43 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "CreateInstance":
+			out.Values[i] = ec._Mutation_CreateInstance(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "UpdateInstance":
+			out.Values[i] = ec._Mutation_UpdateInstance(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "DeleteInstance":
+			out.Values[i] = ec._Mutation_DeleteInstance(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "CreateSlide":
 			out.Values[i] = ec._Mutation_CreateSlide(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "CreateSlideWithText":
+			out.Values[i] = ec._Mutation_CreateSlideWithText(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "UpdateSlide":
 			out.Values[i] = ec._Mutation_UpdateSlide(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "UpdateSlideWithText":
+			out.Values[i] = ec._Mutation_UpdateSlideWithText(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "DeleteSlide":
+			out.Values[i] = ec._Mutation_DeleteSlide(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -6251,6 +10115,34 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "Instance":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_Instance(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "Instances":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_Instances(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "Slide":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -6368,6 +10260,23 @@ func (ec *executionContext) _Slide(ctx context.Context, sel ast.SelectionSet, ob
 			}
 		case "name":
 			out.Values[i] = ec._Slide_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "path_token":
+			out.Values[i] = ec._Slide_path_token(ctx, field, obj)
+		case "size":
+			out.Values[i] = ec._Slide_size(ctx, field, obj)
+		case "access_level":
+			out.Values[i] = ec._Slide_access_level(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "shared_with":
+			out.Values[i] = ec._Slide_shared_with(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "created_at":
 			out.Values[i] = ec._Slide_created_at(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -6412,6 +10321,9 @@ func (ec *executionContext) _SlideConnection(ctx context.Context, sel ast.Select
 			}
 		case "edges":
 			out.Values[i] = ec._SlideConnection_edges(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6436,6 +10348,9 @@ func (ec *executionContext) _SlideEdge(ctx context.Context, sel ast.SelectionSet
 			out.Values[i] = graphql.MarshalString("SlideEdge")
 		case "node":
 			out.Values[i] = ec._SlideEdge_node(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "cursor":
 			out.Values[i] = ec._SlideEdge_cursor(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -6855,6 +10770,16 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) unmarshalNAccessLevel2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋslideᚐAccessLevel(ctx context.Context, v interface{}) (slide.AccessLevel, error) {
+	var res slide.AccessLevel
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNAccessLevel2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋslideᚐAccessLevel(ctx context.Context, sel ast.SelectionSet, v slide.AccessLevel) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -6870,8 +10795,18 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNCreateInstanceInput2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐCreateInstanceInput(ctx context.Context, v interface{}) (ent.CreateInstanceInput, error) {
+	res, err := ec.unmarshalInputCreateInstanceInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateSlideInput2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐCreateSlideInput(ctx context.Context, v interface{}) (ent.CreateSlideInput, error) {
 	res, err := ec.unmarshalInputCreateSlideInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreateSlideWithTextInput2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋgraphᚐCreateSlideWithTextInput(ctx context.Context, v interface{}) (graph.CreateSlideWithTextInput, error) {
+	res, err := ec.unmarshalInputCreateSlideWithTextInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -6900,6 +10835,93 @@ func (ec *executionContext) marshalNID2githubᚗcomᚋmarcustutᚋfypᚋbackend�
 	return v
 }
 
+func (ec *executionContext) marshalNInstance2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstance(ctx context.Context, sel ast.SelectionSet, v ent.Instance) graphql.Marshaler {
+	return ec._Instance(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNInstance2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstance(ctx context.Context, sel ast.SelectionSet, v *ent.Instance) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Instance(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNInstanceConnection2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceConnection(ctx context.Context, sel ast.SelectionSet, v ent.InstanceConnection) graphql.Marshaler {
+	return ec._InstanceConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNInstanceConnection2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceConnection(ctx context.Context, sel ast.SelectionSet, v *ent.InstanceConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._InstanceConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNInstanceEdge2ᚕᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.InstanceEdge) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNInstanceEdge2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNInstanceEdge2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceEdge(ctx context.Context, sel ast.SelectionSet, v *ent.InstanceEdge) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._InstanceEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNInstanceWhereInput2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceWhereInput(ctx context.Context, v interface{}) (*ent.InstanceWhereInput, error) {
+	res, err := ec.unmarshalInputInstanceWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -6907,6 +10929,21 @@ func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}
 
 func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
 	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNInt2int64(ctx context.Context, v interface{}) (int64, error) {
+	res, err := graphql.UnmarshalInt64(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int64(ctx context.Context, sel ast.SelectionSet, v int64) graphql.Marshaler {
+	res := graphql.MarshalInt64(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -6967,6 +11004,60 @@ func (ec *executionContext) marshalNSlideConnection2ᚖgithubᚗcomᚋmarcustut�
 	return ec._SlideConnection(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNSlideEdge2ᚕᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.SlideEdge) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNSlideEdge2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNSlideEdge2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideEdge(ctx context.Context, sel ast.SelectionSet, v *ent.SlideEdge) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._SlideEdge(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNSlideWhereInput2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideWhereInput(ctx context.Context, v interface{}) (*ent.SlideWhereInput, error) {
 	res, err := ec.unmarshalInputSlideWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
@@ -6987,6 +11078,42 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
+func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
 	res, err := graphql.UnmarshalTime(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -7000,6 +11127,11 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNUpdateInstanceInput2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUpdateInstanceInput(ctx context.Context, v interface{}) (ent.UpdateInstanceInput, error) {
+	res, err := ec.unmarshalInputUpdateInstanceInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNUpdateSlideInput2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUpdateSlideInput(ctx context.Context, v interface{}) (ent.UpdateSlideInput, error) {
@@ -7316,6 +11448,93 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) unmarshalOAccessLevel2ᚕgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋslideᚐAccessLevelᚄ(ctx context.Context, v interface{}) ([]slide.AccessLevel, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]slide.AccessLevel, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNAccessLevel2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋslideᚐAccessLevel(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOAccessLevel2ᚕgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋslideᚐAccessLevelᚄ(ctx context.Context, sel ast.SelectionSet, v []slide.AccessLevel) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNAccessLevel2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋslideᚐAccessLevel(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOAccessLevel2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋslideᚐAccessLevel(ctx context.Context, v interface{}) (*slide.AccessLevel, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(slide.AccessLevel)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOAccessLevel2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋslideᚐAccessLevel(ctx context.Context, sel ast.SelectionSet, v *slide.AccessLevel) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -7414,6 +11633,104 @@ func (ec *executionContext) marshalOID2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbacke
 	return v
 }
 
+func (ec *executionContext) unmarshalOInstanceOrder2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceOrder(ctx context.Context, v interface{}) (*ent.InstanceOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputInstanceOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOInstanceOrderField2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceOrderField(ctx context.Context, v interface{}) (*ent.InstanceOrderField, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(ent.InstanceOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInstanceOrderField2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.InstanceOrderField) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOInstanceWhereInput2ᚕᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.InstanceWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*ent.InstanceWhereInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNInstanceWhereInput2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceWhereInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOInstanceWhereInput2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceWhereInput(ctx context.Context, v interface{}) (*ent.InstanceWhereInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputInstanceWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚕint64ᚄ(ctx context.Context, v interface{}) ([]int64, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]int64, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNInt2int64(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOInt2ᚕint64ᚄ(ctx context.Context, sel ast.SelectionSet, v []int64) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNInt2int64(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
 	if v == nil {
 		return nil, nil
@@ -7429,66 +11746,26 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return graphql.MarshalInt(*v)
 }
 
+func (ec *executionContext) unmarshalOInt2ᚖint64(ctx context.Context, v interface{}) (*int64, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt64(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint64(ctx context.Context, sel ast.SelectionSet, v *int64) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalInt64(*v)
+}
+
 func (ec *executionContext) marshalONode2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐNoder(ctx context.Context, sel ast.SelectionSet, v ent.Noder) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Node(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOSlide2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlide(ctx context.Context, sel ast.SelectionSet, v *ent.Slide) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Slide(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOSlideEdge2ᚕᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.SlideEdge) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOSlideEdge2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideEdge(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
-}
-
-func (ec *executionContext) marshalOSlideEdge2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideEdge(ctx context.Context, sel ast.SelectionSet, v *ent.SlideEdge) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._SlideEdge(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOSlideOrder2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlideOrder(ctx context.Context, v interface{}) (*ent.SlideOrder, error) {
@@ -7611,6 +11888,18 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return graphql.MarshalString(*v)
+}
+
+func (ec *executionContext) unmarshalOString2ᚖᚕstringᚄ(ctx context.Context, v interface{}) (*[]string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOString2ᚖᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v *[]string) graphql.Marshaler {
+	return ec.marshalOString2ᚕstringᚄ(ctx, sel, *v)
 }
 
 func (ec *executionContext) unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx context.Context, v interface{}) ([]time.Time, error) {

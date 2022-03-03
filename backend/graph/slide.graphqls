@@ -1,3 +1,9 @@
+enum AccessLevel {
+  PRIVATE
+  PUBLIC
+  VIEW
+}
+
 enum SlideOrderField {
   CREATED_AT
   UPDATED_AT
@@ -5,26 +11,51 @@ enum SlideOrderField {
 
 type Slide {
   id: ID!
-  name: String
+  name: String!
+  path_token: [String!]
+  size: Int
+  access_level: AccessLevel!
+  shared_with: [String!]!
   created_at: Time!
   updated_at: Time!
 }
 
 input CreateSlideInput {
-  name: String
+  name: String!
+  path_token: [String!]
+  size: Int
+  access_level: AccessLevel
+  shared_with: [String!]!
+  instance_id: ID
+  user_id: ID!
+}
+input CreateSlideWithTextInput {
+  name: String!
+  access_level: AccessLevel
+  shared_with: [String!]
+  user_id: ID!
 }
 input UpdateSlideInput {
   id: ID!
   name: String
+  path_token: [String!]
+  clear_path_token: Boolean
+  size: Int
+  access_level: AccessLevel
+  shared_with: [String!]
+  instance_id: ID
+  clear_instance: Boolean
+  user_id: ID
+  clear_user: Boolean
 }
 
 type SlideConnection {
   totalCount: Int!
   pageInfo: PageInfo!
-  edges: [SlideEdge]
+  edges: [SlideEdge!]!
 }
 type SlideEdge {
-  node: Slide
+  node: Slide!
   cursor: Cursor!
 }
 input SlideOrder {
@@ -46,5 +77,8 @@ extend type Query {
 
 extend type Mutation {
   CreateSlide(input: CreateSlideInput!): Slide!
+  CreateSlideWithText(input: CreateSlideWithTextInput!, text: String!): Slide!
   UpdateSlide(input: UpdateSlideInput!): Slide!
+  UpdateSlideWithText(id: ID!, text: String!): Slide!
+  DeleteSlide(id: ID!, user_id: ID!): Slide!
 }

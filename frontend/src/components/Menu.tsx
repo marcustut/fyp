@@ -23,7 +23,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ render, icon, onClick, tw }) => {
             TW.display('flex'),
             TW.padding('px-4', 'py-3'),
             TW.fontSize('text-sm'),
-            TW.borderRadius('rounded-lg'),
+            TW.borderRadius('rounded-md'),
             TW.alignItems('items-center'),
             TW.transitionProperty('transition'),
             TW.transitionDuration('duration-150'),

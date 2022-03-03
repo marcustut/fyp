@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Instance is the predicate function for instance builders.
+type Instance func(*sql.Selector)
+
 // Slide is the predicate function for slide builders.
 type Slide func(*sql.Selector)
 

@@ -22,7 +22,7 @@ func NewSlideUsecase(r repository.Slide) Slide {
 	return &slide{r}
 }
 
-func (s *slide) Get(ctx context.Context, id *model.ID) (*model.Slide, error) {
+func (s *slide) Get(ctx context.Context, id model.ID) (*model.Slide, error) {
 	return s.slideRepository.Get(ctx, id)
 }
 
@@ -36,4 +36,8 @@ func (s *slide) Create(ctx context.Context, input model.CreateSlideInput) (*mode
 
 func (s *slide) Update(ctx context.Context, input model.UpdateSlideInput) (*model.Slide, error) {
 	return s.slideRepository.Update(ctx, input)
+}
+
+func (s *slide) Delete(ctx context.Context, id model.ID) (*model.Slide, error) {
+	return s.slideRepository.Delete(ctx, id)
 }

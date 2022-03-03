@@ -6,7 +6,16 @@ import (
 	"time"
 
 	"github.com/marcustut/fyp/backend/ent"
+	"github.com/marcustut/fyp/backend/ent/schema/ulid"
+	"github.com/marcustut/fyp/backend/ent/slide"
 )
+
+type CreateSlideWithTextInput struct {
+	Name        string             `json:"name"`
+	AccessLevel *slide.AccessLevel `json:"access_level"`
+	SharedWith  []string           `json:"shared_with"`
+	UserID      ulid.ID            `json:"user_id"`
+}
 
 type SignInWithEmail struct {
 	Email    string `json:"email"`

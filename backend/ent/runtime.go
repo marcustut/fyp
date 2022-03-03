@@ -5,6 +5,7 @@ package ent
 import (
 	"time"
 
+	"github.com/marcustut/fyp/backend/ent/instance"
 	"github.com/marcustut/fyp/backend/ent/schema"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
@@ -15,9 +16,40 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	instanceMixin := schema.Instance{}.Mixin()
+	instanceMixinFields0 := instanceMixin[0].Fields()
+	_ = instanceMixinFields0
+	instanceMixinFields1 := instanceMixin[1].Fields()
+	_ = instanceMixinFields1
+	instanceMixinFields2 := instanceMixin[2].Fields()
+	_ = instanceMixinFields2
+	instanceFields := schema.Instance{}.Fields()
+	_ = instanceFields
+	// instanceDescArchitecture is the schema descriptor for architecture field.
+	instanceDescArchitecture := instanceMixinFields1[7].Descriptor()
+	// instance.ArchitectureValidator is a validator for the "architecture" field. It is called by the builders before save.
+	instance.ArchitectureValidator = instanceDescArchitecture.Validators[0].(func(string) error)
+	// instanceDescAvailabilityZone is the schema descriptor for availability_zone field.
+	instanceDescAvailabilityZone := instanceMixinFields1[8].Descriptor()
+	// instance.AvailabilityZoneValidator is a validator for the "availability_zone" field. It is called by the builders before save.
+	instance.AvailabilityZoneValidator = instanceDescAvailabilityZone.Validators[0].(func(string) error)
+	// instanceDescCreatedAt is the schema descriptor for created_at field.
+	instanceDescCreatedAt := instanceMixinFields2[0].Descriptor()
+	// instance.DefaultCreatedAt holds the default value on creation for the created_at field.
+	instance.DefaultCreatedAt = instanceDescCreatedAt.Default.(func() time.Time)
+	// instanceDescUpdatedAt is the schema descriptor for updated_at field.
+	instanceDescUpdatedAt := instanceMixinFields2[1].Descriptor()
+	// instance.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	instance.DefaultUpdatedAt = instanceDescUpdatedAt.Default.(func() time.Time)
+	// instanceDescID is the schema descriptor for id field.
+	instanceDescID := instanceMixinFields0[0].Descriptor()
+	// instance.DefaultID holds the default value on creation for the id field.
+	instance.DefaultID = instanceDescID.Default.(func() ulid.ID)
 	slideMixin := schema.Slide{}.Mixin()
 	slideMixinFields0 := slideMixin[0].Fields()
 	_ = slideMixinFields0
+	slideMixinFields1 := slideMixin[1].Fields()
+	_ = slideMixinFields1
 	slideMixinFields2 := slideMixin[2].Fields()
 	_ = slideMixinFields2
 	slideFields := schema.Slide{}.Fields()

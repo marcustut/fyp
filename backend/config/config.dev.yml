@@ -21,3 +21,8 @@ services:
 
   slide:
     port: 8081
+
+  compute:
+    port: 8082
+    awsAccessKeyID: ${AWS_ACCESS_KEY_ID}
+    awsSecretAccessKey: ${AWS_SECRET_ACCESS_KEY}

@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	entMixin "entgo.io/ent/schema/mixin"
 	"github.com/marcustut/fyp/backend/ent/mixin"
@@ -47,7 +48,10 @@ func (UserMixin) Fields() []ent.Field {
 
 // Edges of the User.
 func (User) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.To("instances", Instance.Type),
+		edge.To("slides", Slide.Type),
+	}
 }
 
 // Mixin of the User.

@@ -9,7 +9,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/marcustut/fyp/backend/ent/instance"
 	"github.com/marcustut/fyp/backend/ent/predicate"
+	"github.com/marcustut/fyp/backend/ent/schema/ulid"
+	"github.com/marcustut/fyp/backend/ent/slide"
 	"github.com/marcustut/fyp/backend/ent/user"
 )
 
@@ -92,9 +95,81 @@ func (uu *UserUpdate) ClearBio() *UserUpdate {
 	return uu
 }
 
+// AddInstanceIDs adds the "instances" edge to the Instance entity by IDs.
+func (uu *UserUpdate) AddInstanceIDs(ids ...ulid.ID) *UserUpdate {
+	uu.mutation.AddInstanceIDs(ids...)
+	return uu
+}
+
+// AddInstances adds the "instances" edges to the Instance entity.
+func (uu *UserUpdate) AddInstances(i ...*Instance) *UserUpdate {
+	ids := make([]ulid.ID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uu.AddInstanceIDs(ids...)
+}
+
+// AddSlideIDs adds the "slides" edge to the Slide entity by IDs.
+func (uu *UserUpdate) AddSlideIDs(ids ...ulid.ID) *UserUpdate {
+	uu.mutation.AddSlideIDs(ids...)
+	return uu
+}
+
+// AddSlides adds the "slides" edges to the Slide entity.
+func (uu *UserUpdate) AddSlides(s ...*Slide) *UserUpdate {
+	ids := make([]ulid.ID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uu.AddSlideIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
+}
+
+// ClearInstances clears all "instances" edges to the Instance entity.
+func (uu *UserUpdate) ClearInstances() *UserUpdate {
+	uu.mutation.ClearInstances()
+	return uu
+}
+
+// RemoveInstanceIDs removes the "instances" edge to Instance entities by IDs.
+func (uu *UserUpdate) RemoveInstanceIDs(ids ...ulid.ID) *UserUpdate {
+	uu.mutation.RemoveInstanceIDs(ids...)
+	return uu
+}
+
+// RemoveInstances removes "instances" edges to Instance entities.
+func (uu *UserUpdate) RemoveInstances(i ...*Instance) *UserUpdate {
+	ids := make([]ulid.ID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uu.RemoveInstanceIDs(ids...)
+}
+
+// ClearSlides clears all "slides" edges to the Slide entity.
+func (uu *UserUpdate) ClearSlides() *UserUpdate {
+	uu.mutation.ClearSlides()
+	return uu
+}
+
+// RemoveSlideIDs removes the "slides" edge to Slide entities by IDs.
+func (uu *UserUpdate) RemoveSlideIDs(ids ...ulid.ID) *UserUpdate {
+	uu.mutation.RemoveSlideIDs(ids...)
+	return uu
+}
+
+// RemoveSlides removes "slides" edges to Slide entities.
+func (uu *UserUpdate) RemoveSlides(s ...*Slide) *UserUpdate {
+	ids := make([]ulid.ID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uu.RemoveSlideIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -246,6 +321,114 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldBio,
 		})
 	}
+	if uu.mutation.InstancesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.InstancesTable,
+			Columns: []string{user.InstancesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !uu.mutation.InstancesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.InstancesTable,
+			Columns: []string{user.InstancesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.InstancesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.InstancesTable,
+			Columns: []string{user.InstancesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uu.mutation.SlidesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SlidesTable,
+			Columns: []string{user.SlidesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: slide.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedSlidesIDs(); len(nodes) > 0 && !uu.mutation.SlidesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SlidesTable,
+			Columns: []string{user.SlidesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: slide.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.SlidesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SlidesTable,
+			Columns: []string{user.SlidesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: slide.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -331,9 +514,81 @@ func (uuo *UserUpdateOne) ClearBio() *UserUpdateOne {
 	return uuo
 }
 
+// AddInstanceIDs adds the "instances" edge to the Instance entity by IDs.
+func (uuo *UserUpdateOne) AddInstanceIDs(ids ...ulid.ID) *UserUpdateOne {
+	uuo.mutation.AddInstanceIDs(ids...)
+	return uuo
+}
+
+// AddInstances adds the "instances" edges to the Instance entity.
+func (uuo *UserUpdateOne) AddInstances(i ...*Instance) *UserUpdateOne {
+	ids := make([]ulid.ID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uuo.AddInstanceIDs(ids...)
+}
+
+// AddSlideIDs adds the "slides" edge to the Slide entity by IDs.
+func (uuo *UserUpdateOne) AddSlideIDs(ids ...ulid.ID) *UserUpdateOne {
+	uuo.mutation.AddSlideIDs(ids...)
+	return uuo
+}
+
+// AddSlides adds the "slides" edges to the Slide entity.
+func (uuo *UserUpdateOne) AddSlides(s ...*Slide) *UserUpdateOne {
+	ids := make([]ulid.ID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uuo.AddSlideIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
+}
+
+// ClearInstances clears all "instances" edges to the Instance entity.
+func (uuo *UserUpdateOne) ClearInstances() *UserUpdateOne {
+	uuo.mutation.ClearInstances()
+	return uuo
+}
+
+// RemoveInstanceIDs removes the "instances" edge to Instance entities by IDs.
+func (uuo *UserUpdateOne) RemoveInstanceIDs(ids ...ulid.ID) *UserUpdateOne {
+	uuo.mutation.RemoveInstanceIDs(ids...)
+	return uuo
+}
+
+// RemoveInstances removes "instances" edges to Instance entities.
+func (uuo *UserUpdateOne) RemoveInstances(i ...*Instance) *UserUpdateOne {
+	ids := make([]ulid.ID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uuo.RemoveInstanceIDs(ids...)
+}
+
+// ClearSlides clears all "slides" edges to the Slide entity.
+func (uuo *UserUpdateOne) ClearSlides() *UserUpdateOne {
+	uuo.mutation.ClearSlides()
+	return uuo
+}
+
+// RemoveSlideIDs removes the "slides" edge to Slide entities by IDs.
+func (uuo *UserUpdateOne) RemoveSlideIDs(ids ...ulid.ID) *UserUpdateOne {
+	uuo.mutation.RemoveSlideIDs(ids...)
+	return uuo
+}
+
+// RemoveSlides removes "slides" edges to Slide entities.
+func (uuo *UserUpdateOne) RemoveSlides(s ...*Slide) *UserUpdateOne {
+	ids := make([]ulid.ID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uuo.RemoveSlideIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -508,6 +763,114 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Type:   field.TypeString,
 			Column: user.FieldBio,
 		})
+	}
+	if uuo.mutation.InstancesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.InstancesTable,
+			Columns: []string{user.InstancesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !uuo.mutation.InstancesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.InstancesTable,
+			Columns: []string{user.InstancesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.InstancesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.InstancesTable,
+			Columns: []string{user.InstancesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: instance.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.SlidesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SlidesTable,
+			Columns: []string{user.SlidesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: slide.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedSlidesIDs(); len(nodes) > 0 && !uuo.mutation.SlidesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SlidesTable,
+			Columns: []string{user.SlidesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: slide.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.SlidesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SlidesTable,
+			Columns: []string{user.SlidesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: slide.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &User{config: uuo.config}
 	_spec.Assign = _node.assignValues

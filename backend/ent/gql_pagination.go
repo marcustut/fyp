@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
+	"github.com/marcustut/fyp/backend/ent/instance"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
 	"github.com/marcustut/fyp/backend/ent/user"
@@ -233,6 +234,290 @@ const (
 	pageInfoField   = "pageInfo"
 	totalCountField = "totalCount"
 )
+
+// InstanceEdge is the edge representation of Instance.
+type InstanceEdge struct {
+	Node   *Instance `json:"node"`
+	Cursor Cursor    `json:"cursor"`
+}
+
+// InstanceConnection is the connection containing edges to Instance.
+type InstanceConnection struct {
+	Edges      []*InstanceEdge `json:"edges"`
+	PageInfo   PageInfo        `json:"pageInfo"`
+	TotalCount int             `json:"totalCount"`
+}
+
+// InstancePaginateOption enables pagination customization.
+type InstancePaginateOption func(*instancePager) error
+
+// WithInstanceOrder configures pagination ordering.
+func WithInstanceOrder(order *InstanceOrder) InstancePaginateOption {
+	if order == nil {
+		order = DefaultInstanceOrder
+	}
+	o := *order
+	return func(pager *instancePager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultInstanceOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithInstanceFilter configures pagination filter.
+func WithInstanceFilter(filter func(*InstanceQuery) (*InstanceQuery, error)) InstancePaginateOption {
+	return func(pager *instancePager) error {
+		if filter == nil {
+			return errors.New("InstanceQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type instancePager struct {
+	order  *InstanceOrder
+	filter func(*InstanceQuery) (*InstanceQuery, error)
+}
+
+func newInstancePager(opts []InstancePaginateOption) (*instancePager, error) {
+	pager := &instancePager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultInstanceOrder
+	}
+	return pager, nil
+}
+
+func (p *instancePager) applyFilter(query *InstanceQuery) (*InstanceQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *instancePager) toCursor(i *Instance) Cursor {
+	return p.order.Field.toCursor(i)
+}
+
+func (p *instancePager) applyCursors(query *InstanceQuery, after, before *Cursor) *InstanceQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultInstanceOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *instancePager) applyOrder(query *InstanceQuery, reverse bool) *InstanceQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultInstanceOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultInstanceOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Instance.
+func (i *InstanceQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...InstancePaginateOption,
+) (*InstanceConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newInstancePager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if i, err = pager.applyFilter(i); err != nil {
+		return nil, err
+	}
+
+	conn := &InstanceConnection{Edges: []*InstanceEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := i.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := i.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	i = pager.applyCursors(i, after, before)
+	i = pager.applyOrder(i, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		i = i.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		i = i.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := i.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *Instance
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Instance {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Instance {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*InstanceEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &InstanceEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+var (
+	// InstanceOrderFieldCreatedAt orders Instance by created_at.
+	InstanceOrderFieldCreatedAt = &InstanceOrderField{
+		field: instance.FieldCreatedAt,
+		toCursor: func(i *Instance) Cursor {
+			return Cursor{
+				ID:    i.ID,
+				Value: i.CreatedAt,
+			}
+		},
+	}
+	// InstanceOrderFieldUpdatedAt orders Instance by updated_at.
+	InstanceOrderFieldUpdatedAt = &InstanceOrderField{
+		field: instance.FieldUpdatedAt,
+		toCursor: func(i *Instance) Cursor {
+			return Cursor{
+				ID:    i.ID,
+				Value: i.UpdatedAt,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f InstanceOrderField) String() string {
+	var str string
+	switch f.field {
+	case instance.FieldCreatedAt:
+		str = "CREATED_AT"
+	case instance.FieldUpdatedAt:
+		str = "UPDATED_AT"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f InstanceOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *InstanceOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("InstanceOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATED_AT":
+		*f = *InstanceOrderFieldCreatedAt
+	case "UPDATED_AT":
+		*f = *InstanceOrderFieldUpdatedAt
+	default:
+		return fmt.Errorf("%s is not a valid InstanceOrderField", str)
+	}
+	return nil
+}
+
+// InstanceOrderField defines the ordering field of Instance.
+type InstanceOrderField struct {
+	field    string
+	toCursor func(*Instance) Cursor
+}
+
+// InstanceOrder defines the ordering of Instance.
+type InstanceOrder struct {
+	Direction OrderDirection      `json:"direction"`
+	Field     *InstanceOrderField `json:"field"`
+}
+
+// DefaultInstanceOrder is the default ordering of Instance.
+var DefaultInstanceOrder = &InstanceOrder{
+	Direction: OrderDirectionAsc,
+	Field: &InstanceOrderField{
+		field: instance.FieldID,
+		toCursor: func(i *Instance) Cursor {
+			return Cursor{ID: i.ID}
+		},
+	},
+}
+
+// ToEdge converts Instance into InstanceEdge.
+func (i *Instance) ToEdge(order *InstanceOrder) *InstanceEdge {
+	if order == nil {
+		order = DefaultInstanceOrder
+	}
+	return &InstanceEdge{
+		Node:   i,
+		Cursor: order.Field.toCursor(i),
+	}
+}
 
 // SlideEdge is the edge representation of Slide.
 type SlideEdge struct {

@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 // NewAWSConfig loads the credential values from environment
@@ -15,4 +16,11 @@ func NewAWSConfig() (*aws.Config, error) {
 		return nil, err
 	}
 	return &cfg, nil
+}
+
+// NewS3Client initialize a new aws-s3 API client with the
+// provided config.
+func NewS3Client(cfg aws.Config) *s3.Client {
+	client := s3.NewFromConfig(cfg)
+	return client
 }

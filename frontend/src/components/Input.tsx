@@ -8,6 +8,7 @@ export type InputProps = React.DetailedHTMLProps<
   variant: 'primary' | 'transparent'
   register?: UseFormRegisterReturn
   icon?: (defaultClasses: string) => JSX.Element
+  textarea?: boolean
   inputClassName?: string
 }
 
@@ -15,6 +16,7 @@ export const Input = ({
   variant,
   register,
   icon,
+  textarea = false,
   className = '',
   inputClassName = '',
   ...props
@@ -32,7 +34,11 @@ export const Input = ({
     const _cn = `${
       icon ? `${inputCn} ${inputClassName}` : `${cn} ${className}`
     }`
-    if (register) return <input {...register} {...props} className={_cn} />
+    if (register && textarea)
+      return <textarea {...register} {...(props as unknown)} className={_cn} />
+    else if (register) return <input {...register} {...props} className={_cn} />
+    else if (textarea)
+      return <textarea {...(props as unknown)} className={_cn} />
     else return <input {...props} className={_cn} />
   }
 

@@ -10,11 +10,13 @@ import (
 	"github.com/marcustut/fyp/backend/ent/migrate"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 
+	"github.com/marcustut/fyp/backend/ent/instance"
 	"github.com/marcustut/fyp/backend/ent/slide"
 	"github.com/marcustut/fyp/backend/ent/user"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // Client is the client that holds all ent builders.
@@ -22,6 +24,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Instance is the client for interacting with the Instance builders.
+	Instance *InstanceClient
 	// Slide is the client for interacting with the Slide builders.
 	Slide *SlideClient
 	// User is the client for interacting with the User builders.
@@ -39,6 +43,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Instance = NewInstanceClient(c.config)
 	c.Slide = NewSlideClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -72,10 +77,11 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		Slide:  NewSlideClient(cfg),
-		User:   NewUserClient(cfg),
+		ctx:      ctx,
+		config:   cfg,
+		Instance: NewInstanceClient(cfg),
+		Slide:    NewSlideClient(cfg),
+		User:     NewUserClient(cfg),
 	}, nil
 }
 
@@ -93,16 +99,17 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		config: cfg,
-		Slide:  NewSlideClient(cfg),
-		User:   NewUserClient(cfg),
+		config:   cfg,
+		Instance: NewInstanceClient(cfg),
+		Slide:    NewSlideClient(cfg),
+		User:     NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Slide.
+//		Instance.
 //		Query().
 //		Count(ctx)
 //
@@ -125,8 +132,131 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Instance.Use(hooks...)
 	c.Slide.Use(hooks...)
 	c.User.Use(hooks...)
+}
+
+// InstanceClient is a client for the Instance schema.
+type InstanceClient struct {
+	config
+}
+
+// NewInstanceClient returns a client for the Instance from the given config.
+func NewInstanceClient(c config) *InstanceClient {
+	return &InstanceClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `instance.Hooks(f(g(h())))`.
+func (c *InstanceClient) Use(hooks ...Hook) {
+	c.hooks.Instance = append(c.hooks.Instance, hooks...)
+}
+
+// Create returns a create builder for Instance.
+func (c *InstanceClient) Create() *InstanceCreate {
+	mutation := newInstanceMutation(c.config, OpCreate)
+	return &InstanceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Instance entities.
+func (c *InstanceClient) CreateBulk(builders ...*InstanceCreate) *InstanceCreateBulk {
+	return &InstanceCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Instance.
+func (c *InstanceClient) Update() *InstanceUpdate {
+	mutation := newInstanceMutation(c.config, OpUpdate)
+	return &InstanceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InstanceClient) UpdateOne(i *Instance) *InstanceUpdateOne {
+	mutation := newInstanceMutation(c.config, OpUpdateOne, withInstance(i))
+	return &InstanceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InstanceClient) UpdateOneID(id ulid.ID) *InstanceUpdateOne {
+	mutation := newInstanceMutation(c.config, OpUpdateOne, withInstanceID(id))
+	return &InstanceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Instance.
+func (c *InstanceClient) Delete() *InstanceDelete {
+	mutation := newInstanceMutation(c.config, OpDelete)
+	return &InstanceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *InstanceClient) DeleteOne(i *Instance) *InstanceDeleteOne {
+	return c.DeleteOneID(i.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *InstanceClient) DeleteOneID(id ulid.ID) *InstanceDeleteOne {
+	builder := c.Delete().Where(instance.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InstanceDeleteOne{builder}
+}
+
+// Query returns a query builder for Instance.
+func (c *InstanceClient) Query() *InstanceQuery {
+	return &InstanceQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Instance entity by its id.
+func (c *InstanceClient) Get(ctx context.Context, id ulid.ID) (*Instance, error) {
+	return c.Query().Where(instance.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InstanceClient) GetX(ctx context.Context, id ulid.ID) *Instance {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a Instance.
+func (c *InstanceClient) QueryUser(i *Instance) *UserQuery {
+	query := &UserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(instance.Table, instance.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, instance.UserTable, instance.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySlide queries the slide edge of a Instance.
+func (c *InstanceClient) QuerySlide(i *Instance) *SlideQuery {
+	query := &SlideQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(instance.Table, instance.FieldID, id),
+			sqlgraph.To(slide.Table, slide.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, instance.SlideTable, instance.SlideColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InstanceClient) Hooks() []Hook {
+	return c.hooks.Instance
 }
 
 // SlideClient is a client for the Slide schema.
@@ -212,6 +342,38 @@ func (c *SlideClient) GetX(ctx context.Context, id ulid.ID) *Slide {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryInstance queries the instance edge of a Slide.
+func (c *SlideClient) QueryInstance(s *Slide) *InstanceQuery {
+	query := &InstanceQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(slide.Table, slide.FieldID, id),
+			sqlgraph.To(instance.Table, instance.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, slide.InstanceTable, slide.InstanceColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a Slide.
+func (c *SlideClient) QueryUser(s *Slide) *UserQuery {
+	query := &UserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(slide.Table, slide.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, slide.UserTable, slide.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -302,6 +464,38 @@ func (c *UserClient) GetX(ctx context.Context, id ulid.ID) *User {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryInstances queries the instances edge of a User.
+func (c *UserClient) QueryInstances(u *User) *InstanceQuery {
+	query := &InstanceQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(instance.Table, instance.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.InstancesTable, user.InstancesColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySlides queries the slides edge of a User.
+func (c *UserClient) QuerySlides(u *User) *SlideQuery {
+	query := &SlideQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(slide.Table, slide.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.SlidesTable, user.SlidesColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.

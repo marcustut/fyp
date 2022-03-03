@@ -12,6 +12,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// Instance is the client for interacting with the Instance builders.
+	Instance *InstanceClient
 	// Slide is the client for interacting with the Slide builders.
 	Slide *SlideClient
 	// User is the client for interacting with the User builders.
@@ -151,6 +153,7 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.Instance = NewInstanceClient(tx.config)
 	tx.Slide = NewSlideClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
@@ -162,7 +165,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Slide.QueryXXX(), the query will be executed
+// applies a query, for example: Instance.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

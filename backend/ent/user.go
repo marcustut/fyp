@@ -33,6 +33,38 @@ type User struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the UserQuery when eager-loading is set.
+	Edges UserEdges `json:"edges"`
+}
+
+// UserEdges holds the relations/edges for other nodes in the graph.
+type UserEdges struct {
+	// Instances holds the value of the instances edge.
+	Instances []*Instance `json:"instances,omitempty"`
+	// Slides holds the value of the slides edge.
+	Slides []*Slide `json:"slides,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// InstancesOrErr returns the Instances value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) InstancesOrErr() ([]*Instance, error) {
+	if e.loadedTypes[0] {
+		return e.Instances, nil
+	}
+	return nil, &NotLoadedError{edge: "instances"}
+}
+
+// SlidesOrErr returns the Slides value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) SlidesOrErr() ([]*Slide, error) {
+	if e.loadedTypes[1] {
+		return e.Slides, nil
+	}
+	return nil, &NotLoadedError{edge: "slides"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -118,6 +150,16 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 		}
 	}
 	return nil
+}
+
+// QueryInstances queries the "instances" edge of the User entity.
+func (u *User) QueryInstances() *InstanceQuery {
+	return (&UserClient{config: u.config}).QueryInstances(u)
+}
+
+// QuerySlides queries the "slides" edge of the User entity.
+func (u *User) QuerySlides() *SlideQuery {
+	return (&UserClient{config: u.config}).QuerySlides(u)
 }
 
 // Update returns a builder for updating this User.
