@@ -108,6 +108,13 @@ func Size(v int64) predicate.Slide {
 	})
 }
 
+// Deleted applies equality check predicate on the "deleted" field. It's identical to DeletedEQ.
+func Deleted(v bool) predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldDeleted), v))
+	})
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Slide {
 	return predicate.Slide(func(s *sql.Selector) {
@@ -382,6 +389,20 @@ func AccessLevelNotIn(vs ...AccessLevel) predicate.Slide {
 			return
 		}
 		s.Where(sql.NotIn(s.C(FieldAccessLevel), v...))
+	})
+}
+
+// DeletedEQ applies the EQ predicate on the "deleted" field.
+func DeletedEQ(v bool) predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldDeleted), v))
+	})
+}
+
+// DeletedNEQ applies the NEQ predicate on the "deleted" field.
+func DeletedNEQ(v bool) predicate.Slide {
+	return predicate.Slide(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldDeleted), v))
 	})
 }
 

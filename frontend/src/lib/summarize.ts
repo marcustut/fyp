@@ -1,11 +1,41 @@
+export enum SummarizeMode {
+  Abstractive = 'abs',
+  Extractive = 'ext'
+}
+
+export enum SummarizeType {
+  Text = 'txt',
+  URL = 'url',
+  PDF = 'pdf'
+}
+
+export enum SummarizeMaxChunk {
+  Long = 150,
+  Intermediate = 250,
+  Short = 500
+}
+
+export enum SummarizeMaxCharPerSlide {
+  Compact = 500, 
+  Comfortable = 250
+}
+
+export enum SummarizeTheme {
+  Default = 'default',
+  AppleBasic = 'apple-basic',
+  Seriph = 'seriph',
+  Bricks = 'bricks',
+  ShibaInu = 'shibainu'
+}
+
 export type SummarizeOptions = {
-  mode: 'abs' | 'ext'
-  type: 'txt' | 'url' | 'pdf'
+  mode: SummarizeMode
+  type: SummarizeType
   input: string
   outputName: string
-  maxChunk?: number
-  maxCharPerSlide?: number
-  theme?: 'apple-basic' | 'seriph' | 'default'
+  maxChunk?: SummarizeMaxChunk
+  maxCharPerSlide?: SummarizeMaxCharPerSlide
+  theme?: SummarizeTheme
 }
 
 type SummarizeResponse = {

@@ -118,6 +118,7 @@ type ComplexityRoot struct {
 	Slide struct {
 		AccessLevel func(childComplexity int) int
 		CreatedAt   func(childComplexity int) int
+		Deleted     func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Name        func(childComplexity int) int
 		PathToken   func(childComplexity int) int
@@ -711,6 +712,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Slide.CreatedAt(childComplexity), true
 
+	case "Slide.deleted":
+		if e.complexity.Slide.Deleted == nil {
+			break
+		}
+
+		return e.complexity.Slide.Deleted(childComplexity), true
+
 	case "Slide.id":
 		if e.complexity.Slide.ID == nil {
 			break
@@ -1032,6 +1040,10 @@ input SlideWhereInput {
   accessLevelNEQ: AccessLevel
   accessLevelIn: [AccessLevel!]
   accessLevelNotIn: [AccessLevel!]
+  
+  """deleted field predicates"""
+  deleted: Boolean
+  deletedNEQ: Boolean
   
   """created_at field predicates"""
   createdAt: Time
@@ -1533,6 +1545,7 @@ type Slide {
   size: Int
   access_level: AccessLevel!
   shared_with: [String!]!
+  deleted: Boolean!
   created_at: Time!
   updated_at: Time!
 }
@@ -1543,6 +1556,7 @@ input CreateSlideInput {
   size: Int
   access_level: AccessLevel
   shared_with: [String!]!
+  deleted: Boolean
   instance_id: ID
   user_id: ID!
 }
@@ -1560,6 +1574,7 @@ input UpdateSlideInput {
   size: Int
   access_level: AccessLevel
   shared_with: [String!]
+  deleted: Boolean
   instance_id: ID
   clear_instance: Boolean
   user_id: ID
@@ -4489,6 +4504,41 @@ func (ec *executionContext) _Slide_shared_with(ctx context.Context, field graphq
 	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Slide_deleted(ctx context.Context, field graphql.CollectedField, obj *ent.Slide) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Slide",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Deleted, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Slide_created_at(ctx context.Context, field graphql.CollectedField, obj *ent.Slide) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6553,6 +6603,14 @@ func (ec *executionContext) unmarshalInputCreateSlideInput(ctx context.Context, 
 			if err != nil {
 				return it, err
 			}
+		case "deleted":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deleted"))
+			it.Deleted, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "instance_id":
 			var err error
 
@@ -8257,6 +8315,22 @@ func (ec *executionContext) unmarshalInputSlideWhereInput(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
+		case "deleted":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deleted"))
+			it.Deleted, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "deletedNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deletedNEQ"))
+			it.DeletedNEQ, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "createdAt":
 			var err error
 
@@ -8668,6 +8742,14 @@ func (ec *executionContext) unmarshalInputUpdateSlideInput(ctx context.Context, 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shared_with"))
 			it.SharedWith, err = ec.unmarshalOString2ᚖᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "deleted":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deleted"))
+			it.Deleted, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10274,6 +10356,11 @@ func (ec *executionContext) _Slide(ctx context.Context, sel ast.SelectionSet, ob
 			}
 		case "shared_with":
 			out.Values[i] = ec._Slide_shared_with(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleted":
+			out.Values[i] = ec._Slide_deleted(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

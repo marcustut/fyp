@@ -16,6 +16,7 @@ type Slide {
   size: Int
   access_level: AccessLevel!
   shared_with: [String!]!
+  deleted: Boolean!
   created_at: Time!
   updated_at: Time!
 }
@@ -26,6 +27,7 @@ input CreateSlideInput {
   size: Int
   access_level: AccessLevel
   shared_with: [String!]!
+  deleted: Boolean
   instance_id: ID
   user_id: ID!
 }
@@ -43,6 +45,7 @@ input UpdateSlideInput {
   size: Int
   access_level: AccessLevel
   shared_with: [String!]
+  deleted: Boolean
   instance_id: ID
   clear_instance: Boolean
   user_id: ID

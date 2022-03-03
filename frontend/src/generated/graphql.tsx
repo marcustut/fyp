@@ -40,6 +40,7 @@ export type CreateInstanceInput = {
 
 export type CreateSlideInput = {
   access_level?: InputMaybe<AccessLevel>;
+  deleted?: InputMaybe<Scalars['Boolean']>;
   instance_id?: InputMaybe<Scalars['ID']>;
   name: Scalars['String'];
   path_token?: InputMaybe<Array<Scalars['String']>>;
@@ -497,6 +498,7 @@ export type Slide = {
   __typename?: 'Slide';
   access_level: AccessLevel;
   created_at: Scalars['Time'];
+  deleted: Scalars['Boolean'];
   id: Scalars['ID'];
   name: Scalars['String'];
   path_token?: Maybe<Array<Scalars['String']>>;
@@ -548,6 +550,9 @@ export type SlideWhereInput = {
   createdAtLTE?: InputMaybe<Scalars['Time']>;
   createdAtNEQ?: InputMaybe<Scalars['Time']>;
   createdAtNotIn?: InputMaybe<Array<Scalars['Time']>>;
+  /** deleted field predicates */
+  deleted?: InputMaybe<Scalars['Boolean']>;
+  deletedNEQ?: InputMaybe<Scalars['Boolean']>;
   /** instance edge predicates */
   hasInstance?: InputMaybe<Scalars['Boolean']>;
   hasInstanceWith?: InputMaybe<Array<InstanceWhereInput>>;
@@ -622,6 +627,7 @@ export type UpdateSlideInput = {
   clear_instance?: InputMaybe<Scalars['Boolean']>;
   clear_path_token?: InputMaybe<Scalars['Boolean']>;
   clear_user?: InputMaybe<Scalars['Boolean']>;
+  deleted?: InputMaybe<Scalars['Boolean']>;
   id: Scalars['ID'];
   instance_id?: InputMaybe<Scalars['ID']>;
   name?: InputMaybe<Scalars['String']>;
@@ -753,9 +759,9 @@ export type UserWhereInput = {
   fullNameNEQ?: InputMaybe<Scalars['String']>;
   fullNameNotIn?: InputMaybe<Array<Scalars['String']>>;
   fullNameNotNil?: InputMaybe<Scalars['Boolean']>;
-  /** instance edge predicates */
-  hasInstance?: InputMaybe<Scalars['Boolean']>;
-  hasInstanceWith?: InputMaybe<Array<InstanceWhereInput>>;
+  /** instances edge predicates */
+  hasInstances?: InputMaybe<Scalars['Boolean']>;
+  hasInstancesWith?: InputMaybe<Array<InstanceWhereInput>>;
   /** slides edge predicates */
   hasSlides?: InputMaybe<Scalars['Boolean']>;
   hasSlidesWith?: InputMaybe<Array<SlideWhereInput>>;
@@ -853,7 +859,7 @@ export type GetSlideQueryVariables = Exact<{
 }>;
 
 
-export type GetSlideQuery = { __typename?: 'Query', Slide: { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, created_at: any, updated_at: any } };
+export type GetSlideQuery = { __typename?: 'Query', Slide: { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, deleted: boolean, created_at: any, updated_at: any } };
 
 export type ListSlideQueryVariables = Exact<{
   after?: InputMaybe<Scalars['Cursor']>;
@@ -865,14 +871,14 @@ export type ListSlideQueryVariables = Exact<{
 }>;
 
 
-export type ListSlideQuery = { __typename?: 'Query', Slides: { __typename?: 'SlideConnection', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, hasPreviousPage: boolean, startCursor?: any | null, endCursor?: any | null }, edges: Array<{ __typename?: 'SlideEdge', cursor: any, node: { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, created_at: any, updated_at: any } }> } };
+export type ListSlideQuery = { __typename?: 'Query', Slides: { __typename?: 'SlideConnection', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, hasPreviousPage: boolean, startCursor?: any | null, endCursor?: any | null }, edges: Array<{ __typename?: 'SlideEdge', cursor: any, node: { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, deleted: boolean, created_at: any, updated_at: any } }> } };
 
 export type CreateSlideMutationVariables = Exact<{
   input: CreateSlideInput;
 }>;
 
 
-export type CreateSlideMutation = { __typename?: 'Mutation', CreateSlide: { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, created_at: any, updated_at: any } };
+export type CreateSlideMutation = { __typename?: 'Mutation', CreateSlide: { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, deleted: boolean, created_at: any, updated_at: any } };
 
 export type CreateSlideWithTextMutationVariables = Exact<{
   createSlideWithTextInput: CreateSlideWithTextInput;
@@ -880,7 +886,7 @@ export type CreateSlideWithTextMutationVariables = Exact<{
 }>;
 
 
-export type CreateSlideWithTextMutation = { __typename?: 'Mutation', CreateSlideWithText: { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, created_at: any, updated_at: any } };
+export type CreateSlideWithTextMutation = { __typename?: 'Mutation', CreateSlideWithText: { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, deleted: boolean, created_at: any, updated_at: any } };
 
 export type UpdateSlideWithTextMutationVariables = Exact<{
   id: Scalars['ID'];
@@ -888,7 +894,14 @@ export type UpdateSlideWithTextMutationVariables = Exact<{
 }>;
 
 
-export type UpdateSlideWithTextMutation = { __typename?: 'Mutation', UpdateSlideWithText: { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, created_at: any, updated_at: any } };
+export type UpdateSlideWithTextMutation = { __typename?: 'Mutation', UpdateSlideWithText: { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, deleted: boolean, created_at: any, updated_at: any } };
+
+export type UpdateSlideMutationVariables = Exact<{
+  input: UpdateSlideInput;
+}>;
+
+
+export type UpdateSlideMutation = { __typename?: 'Mutation', UpdateSlide: { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, deleted: boolean, created_at: any, updated_at: any } };
 
 export type DeleteSlideMutationVariables = Exact<{
   id: Scalars['ID'];
@@ -896,9 +909,9 @@ export type DeleteSlideMutationVariables = Exact<{
 }>;
 
 
-export type DeleteSlideMutation = { __typename?: 'Mutation', DeleteSlide: { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, created_at: any, updated_at: any } };
+export type DeleteSlideMutation = { __typename?: 'Mutation', DeleteSlide: { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, deleted: boolean, created_at: any, updated_at: any } };
 
-export type SlideFieldsFragment = { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, created_at: any, updated_at: any };
+export type SlideFieldsFragment = { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, deleted: boolean, created_at: any, updated_at: any };
 
 export const UserFieldsFragmentDoc = gql`
     fragment UserFields on User {
@@ -929,6 +942,7 @@ export const SlideFieldsFragmentDoc = gql`
   size
   access_level
   shared_with
+  deleted
   created_at
   updated_at
 }
@@ -1050,6 +1064,17 @@ export const UpdateSlideWithTextDocument = gql`
 
 export function useUpdateSlideWithTextMutation() {
   return Urql.useMutation<UpdateSlideWithTextMutation, UpdateSlideWithTextMutationVariables>(UpdateSlideWithTextDocument);
+};
+export const UpdateSlideDocument = gql`
+    mutation UpdateSlide($input: UpdateSlideInput!) {
+  UpdateSlide(input: $input) {
+    ...SlideFields
+  }
+}
+    ${SlideFieldsFragmentDoc}`;
+
+export function useUpdateSlideMutation() {
+  return Urql.useMutation<UpdateSlideMutation, UpdateSlideMutationVariables>(UpdateSlideDocument);
 };
 export const DeleteSlideDocument = gql`
     mutation DeleteSlide($id: ID!, $user_id: ID!) {

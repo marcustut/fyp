@@ -53,6 +53,7 @@ var (
 		{Name: "size", Type: field.TypeInt64, Nullable: true},
 		{Name: "access_level", Type: field.TypeEnum, Enums: []string{"PRIVATE", "PUBLIC", "VIEW"}, Default: "PRIVATE"},
 		{Name: "shared_with", Type: field.TypeJSON, SchemaType: map[string]string{"mysql": "json DEFAULT (JSON_ARRAY())"}},
+		{Name: "deleted", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "timestamp DEFAULT CURRENT_TIMESTAMP"}},
 		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"}},
 		{Name: "user_slides", Type: field.TypeString, Nullable: true},
@@ -65,7 +66,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "slides_users_slides",
-				Columns:    []*schema.Column{SlidesColumns[8]},
+				Columns:    []*schema.Column{SlidesColumns[9]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

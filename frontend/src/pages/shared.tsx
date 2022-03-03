@@ -2,17 +2,17 @@ import React from 'react'
 import { NextPage } from 'next'
 import Head from 'next/head'
 
-import { SideNav, Spinner, AppLayout, InfoTab } from '@/components'
-import { FileBrowser, Summary } from '@/features/storage'
 import { CheckAuth, useAuth } from '@/lib/auth'
+import { AppLayout, InfoTab, SideNav, Spinner } from '@/components'
+import { FileBrowser, Summary } from '@/features/storage'
 
-const FilesPage: NextPage = () => {
+const SharedPage: NextPage = () => {
   const { user } = useAuth()
 
   return (
     <>
       <Head>
-        <title>AI Summarizer - Files</title>
+        <title>AI Summarizer - Shared Files</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -22,7 +22,11 @@ const FilesPage: NextPage = () => {
         ) : (
           <AppLayout>
             <SideNav title="AI Summarizer" />
-            <FileBrowser user={user} variant="normal" />
+            <FileBrowser
+              user={user}
+              variant="shared"
+              emptyMessage="No files shared"
+            />
             <InfoTab
               mainRender={() => <Summary user={user} variant="visual" />}
               subRender={() => <Summary user={user} variant="detailed" />}
@@ -34,4 +38,4 @@ const FilesPage: NextPage = () => {
   )
 }
 
-export default FilesPage
+export default SharedPage

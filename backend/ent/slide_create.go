@@ -69,6 +69,20 @@ func (sc *SlideCreate) SetSharedWith(s []string) *SlideCreate {
 	return sc
 }
 
+// SetDeleted sets the "deleted" field.
+func (sc *SlideCreate) SetDeleted(b bool) *SlideCreate {
+	sc.mutation.SetDeleted(b)
+	return sc
+}
+
+// SetNillableDeleted sets the "deleted" field if the given value is not nil.
+func (sc *SlideCreate) SetNillableDeleted(b *bool) *SlideCreate {
+	if b != nil {
+		sc.SetDeleted(*b)
+	}
+	return sc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (sc *SlideCreate) SetCreatedAt(t time.Time) *SlideCreate {
 	sc.mutation.SetCreatedAt(t)
@@ -216,6 +230,10 @@ func (sc *SlideCreate) defaults() {
 		v := slide.DefaultAccessLevel
 		sc.mutation.SetAccessLevel(v)
 	}
+	if _, ok := sc.mutation.Deleted(); !ok {
+		v := slide.DefaultDeleted
+		sc.mutation.SetDeleted(v)
+	}
 	if _, ok := sc.mutation.CreatedAt(); !ok {
 		v := slide.DefaultCreatedAt()
 		sc.mutation.SetCreatedAt(v)
@@ -245,6 +263,9 @@ func (sc *SlideCreate) check() error {
 	}
 	if _, ok := sc.mutation.SharedWith(); !ok {
 		return &ValidationError{Name: "shared_with", err: errors.New(`ent: missing required field "shared_with"`)}
+	}
+	if _, ok := sc.mutation.Deleted(); !ok {
+		return &ValidationError{Name: "deleted", err: errors.New(`ent: missing required field "deleted"`)}
 	}
 	if _, ok := sc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
@@ -326,6 +347,14 @@ func (sc *SlideCreate) createSpec() (*Slide, *sqlgraph.CreateSpec) {
 			Column: slide.FieldSharedWith,
 		})
 		_node.SharedWith = value
+	}
+	if value, ok := sc.mutation.Deleted(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: slide.FieldDeleted,
+		})
+		_node.Deleted = value
 	}
 	if value, ok := sc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

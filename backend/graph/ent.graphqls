@@ -40,6 +40,10 @@ input SlideWhereInput {
   accessLevelIn: [AccessLevel!]
   accessLevelNotIn: [AccessLevel!]
   
+  """deleted field predicates"""
+  deleted: Boolean
+  deletedNEQ: Boolean
+  
   """created_at field predicates"""
   createdAt: Time
   createdAtNEQ: Time

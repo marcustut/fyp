@@ -57,6 +57,12 @@ mutation UpdateSlideWithText($id: ID!, $text: String!) {
   }
 }
 
+mutation UpdateSlide($input: UpdateSlideInput!) {
+  UpdateSlide(input: $input) {
+    ...SlideFields
+  }
+}
+
 mutation DeleteSlide($id: ID!, $user_id: ID!) {
   DeleteSlide(id: $id, user_id: $user_id) {
     ...SlideFields
@@ -70,6 +76,7 @@ fragment SlideFields on Slide {
   size
   access_level
   shared_with
+  deleted
   created_at
   updated_at
 }

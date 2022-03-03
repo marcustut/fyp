@@ -771,6 +771,10 @@ type SlideWhereInput struct {
 	AccessLevelIn    []slide.AccessLevel `json:"accessLevelIn,omitempty"`
 	AccessLevelNotIn []slide.AccessLevel `json:"accessLevelNotIn,omitempty"`
 
+	// "deleted" field predicates.
+	Deleted    *bool `json:"deleted,omitempty"`
+	DeletedNEQ *bool `json:"deletedNEQ,omitempty"`
+
 	// "created_at" field predicates.
 	CreatedAt      *time.Time  `json:"createdAt,omitempty"`
 	CreatedAtNEQ   *time.Time  `json:"createdAtNEQ,omitempty"`
@@ -963,6 +967,12 @@ func (i *SlideWhereInput) P() (predicate.Slide, error) {
 	}
 	if len(i.AccessLevelNotIn) > 0 {
 		predicates = append(predicates, slide.AccessLevelNotIn(i.AccessLevelNotIn...))
+	}
+	if i.Deleted != nil {
+		predicates = append(predicates, slide.DeletedEQ(*i.Deleted))
+	}
+	if i.DeletedNEQ != nil {
+		predicates = append(predicates, slide.DeletedNEQ(*i.DeletedNEQ))
 	}
 	if i.CreatedAt != nil {
 		predicates = append(predicates, slide.CreatedAtEQ(*i.CreatedAt))

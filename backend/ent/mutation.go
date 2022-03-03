@@ -1009,6 +1009,7 @@ type SlideMutation struct {
 	addsize         *int64
 	access_level    *slide.AccessLevel
 	shared_with     *[]string
+	deleted         *bool
 	created_at      *time.Time
 	updated_at      *time.Time
 	clearedFields   map[string]struct{}
@@ -1333,6 +1334,42 @@ func (m *SlideMutation) ResetSharedWith() {
 	m.shared_with = nil
 }
 
+// SetDeleted sets the "deleted" field.
+func (m *SlideMutation) SetDeleted(b bool) {
+	m.deleted = &b
+}
+
+// Deleted returns the value of the "deleted" field in the mutation.
+func (m *SlideMutation) Deleted() (r bool, exists bool) {
+	v := m.deleted
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeleted returns the old "deleted" field's value of the Slide entity.
+// If the Slide object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SlideMutation) OldDeleted(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldDeleted is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldDeleted requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeleted: %w", err)
+	}
+	return oldValue.Deleted, nil
+}
+
+// ResetDeleted resets all changes to the "deleted" field.
+func (m *SlideMutation) ResetDeleted() {
+	m.deleted = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *SlideMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -1502,7 +1539,7 @@ func (m *SlideMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SlideMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.name != nil {
 		fields = append(fields, slide.FieldName)
 	}
@@ -1517,6 +1554,9 @@ func (m *SlideMutation) Fields() []string {
 	}
 	if m.shared_with != nil {
 		fields = append(fields, slide.FieldSharedWith)
+	}
+	if m.deleted != nil {
+		fields = append(fields, slide.FieldDeleted)
 	}
 	if m.created_at != nil {
 		fields = append(fields, slide.FieldCreatedAt)
@@ -1542,6 +1582,8 @@ func (m *SlideMutation) Field(name string) (ent.Value, bool) {
 		return m.AccessLevel()
 	case slide.FieldSharedWith:
 		return m.SharedWith()
+	case slide.FieldDeleted:
+		return m.Deleted()
 	case slide.FieldCreatedAt:
 		return m.CreatedAt()
 	case slide.FieldUpdatedAt:
@@ -1565,6 +1607,8 @@ func (m *SlideMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldAccessLevel(ctx)
 	case slide.FieldSharedWith:
 		return m.OldSharedWith(ctx)
+	case slide.FieldDeleted:
+		return m.OldDeleted(ctx)
 	case slide.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case slide.FieldUpdatedAt:
@@ -1612,6 +1656,13 @@ func (m *SlideMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSharedWith(v)
+		return nil
+	case slide.FieldDeleted:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeleted(v)
 		return nil
 	case slide.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -1720,6 +1771,9 @@ func (m *SlideMutation) ResetField(name string) error {
 		return nil
 	case slide.FieldSharedWith:
 		m.ResetSharedWith()
+		return nil
+	case slide.FieldDeleted:
+		m.ResetDeleted()
 		return nil
 	case slide.FieldCreatedAt:
 		m.ResetCreatedAt()

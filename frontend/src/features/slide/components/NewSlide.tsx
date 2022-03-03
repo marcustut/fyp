@@ -1,14 +1,23 @@
-import React, { Fragment, useCallback, useMemo, useState } from 'react'
-import { Icon } from '@iconify/react'
-import { Listbox, Tab, Transition } from '@headlessui/react'
+import React, { Fragment, useCallback, useState } from 'react'
 import Dropzone from 'react-dropzone'
+import { Icon } from '@iconify/react'
+import { Tab } from '@headlessui/react'
+import { Selection } from '@/components'
 import { classnames, TW, TTailwindString } from 'tailwindcss-classnames'
 
 import { Button, ButtonProps, Dialog, Input } from '@/components'
 import { toast } from 'react-toastify'
 import { handleFileRejections } from '@/utils/handler'
 import { SUMMARIZE_API_URL } from '@/lib/constants'
-import { SummarizeClient, SummarizeOptions } from '@/lib/summarize'
+import {
+  SummarizeClient,
+  SummarizeMaxCharPerSlide,
+  SummarizeMaxChunk,
+  SummarizeMode,
+  SummarizeOptions,
+  SummarizeTheme,
+  SummarizeType,
+} from '@/lib/summarize'
 import { isValidHttpUrl } from '@/utils/validate'
 import {
   useCreateSlideWithTextMutation,
@@ -32,7 +41,29 @@ type UserSummarizeOptions = Omit<
   'outputName'
 >
 
-const modes = ['ext', 'abs']
+const modes = {
+  [SummarizeMode.Extractive]: 'Original Text',
+  [SummarizeMode.Abstractive]: 'AI Generated Text',
+}
+
+const themes = {
+  [SummarizeTheme.Default]: 'Default',
+  [SummarizeTheme.AppleBasic]: 'Apple Basic',
+  [SummarizeTheme.Seriph]: 'Seriph',
+  [SummarizeTheme.Bricks]: 'Bricks',
+  [SummarizeTheme.ShibaInu]: 'Shiba Inu',
+}
+
+const maxChunks = {
+  [SummarizeMaxChunk.Short]: 'Short',
+  [SummarizeMaxChunk.Intermediate]: 'Intermediate',
+  [SummarizeMaxChunk.Long]: 'Long',
+}
+
+const maxCharPerSlides = {
+  [SummarizeMaxCharPerSlide.Compact]: 'Compact',
+  [SummarizeMaxCharPerSlide.Comfortable]: 'Comfortable',
+}
 
 export const NewSlide: React.FC<NewSlideProps> = ({ user, buttonProps }) => {
   const summarize = new SummarizeClient({ ServerURL: SUMMARIZE_API_URL })
@@ -41,21 +72,17 @@ export const NewSlide: React.FC<NewSlideProps> = ({ user, buttonProps }) => {
   const [uploadType, setUploadType] = useState<UploadType>(UploadType.File)
   const [url, setUrl] = useState<string>('')
   const [text, setText] = useState<string>('')
-  const [summarizeOpts, setSummarizeOpts] = useState<UserSummarizeOptions>({
-    mode: 'ext',
-    theme: 'apple-basic',
-    maxChunk: 500,
-    maxCharPerSlide: 500,
+  const [summarizeOpts, setSummarizeOpts] = useState<
+    Required<UserSummarizeOptions>
+  >({
+    mode: SummarizeMode.Extractive,
+    theme: SummarizeTheme.Default,
+    maxChunk: SummarizeMaxChunk.Short,
+    maxCharPerSlide: SummarizeMaxCharPerSlide.Compact,
   })
   const [stagedFile, setStagedFile] =
     useState<{ blob: Blob; fileName: string }>()
   const [_, createSlideWithText] = useCreateSlideWithTextMutation()
-
-  const summarizationMode = useMemo(
-    () =>
-      summarizeOpts.mode === 'ext' ? 'Original Text' : 'AI Generated Text',
-    [summarizeOpts]
-  )
 
   const handleCreateSlide = useCallback(
     async (mdText: string, fileName: string) => {
@@ -92,7 +119,7 @@ export const NewSlide: React.FC<NewSlideProps> = ({ user, buttonProps }) => {
         await summarize.uploadFile(stagedFile.blob, stagedFile.fileName)
         try {
           const mdText = await summarize.summarize({
-            type: 'pdf',
+            type: SummarizeType.PDF,
             input: stagedFile.fileName,
             outputName,
             ...summarizeOpts,
@@ -113,7 +140,7 @@ export const NewSlide: React.FC<NewSlideProps> = ({ user, buttonProps }) => {
         }
         try {
           const mdText = await summarize.summarize({
-            type: 'url',
+            type: SummarizeType.URL,
             input: url,
             outputName,
             ...summarizeOpts,
@@ -135,7 +162,7 @@ export const NewSlide: React.FC<NewSlideProps> = ({ user, buttonProps }) => {
         await summarize.uploadFile(new Blob([text]), fileName)
         try {
           const mdText = await summarize.summarize({
-            type: 'txt',
+            type: SummarizeType.Text,
             input: fileName,
             outputName,
             ...summarizeOpts,
@@ -297,71 +324,42 @@ export const NewSlide: React.FC<NewSlideProps> = ({ user, buttonProps }) => {
                   />
                 </Tab.Panel>
               </Tab.Panels>
-              <Listbox
+              <Selection
                 value={summarizeOpts.mode}
                 onChange={(mode) =>
                   setSummarizeOpts({ ...summarizeOpts, mode })
                 }
-              >
-                <p className="mt-4 mb-1 self-start text-left text-sm font-medium">
-                  Summarization Mode
-                </p>
-                <Listbox.Button className="relative w-full cursor-default rounded-lg bg-indigo-200 py-2 pl-3 pr-10 text-left focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
-                  <span className="block truncate">{summarizationMode}</span>
-                  <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                    <Icon
-                      icon="heroicons-outline:selector"
-                      className="h-5 w-5 text-gray-700"
-                      aria-hidden="true"
-                    />
-                  </span>
-                </Listbox.Button>
-                <Transition
-                  as={Fragment}
-                  leave="transition ease-in duration-100"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
-                  <Listbox.Options className="mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-                    {modes.map((mode, idx) => (
-                      <Listbox.Option
-                        key={idx}
-                        className={({ active }) =>
-                          `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                            active
-                              ? 'bg-indigo-100 text-indigo-700'
-                              : 'text-gray-900'
-                          }`
-                        }
-                        value={mode}
-                      >
-                        {({ selected }) => (
-                          <>
-                            <span
-                              className={`block truncate ${
-                                selected ? 'font-medium' : 'font-normal'
-                              }`}
-                            >
-                              {mode === 'ext'
-                                ? 'Original Text'
-                                : 'AI Generated Text'}
-                            </span>
-                            {selected ? (
-                              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
-                                <Icon
-                                  icon="heroicons-outline:check"
-                                  className="h-5 w-5"
-                                  aria-hidden="true"
-                                />
-                              </span>
-                            ) : null}
-                          </>
-                        )}
-                      </Listbox.Option>
-                    ))}
-                  </Listbox.Options>
-                </Transition>
-              </Listbox>
+                labelText={'Summarization Mode'}
+                buttonText={modes[summarizeOpts.mode]}
+                options={modes}
+              />
+              <Selection
+                value={summarizeOpts.theme}
+                onChange={(theme) =>
+                  setSummarizeOpts({ ...summarizeOpts, theme })
+                }
+                labelText={"Slide's Theme"}
+                buttonText={themes[summarizeOpts.theme]}
+                options={themes}
+              />
+              <Selection
+                value={summarizeOpts.maxChunk}
+                onChange={(maxChunk) =>
+                  setSummarizeOpts({ ...summarizeOpts, maxChunk })
+                }
+                labelText={'Paragraph Length'}
+                buttonText={maxChunks[summarizeOpts.maxChunk]}
+                options={maxChunks}
+              />
+              <Selection
+                value={summarizeOpts.maxCharPerSlide}
+                onChange={(maxCharPerSlide) =>
+                  setSummarizeOpts({ ...summarizeOpts, maxCharPerSlide })
+                }
+                labelText={'Slide Layout'}
+                buttonText={maxCharPerSlides[summarizeOpts.maxCharPerSlide]}
+                options={maxCharPerSlides}
+              />
               <Button
                 loading={loading}
                 variant="primary"

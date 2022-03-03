@@ -43,6 +43,8 @@ func (SlideMixin) Fields() []ent.Field {
 			SchemaType(map[string]string{
 				dialect.MySQL: "json DEFAULT (JSON_ARRAY())",
 			}),
+		field.Bool("deleted").
+			Default(false),
 	}
 }
 

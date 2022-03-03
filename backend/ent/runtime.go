@@ -54,6 +54,10 @@ func init() {
 	_ = slideMixinFields2
 	slideFields := schema.Slide{}.Fields()
 	_ = slideFields
+	// slideDescDeleted is the schema descriptor for deleted field.
+	slideDescDeleted := slideMixinFields1[5].Descriptor()
+	// slide.DefaultDeleted holds the default value on creation for the deleted field.
+	slide.DefaultDeleted = slideDescDeleted.Default.(bool)
 	// slideDescCreatedAt is the schema descriptor for created_at field.
 	slideDescCreatedAt := slideMixinFields2[0].Descriptor()
 	// slide.DefaultCreatedAt holds the default value on creation for the created_at field.

@@ -129,6 +129,7 @@ type CreateSlideInput struct {
 	Size        *int64
 	AccessLevel *slide.AccessLevel
 	SharedWith  []string
+	Deleted     *bool
 	CreatedAt   *time.Time
 	UpdatedAt   *time.Time
 	InstanceID  *ulid.ID
@@ -148,6 +149,9 @@ func (i *CreateSlideInput) Mutate(m *SlideCreate) {
 		m.SetAccessLevel(*v)
 	}
 	m.SetSharedWith(i.SharedWith)
+	if v := i.Deleted; v != nil {
+		m.SetDeleted(*v)
+	}
 	if v := i.CreatedAt; v != nil {
 		m.SetCreatedAt(*v)
 	}
@@ -176,6 +180,7 @@ type UpdateSlideInput struct {
 	ClearSize      bool
 	AccessLevel    *slide.AccessLevel
 	SharedWith     *[]string
+	Deleted        *bool
 	InstanceID     *ulid.ID
 	ClearInstance  bool
 	UserID         *ulid.ID
@@ -204,6 +209,9 @@ func (i *UpdateSlideInput) Mutate(m *SlideMutation) {
 	}
 	if v := i.SharedWith; v != nil {
 		m.SetSharedWith(*v)
+	}
+	if v := i.Deleted; v != nil {
+		m.SetDeleted(*v)
 	}
 	if i.ClearInstance {
 		m.ClearInstance()

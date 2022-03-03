@@ -166,7 +166,7 @@ func (s *Slide) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     s.ID,
 		Type:   "Slide",
-		Fields: make([]*Field, 7),
+		Fields: make([]*Field, 8),
 		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
@@ -210,10 +210,18 @@ func (s *Slide) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "shared_with",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(s.CreatedAt); err != nil {
+	if buf, err = json.Marshal(s.Deleted); err != nil {
 		return nil, err
 	}
 	node.Fields[5] = &Field{
+		Type:  "bool",
+		Name:  "deleted",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(s.CreatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
 		Type:  "time.Time",
 		Name:  "created_at",
 		Value: string(buf),
@@ -221,7 +229,7 @@ func (s *Slide) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(s.UpdatedAt); err != nil {
 		return nil, err
 	}
-	node.Fields[6] = &Field{
+	node.Fields[7] = &Field{
 		Type:  "time.Time",
 		Name:  "updated_at",
 		Value: string(buf),

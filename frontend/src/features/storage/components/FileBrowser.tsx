@@ -19,6 +19,7 @@ import {
   useDeleteSlideMutation,
   useListSlideQuery,
   UserWithAuth,
+  useUpdateSlideMutation,
 } from '@/generated/graphql'
 import { AvatarDropdown } from '@/features/auth'
 import { NewSlide } from '@/features/slide'
@@ -26,24 +27,41 @@ import { niceBytes } from '@/utils/formatting'
 
 type FileBrowserProps = {
   user: UserWithAuth
+  variant: 'normal' | 'bin' | 'starred' | 'shared'
+  emptyMessage?: string
 }
 
-export const FileBrowser: React.FC<FileBrowserProps> = ({ user }) => {
+export const FileBrowser: React.FC<FileBrowserProps> = ({
+  user,
+  variant,
+  emptyMessage = 'No files in the cloud',
+}) => {
   const [setGlobalFilter, setSetGlobalFilter] = useState<
     (filterValue: any) => void
   >(() => () => {})
   const [slides] = useListSlideQuery({
     variables: { where: { hasUserWith: [{ id: user.user.id }] } },
   })
-  const [_, deleteSlide] = useDeleteSlideMutation()
+  const [_deleteSlideState, deleteSlide] = useDeleteSlideMutation()
+  const [_updateSlideState, updateSlide] = useUpdateSlideMutation()
   const { push } = useRouter()
 
   const isFetching = useMemo(() => slides.fetching || !slides.data, [slides])
 
-  const data = useMemo(
-    () => (!slides.data ? [] : slides.data.Slides.edges.map((e) => e.node)),
-    [slides]
-  )
+  const data = useMemo(() => {
+    const mappedSlides = !slides.data
+      ? []
+      : slides.data.Slides.edges.map((e) => e.node)
+    return variant === 'bin'
+      ? mappedSlides.filter((s) => s.deleted)
+      : variant === 'shared'
+      ? mappedSlides.filter((s) => s.shared_with.length > 0)
+      : variant === 'starred'
+      ? mappedSlides
+      : variant === 'normal'
+      ? mappedSlides.filter((s) => !s.deleted)
+      : []
+  }, [slides])
 
   const findSlide = useCallback(
     (id: string) => data.filter((d) => d.id === id).shift(),
@@ -135,17 +153,46 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({ user }) => {
                       onClick: () => window.open(`slide/${value}`),
                     },
                     {
-                      render: () => <>Rename</>,
+                      render: () => (
+                        <>{variant === 'bin' ? 'Restore' : 'Rename'}</>
+                      ),
                       icon: (defaultClasses) => (
                         <Icon
-                          icon="heroicons-outline:pencil-alt"
+                          icon={
+                            variant === 'bin'
+                              ? 'heroicons-outline:reply'
+                              : 'heroicons-outline:pencil-alt'
+                          }
                           className={defaultClasses}
                         />
                       ),
-                      onClick: () => toast.warn('not implemented'),
+                      onClick: async () => {
+                        switch (variant) {
+                          case 'bin': {
+                            const { data, error } = await updateSlide({
+                              input: { id: value, deleted: false },
+                            })
+                            if (error || !data) {
+                              toast.error(
+                                'An error occured while restoring slide'
+                              )
+                              return
+                            }
+                            toast.success(
+                              `${data.UpdateSlide.name} has been restored`
+                            )
+                            break
+                          }
+                          default:
+                            toast.warn('not implemented')
+                            break
+                        }
+                      },
                     },
                     {
-                      render: () => <>Delete</>,
+                      render: () => (
+                        <>{variant === 'bin' ? 'Delete' : 'Move to Bin'}</>
+                      ),
                       icon: (defaultClasses) => (
                         <Icon
                           icon="heroicons-outline:trash"
@@ -153,17 +200,42 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({ user }) => {
                         />
                       ),
                       onClick: async () => {
-                        const { data, error } = await deleteSlide({
-                          id: value,
-                          user_id: user.user.id,
-                        })
-                        if (error || !data) {
-                          toast.error('An error occured while deleting slide')
-                          return
+                        switch (variant) {
+                          case 'bin': {
+                            const { data, error } = await deleteSlide({
+                              id: value,
+                              user_id: user.user.id,
+                            })
+                            if (error || !data) {
+                              toast.error(
+                                'An error occured while deleting slide'
+                              )
+                              return
+                            }
+                            toast.success(
+                              `${data.DeleteSlide.name} has been successfully deleted`
+                            )
+                            break
+                          }
+                          case 'normal': {
+                            const { data, error } = await updateSlide({
+                              input: { id: value, deleted: true },
+                            })
+                            if (error || !data) {
+                              toast.error(
+                                'An error occured while moving slide to bin'
+                              )
+                              return
+                            }
+                            toast.success(
+                              `${data.UpdateSlide.name} has been moved to bin`
+                            )
+                            break
+                          }
+                          default:
+                            toast.warn('not implemented')
+                            break
                         }
-                        toast.success(
-                          `${data.DeleteSlide.name} has been successfully deleted`
-                        )
                       },
                     },
                   ]}
@@ -228,7 +300,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({ user }) => {
       ) : data.length === 0 ? (
         <div className="flex h-3/4 flex-col items-center justify-center text-indigo-300">
           <Icon icon="heroicons-outline:inbox" className="h-16 w-16" />
-          <p className="mt-2 text-sm font-medium">No files in the cloud</p>
+          <p className="mt-2 text-sm font-medium">{emptyMessage}</p>
         </div>
       ) : (
         <Table

@@ -26,6 +26,8 @@ const (
 	FieldAccessLevel = "access_level"
 	// FieldSharedWith holds the string denoting the shared_with field in the database.
 	FieldSharedWith = "shared_with"
+	// FieldDeleted holds the string denoting the deleted field in the database.
+	FieldDeleted = "deleted"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -60,6 +62,7 @@ var Columns = []string{
 	FieldSize,
 	FieldAccessLevel,
 	FieldSharedWith,
+	FieldDeleted,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -86,6 +89,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultDeleted holds the default value on creation for the "deleted" field.
+	DefaultDeleted bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.

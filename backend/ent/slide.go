@@ -30,6 +30,8 @@ type Slide struct {
 	AccessLevel slide.AccessLevel `json:"access_level,omitempty"`
 	// SharedWith holds the value of the "shared_with" field.
 	SharedWith []string `json:"shared_with,omitempty"`
+	// Deleted holds the value of the "deleted" field.
+	Deleted bool `json:"deleted,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -86,6 +88,8 @@ func (*Slide) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case slide.FieldPathToken, slide.FieldSharedWith:
 			values[i] = new([]byte)
+		case slide.FieldDeleted:
+			values[i] = new(sql.NullBool)
 		case slide.FieldSize:
 			values[i] = new(sql.NullInt64)
 		case slide.FieldName, slide.FieldAccessLevel:
@@ -151,6 +155,12 @@ func (s *Slide) assignValues(columns []string, values []interface{}) error {
 				if err := json.Unmarshal(*value, &s.SharedWith); err != nil {
 					return fmt.Errorf("unmarshal field shared_with: %w", err)
 				}
+			}
+		case slide.FieldDeleted:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field deleted", values[i])
+			} else if value.Valid {
+				s.Deleted = value.Bool
 			}
 		case slide.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -221,6 +231,8 @@ func (s *Slide) String() string {
 	builder.WriteString(fmt.Sprintf("%v", s.AccessLevel))
 	builder.WriteString(", shared_with=")
 	builder.WriteString(fmt.Sprintf("%v", s.SharedWith))
+	builder.WriteString(", deleted=")
+	builder.WriteString(fmt.Sprintf("%v", s.Deleted))
 	builder.WriteString(", created_at=")
 	builder.WriteString(s.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", updated_at=")

@@ -95,6 +95,20 @@ func (su *SlideUpdate) SetSharedWith(s []string) *SlideUpdate {
 	return su
 }
 
+// SetDeleted sets the "deleted" field.
+func (su *SlideUpdate) SetDeleted(b bool) *SlideUpdate {
+	su.mutation.SetDeleted(b)
+	return su
+}
+
+// SetNillableDeleted sets the "deleted" field if the given value is not nil.
+func (su *SlideUpdate) SetNillableDeleted(b *bool) *SlideUpdate {
+	if b != nil {
+		su.SetDeleted(*b)
+	}
+	return su
+}
+
 // SetInstanceID sets the "instance" edge to the Instance entity by ID.
 func (su *SlideUpdate) SetInstanceID(id ulid.ID) *SlideUpdate {
 	su.mutation.SetInstanceID(id)
@@ -287,6 +301,13 @@ func (su *SlideUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: slide.FieldSharedWith,
 		})
 	}
+	if value, ok := su.mutation.Deleted(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: slide.FieldDeleted,
+		})
+	}
 	if su.mutation.InstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -438,6 +459,20 @@ func (suo *SlideUpdateOne) SetNillableAccessLevel(sl *slide.AccessLevel) *SlideU
 // SetSharedWith sets the "shared_with" field.
 func (suo *SlideUpdateOne) SetSharedWith(s []string) *SlideUpdateOne {
 	suo.mutation.SetSharedWith(s)
+	return suo
+}
+
+// SetDeleted sets the "deleted" field.
+func (suo *SlideUpdateOne) SetDeleted(b bool) *SlideUpdateOne {
+	suo.mutation.SetDeleted(b)
+	return suo
+}
+
+// SetNillableDeleted sets the "deleted" field if the given value is not nil.
+func (suo *SlideUpdateOne) SetNillableDeleted(b *bool) *SlideUpdateOne {
+	if b != nil {
+		suo.SetDeleted(*b)
+	}
 	return suo
 }
 
@@ -655,6 +690,13 @@ func (suo *SlideUpdateOne) sqlSave(ctx context.Context) (_node *Slide, err error
 			Type:   field.TypeJSON,
 			Value:  value,
 			Column: slide.FieldSharedWith,
+		})
+	}
+	if value, ok := suo.mutation.Deleted(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBool,
+			Value:  value,
+			Column: slide.FieldDeleted,
 		})
 	}
 	if suo.mutation.InstanceCleared() {
