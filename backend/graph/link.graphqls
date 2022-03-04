@@ -1,0 +1,66 @@
+enum LinkOrderField {
+  CREATED_AT
+  UPDATED_AT
+}
+
+type Link {
+  id: ID!
+  link_id: String!
+  original_url: String!
+  visited_count: Int!
+  created_at: Time!
+  updated_at: Time!
+}
+
+input CreateLinkOptionalLinkIDInput {
+  link_id: String
+  original_url: String!
+  owner_id: ID!
+}
+input CreateLinkInput {
+  link_id: String!
+  original_url: String!
+  visited_count: Int
+  owner_id: ID!
+}
+input UpdateLinkInput {
+  id: ID!
+  link_id: String
+  original_url: String
+  visited_count: Int
+  owner_id: ID
+  clear_owner: Boolean
+}
+
+type LinkConnection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [LinkEdge!]!
+}
+type LinkEdge {
+  node: Link!
+  cursor: Cursor!
+}
+input LinkOrder {
+  direction: OrderDirection!
+  field: LinkOrderField
+}
+
+extend type Query {
+  Link(id: ID!): Link!
+  Links(
+    after: Cursor
+    first: Int
+    before: Cursor
+    last: Int
+    where: LinkWhereInput
+    orderBy: LinkOrder
+  ): LinkConnection!
+}
+
+extend type Mutation {
+  CreateLink(input: CreateLinkInput!): Link!
+  CreateLinkOptionalLinkID(input: CreateLinkOptionalLinkIDInput!): Link!
+  UpdateLink(input: UpdateLinkInput!): Link!
+  DeleteLink(id: ID!): Link!
+}

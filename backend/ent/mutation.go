@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/marcustut/fyp/backend/ent/instance"
+	"github.com/marcustut/fyp/backend/ent/link"
 	"github.com/marcustut/fyp/backend/ent/predicate"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
@@ -27,6 +28,7 @@ const (
 
 	// Node types.
 	TypeInstance = "Instance"
+	TypeLink     = "Link"
 	TypeSlide    = "Slide"
 	TypeUser     = "User"
 )
@@ -997,6 +999,625 @@ func (m *InstanceMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Instance edge %s", name)
 }
 
+// LinkMutation represents an operation that mutates the Link nodes in the graph.
+type LinkMutation struct {
+	config
+	op               Op
+	typ              string
+	id               *ulid.ID
+	link_id          *string
+	original_url     *string
+	visited_count    *int64
+	addvisited_count *int64
+	created_at       *time.Time
+	updated_at       *time.Time
+	clearedFields    map[string]struct{}
+	owner            *ulid.ID
+	clearedowner     bool
+	done             bool
+	oldValue         func(context.Context) (*Link, error)
+	predicates       []predicate.Link
+}
+
+var _ ent.Mutation = (*LinkMutation)(nil)
+
+// linkOption allows management of the mutation configuration using functional options.
+type linkOption func(*LinkMutation)
+
+// newLinkMutation creates new mutation for the Link entity.
+func newLinkMutation(c config, op Op, opts ...linkOption) *LinkMutation {
+	m := &LinkMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeLink,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withLinkID sets the ID field of the mutation.
+func withLinkID(id ulid.ID) linkOption {
+	return func(m *LinkMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Link
+		)
+		m.oldValue = func(ctx context.Context) (*Link, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Link.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withLink sets the old Link of the mutation.
+func withLink(node *Link) linkOption {
+	return func(m *LinkMutation) {
+		m.oldValue = func(context.Context) (*Link, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m LinkMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m LinkMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Link entities.
+func (m *LinkMutation) SetID(id ulid.ID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *LinkMutation) ID() (id ulid.ID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetLinkID sets the "link_id" field.
+func (m *LinkMutation) SetLinkID(s string) {
+	m.link_id = &s
+}
+
+// LinkID returns the value of the "link_id" field in the mutation.
+func (m *LinkMutation) LinkID() (r string, exists bool) {
+	v := m.link_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLinkID returns the old "link_id" field's value of the Link entity.
+// If the Link object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LinkMutation) OldLinkID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldLinkID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldLinkID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLinkID: %w", err)
+	}
+	return oldValue.LinkID, nil
+}
+
+// ResetLinkID resets all changes to the "link_id" field.
+func (m *LinkMutation) ResetLinkID() {
+	m.link_id = nil
+}
+
+// SetOriginalURL sets the "original_url" field.
+func (m *LinkMutation) SetOriginalURL(s string) {
+	m.original_url = &s
+}
+
+// OriginalURL returns the value of the "original_url" field in the mutation.
+func (m *LinkMutation) OriginalURL() (r string, exists bool) {
+	v := m.original_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOriginalURL returns the old "original_url" field's value of the Link entity.
+// If the Link object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LinkMutation) OldOriginalURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldOriginalURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldOriginalURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOriginalURL: %w", err)
+	}
+	return oldValue.OriginalURL, nil
+}
+
+// ResetOriginalURL resets all changes to the "original_url" field.
+func (m *LinkMutation) ResetOriginalURL() {
+	m.original_url = nil
+}
+
+// SetVisitedCount sets the "visited_count" field.
+func (m *LinkMutation) SetVisitedCount(i int64) {
+	m.visited_count = &i
+	m.addvisited_count = nil
+}
+
+// VisitedCount returns the value of the "visited_count" field in the mutation.
+func (m *LinkMutation) VisitedCount() (r int64, exists bool) {
+	v := m.visited_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVisitedCount returns the old "visited_count" field's value of the Link entity.
+// If the Link object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LinkMutation) OldVisitedCount(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldVisitedCount is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldVisitedCount requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVisitedCount: %w", err)
+	}
+	return oldValue.VisitedCount, nil
+}
+
+// AddVisitedCount adds i to the "visited_count" field.
+func (m *LinkMutation) AddVisitedCount(i int64) {
+	if m.addvisited_count != nil {
+		*m.addvisited_count += i
+	} else {
+		m.addvisited_count = &i
+	}
+}
+
+// AddedVisitedCount returns the value that was added to the "visited_count" field in this mutation.
+func (m *LinkMutation) AddedVisitedCount() (r int64, exists bool) {
+	v := m.addvisited_count
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetVisitedCount resets all changes to the "visited_count" field.
+func (m *LinkMutation) ResetVisitedCount() {
+	m.visited_count = nil
+	m.addvisited_count = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *LinkMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *LinkMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Link entity.
+// If the Link object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LinkMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *LinkMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *LinkMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *LinkMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Link entity.
+// If the Link object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LinkMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *LinkMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetOwnerID sets the "owner" edge to the User entity by id.
+func (m *LinkMutation) SetOwnerID(id ulid.ID) {
+	m.owner = &id
+}
+
+// ClearOwner clears the "owner" edge to the User entity.
+func (m *LinkMutation) ClearOwner() {
+	m.clearedowner = true
+}
+
+// OwnerCleared reports if the "owner" edge to the User entity was cleared.
+func (m *LinkMutation) OwnerCleared() bool {
+	return m.clearedowner
+}
+
+// OwnerID returns the "owner" edge ID in the mutation.
+func (m *LinkMutation) OwnerID() (id ulid.ID, exists bool) {
+	if m.owner != nil {
+		return *m.owner, true
+	}
+	return
+}
+
+// OwnerIDs returns the "owner" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// OwnerID instead. It exists only for internal usage by the builders.
+func (m *LinkMutation) OwnerIDs() (ids []ulid.ID) {
+	if id := m.owner; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetOwner resets all changes to the "owner" edge.
+func (m *LinkMutation) ResetOwner() {
+	m.owner = nil
+	m.clearedowner = false
+}
+
+// Where appends a list predicates to the LinkMutation builder.
+func (m *LinkMutation) Where(ps ...predicate.Link) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *LinkMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Link).
+func (m *LinkMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *LinkMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.link_id != nil {
+		fields = append(fields, link.FieldLinkID)
+	}
+	if m.original_url != nil {
+		fields = append(fields, link.FieldOriginalURL)
+	}
+	if m.visited_count != nil {
+		fields = append(fields, link.FieldVisitedCount)
+	}
+	if m.created_at != nil {
+		fields = append(fields, link.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, link.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *LinkMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case link.FieldLinkID:
+		return m.LinkID()
+	case link.FieldOriginalURL:
+		return m.OriginalURL()
+	case link.FieldVisitedCount:
+		return m.VisitedCount()
+	case link.FieldCreatedAt:
+		return m.CreatedAt()
+	case link.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *LinkMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case link.FieldLinkID:
+		return m.OldLinkID(ctx)
+	case link.FieldOriginalURL:
+		return m.OldOriginalURL(ctx)
+	case link.FieldVisitedCount:
+		return m.OldVisitedCount(ctx)
+	case link.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case link.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Link field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LinkMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case link.FieldLinkID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLinkID(v)
+		return nil
+	case link.FieldOriginalURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOriginalURL(v)
+		return nil
+	case link.FieldVisitedCount:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVisitedCount(v)
+		return nil
+	case link.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case link.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Link field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *LinkMutation) AddedFields() []string {
+	var fields []string
+	if m.addvisited_count != nil {
+		fields = append(fields, link.FieldVisitedCount)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *LinkMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case link.FieldVisitedCount:
+		return m.AddedVisitedCount()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *LinkMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case link.FieldVisitedCount:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddVisitedCount(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Link numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *LinkMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *LinkMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *LinkMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Link nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *LinkMutation) ResetField(name string) error {
+	switch name {
+	case link.FieldLinkID:
+		m.ResetLinkID()
+		return nil
+	case link.FieldOriginalURL:
+		m.ResetOriginalURL()
+		return nil
+	case link.FieldVisitedCount:
+		m.ResetVisitedCount()
+		return nil
+	case link.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case link.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Link field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *LinkMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.owner != nil {
+		edges = append(edges, link.EdgeOwner)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *LinkMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case link.EdgeOwner:
+		if id := m.owner; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *LinkMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *LinkMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *LinkMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedowner {
+		edges = append(edges, link.EdgeOwner)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *LinkMutation) EdgeCleared(name string) bool {
+	switch name {
+	case link.EdgeOwner:
+		return m.clearedowner
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *LinkMutation) ClearEdge(name string) error {
+	switch name {
+	case link.EdgeOwner:
+		m.ClearOwner()
+		return nil
+	}
+	return fmt.Errorf("unknown Link unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *LinkMutation) ResetEdge(name string) error {
+	switch name {
+	case link.EdgeOwner:
+		m.ResetOwner()
+		return nil
+	}
+	return fmt.Errorf("unknown Link edge %s", name)
+}
+
 // SlideMutation represents an operation that mutates the Slide nodes in the graph.
 type SlideMutation struct {
 	config
@@ -1900,6 +2521,9 @@ type UserMutation struct {
 	slides           map[ulid.ID]struct{}
 	removedslides    map[ulid.ID]struct{}
 	clearedslides    bool
+	links            map[ulid.ID]struct{}
+	removedlinks     map[ulid.ID]struct{}
+	clearedlinks     bool
 	done             bool
 	oldValue         func(context.Context) (*User, error)
 	predicates       []predicate.User
@@ -2425,6 +3049,60 @@ func (m *UserMutation) ResetSlides() {
 	m.removedslides = nil
 }
 
+// AddLinkIDs adds the "links" edge to the Link entity by ids.
+func (m *UserMutation) AddLinkIDs(ids ...ulid.ID) {
+	if m.links == nil {
+		m.links = make(map[ulid.ID]struct{})
+	}
+	for i := range ids {
+		m.links[ids[i]] = struct{}{}
+	}
+}
+
+// ClearLinks clears the "links" edge to the Link entity.
+func (m *UserMutation) ClearLinks() {
+	m.clearedlinks = true
+}
+
+// LinksCleared reports if the "links" edge to the Link entity was cleared.
+func (m *UserMutation) LinksCleared() bool {
+	return m.clearedlinks
+}
+
+// RemoveLinkIDs removes the "links" edge to the Link entity by IDs.
+func (m *UserMutation) RemoveLinkIDs(ids ...ulid.ID) {
+	if m.removedlinks == nil {
+		m.removedlinks = make(map[ulid.ID]struct{})
+	}
+	for i := range ids {
+		delete(m.links, ids[i])
+		m.removedlinks[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedLinks returns the removed IDs of the "links" edge to the Link entity.
+func (m *UserMutation) RemovedLinksIDs() (ids []ulid.ID) {
+	for id := range m.removedlinks {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// LinksIDs returns the "links" edge IDs in the mutation.
+func (m *UserMutation) LinksIDs() (ids []ulid.ID) {
+	for id := range m.links {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetLinks resets all changes to the "links" edge.
+func (m *UserMutation) ResetLinks() {
+	m.links = nil
+	m.clearedlinks = false
+	m.removedlinks = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -2683,12 +3361,15 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.instances != nil {
 		edges = append(edges, user.EdgeInstances)
 	}
 	if m.slides != nil {
 		edges = append(edges, user.EdgeSlides)
+	}
+	if m.links != nil {
+		edges = append(edges, user.EdgeLinks)
 	}
 	return edges
 }
@@ -2709,18 +3390,27 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeLinks:
+		ids := make([]ent.Value, 0, len(m.links))
+		for id := range m.links {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedinstances != nil {
 		edges = append(edges, user.EdgeInstances)
 	}
 	if m.removedslides != nil {
 		edges = append(edges, user.EdgeSlides)
+	}
+	if m.removedlinks != nil {
+		edges = append(edges, user.EdgeLinks)
 	}
 	return edges
 }
@@ -2741,18 +3431,27 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeLinks:
+		ids := make([]ent.Value, 0, len(m.removedlinks))
+		for id := range m.removedlinks {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedinstances {
 		edges = append(edges, user.EdgeInstances)
 	}
 	if m.clearedslides {
 		edges = append(edges, user.EdgeSlides)
+	}
+	if m.clearedlinks {
+		edges = append(edges, user.EdgeLinks)
 	}
 	return edges
 }
@@ -2765,6 +3464,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedinstances
 	case user.EdgeSlides:
 		return m.clearedslides
+	case user.EdgeLinks:
+		return m.clearedlinks
 	}
 	return false
 }
@@ -2786,6 +3487,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeSlides:
 		m.ResetSlides()
+		return nil
+	case user.EdgeLinks:
+		m.ResetLinks()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

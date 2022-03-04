@@ -10,6 +10,12 @@ import (
 	"github.com/marcustut/fyp/backend/ent/slide"
 )
 
+type CreateLinkOptionalLinkIDInput struct {
+	LinkID      *string `json:"link_id"`
+	OriginalURL string  `json:"original_url"`
+	OwnerID     ulid.ID `json:"owner_id"`
+}
+
 type CreateSlideWithTextInput struct {
 	Name        string             `json:"name"`
 	AccessLevel *slide.AccessLevel `json:"access_level"`

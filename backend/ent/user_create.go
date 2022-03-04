@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/marcustut/fyp/backend/ent/instance"
+	"github.com/marcustut/fyp/backend/ent/link"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
 	"github.com/marcustut/fyp/backend/ent/user"
@@ -153,6 +154,21 @@ func (uc *UserCreate) AddSlides(s ...*Slide) *UserCreate {
 		ids[i] = s[i].ID
 	}
 	return uc.AddSlideIDs(ids...)
+}
+
+// AddLinkIDs adds the "links" edge to the Link entity by IDs.
+func (uc *UserCreate) AddLinkIDs(ids ...ulid.ID) *UserCreate {
+	uc.mutation.AddLinkIDs(ids...)
+	return uc
+}
+
+// AddLinks adds the "links" edges to the Link entity.
+func (uc *UserCreate) AddLinks(l ...*Link) *UserCreate {
+	ids := make([]ulid.ID, len(l))
+	for i := range l {
+		ids[i] = l[i].ID
+	}
+	return uc.AddLinkIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -408,6 +424,25 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeString,
 					Column: slide.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.LinksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.LinksTable,
+			Columns: []string{user.LinksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: link.FieldID,
 				},
 			},
 		}

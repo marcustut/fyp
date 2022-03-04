@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/marcustut/fyp/backend/ent/instance"
+	"github.com/marcustut/fyp/backend/ent/link"
 	"github.com/marcustut/fyp/backend/ent/schema"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
@@ -45,6 +46,35 @@ func init() {
 	instanceDescID := instanceMixinFields0[0].Descriptor()
 	// instance.DefaultID holds the default value on creation for the id field.
 	instance.DefaultID = instanceDescID.Default.(func() ulid.ID)
+	linkMixin := schema.Link{}.Mixin()
+	linkMixinFields0 := linkMixin[0].Fields()
+	_ = linkMixinFields0
+	linkMixinFields1 := linkMixin[1].Fields()
+	_ = linkMixinFields1
+	linkMixinFields2 := linkMixin[2].Fields()
+	_ = linkMixinFields2
+	linkFields := schema.Link{}.Fields()
+	_ = linkFields
+	// linkDescOriginalURL is the schema descriptor for original_url field.
+	linkDescOriginalURL := linkMixinFields1[1].Descriptor()
+	// link.OriginalURLValidator is a validator for the "original_url" field. It is called by the builders before save.
+	link.OriginalURLValidator = linkDescOriginalURL.Validators[0].(func(string) error)
+	// linkDescVisitedCount is the schema descriptor for visited_count field.
+	linkDescVisitedCount := linkMixinFields1[2].Descriptor()
+	// link.DefaultVisitedCount holds the default value on creation for the visited_count field.
+	link.DefaultVisitedCount = linkDescVisitedCount.Default.(int64)
+	// linkDescCreatedAt is the schema descriptor for created_at field.
+	linkDescCreatedAt := linkMixinFields2[0].Descriptor()
+	// link.DefaultCreatedAt holds the default value on creation for the created_at field.
+	link.DefaultCreatedAt = linkDescCreatedAt.Default.(func() time.Time)
+	// linkDescUpdatedAt is the schema descriptor for updated_at field.
+	linkDescUpdatedAt := linkMixinFields2[1].Descriptor()
+	// link.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	link.DefaultUpdatedAt = linkDescUpdatedAt.Default.(func() time.Time)
+	// linkDescID is the schema descriptor for id field.
+	linkDescID := linkMixinFields0[0].Descriptor()
+	// link.DefaultID holds the default value on creation for the id field.
+	link.DefaultID = linkDescID.Default.(func() ulid.ID)
 	slideMixin := schema.Slide{}.Mixin()
 	slideMixinFields0 := slideMixin[0].Fields()
 	_ = slideMixinFields0

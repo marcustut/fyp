@@ -5,4 +5,5 @@ type Controller struct {
 	Slide    interface{ Slide }
 	User     interface{ User }
 	Instance interface{ Instance }
+	Link     interface{ Link }
 }

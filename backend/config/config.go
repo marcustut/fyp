@@ -45,6 +45,10 @@ type config struct {
 			AwsAccessKeyID     string
 			AwsSecretAccessKey string
 		}
+		Link struct {
+			Port           int
+			ErrorReturnURL string
+		}
 	}
 }
 

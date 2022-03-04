@@ -20,6 +20,14 @@ func (i *Instance) Slide(ctx context.Context) (*Slide, error) {
 	return result, err
 }
 
+func (l *Link) Owner(ctx context.Context) (*User, error) {
+	result, err := l.Edges.OwnerOrErr()
+	if IsNotLoaded(err) {
+		result, err = l.QueryOwner().Only(ctx)
+	}
+	return result, err
+}
+
 func (s *Slide) Instance(ctx context.Context) (*Instance, error) {
 	result, err := s.Edges.InstanceOrErr()
 	if IsNotLoaded(err) {
@@ -48,6 +56,14 @@ func (u *User) Slides(ctx context.Context) ([]*Slide, error) {
 	result, err := u.Edges.SlidesOrErr()
 	if IsNotLoaded(err) {
 		result, err = u.QuerySlides().All(ctx)
+	}
+	return result, err
+}
+
+func (u *User) Links(ctx context.Context) ([]*Link, error) {
+	result, err := u.Edges.LinksOrErr()
+	if IsNotLoaded(err) {
+		result, err = u.QueryLinks().All(ctx)
 	}
 	return result, err
 }

@@ -21,6 +21,18 @@ func (i *InstanceQuery) collectField(ctx *graphql.OperationContext, field graphq
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (l *LinkQuery) CollectFields(ctx context.Context, satisfies ...string) *LinkQuery {
+	if fc := graphql.GetFieldContext(ctx); fc != nil {
+		l = l.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)
+	}
+	return l
+}
+
+func (l *LinkQuery) collectField(ctx *graphql.OperationContext, field graphql.CollectedField, satisfies ...string) *LinkQuery {
+	return l
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (s *SlideQuery) CollectFields(ctx context.Context, satisfies ...string) *SlideQuery {
 	if fc := graphql.GetFieldContext(ctx); fc != nil {
 		s = s.collectField(graphql.GetOperationContext(ctx), fc.Field, satisfies...)

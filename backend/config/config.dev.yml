@@ -26,3 +26,7 @@ services:
     port: 8082
     awsAccessKeyID: ${AWS_ACCESS_KEY_ID}
     awsSecretAccessKey: ${AWS_SECRET_ACCESS_KEY}
+
+  link:
+    port: 8083
+    errorReturnURL: ${ERROR_RETURN_URL}

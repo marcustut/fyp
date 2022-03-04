@@ -44,9 +44,9 @@ func (r *queryResolver) Instance(ctx context.Context, id ulid.ID) (*ent.Instance
 }
 
 func (r *queryResolver) Instances(ctx context.Context, after *ent.Cursor, first *int, before *ent.Cursor, last *int, where *ent.InstanceWhereInput, orderBy *ent.InstanceOrder) (*ent.InstanceConnection, error) {
-	is, err := r.controller.Instance.List(ctx, after, first, before, last, where, orderBy)
+	ic, err := r.controller.Instance.List(ctx, after, first, before, last, where, orderBy)
 	if err != nil {
 		return nil, handler.HandleError(ctx, err)
 	}
-	return is, nil
+	return ic, nil
 }

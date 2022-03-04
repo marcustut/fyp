@@ -51,6 +51,7 @@ func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("instances", Instance.Type),
 		edge.To("slides", Slide.Type),
+		edge.To("links", Link.Type),
 	}
 }
 

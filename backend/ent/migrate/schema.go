@@ -45,6 +45,30 @@ var (
 			},
 		},
 	}
+	// LinksColumns holds the columns for the "links" table.
+	LinksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString},
+		{Name: "link_id", Type: field.TypeString, Unique: true},
+		{Name: "original_url", Type: field.TypeString},
+		{Name: "visited_count", Type: field.TypeInt64, Default: 0},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "timestamp DEFAULT CURRENT_TIMESTAMP"}},
+		{Name: "updated_at", Type: field.TypeTime, SchemaType: map[string]string{"mysql": "timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"}},
+		{Name: "user_links", Type: field.TypeString, Nullable: true},
+	}
+	// LinksTable holds the schema information for the "links" table.
+	LinksTable = &schema.Table{
+		Name:       "links",
+		Columns:    LinksColumns,
+		PrimaryKey: []*schema.Column{LinksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "links_users_links",
+				Columns:    []*schema.Column{LinksColumns[6]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// SlidesColumns holds the columns for the "slides" table.
 	SlidesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -93,6 +117,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		InstancesTable,
+		LinksTable,
 		SlidesTable,
 		UsersTable,
 	}
@@ -101,5 +126,6 @@ var (
 func init() {
 	InstancesTable.ForeignKeys[0].RefTable = SlidesTable
 	InstancesTable.ForeignKeys[1].RefTable = UsersTable
+	LinksTable.ForeignKeys[0].RefTable = UsersTable
 	SlidesTable.ForeignKeys[0].RefTable = UsersTable
 }

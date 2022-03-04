@@ -44,9 +44,11 @@ type UserEdges struct {
 	Instances []*Instance `json:"instances,omitempty"`
 	// Slides holds the value of the slides edge.
 	Slides []*Slide `json:"slides,omitempty"`
+	// Links holds the value of the links edge.
+	Links []*Link `json:"links,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // InstancesOrErr returns the Instances value or an error if the edge
@@ -65,6 +67,15 @@ func (e UserEdges) SlidesOrErr() ([]*Slide, error) {
 		return e.Slides, nil
 	}
 	return nil, &NotLoadedError{edge: "slides"}
+}
+
+// LinksOrErr returns the Links value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) LinksOrErr() ([]*Link, error) {
+	if e.loadedTypes[2] {
+		return e.Links, nil
+	}
+	return nil, &NotLoadedError{edge: "links"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -160,6 +171,11 @@ func (u *User) QueryInstances() *InstanceQuery {
 // QuerySlides queries the "slides" edge of the User entity.
 func (u *User) QuerySlides() *SlideQuery {
 	return (&UserClient{config: u.config}).QuerySlides(u)
+}
+
+// QueryLinks queries the "links" edge of the User entity.
+func (u *User) QueryLinks() *LinkQuery {
+	return (&UserClient{config: u.config}).QueryLinks(u)
 }
 
 // Update returns a builder for updating this User.

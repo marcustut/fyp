@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/marcustut/fyp/backend/ent/instance"
+	"github.com/marcustut/fyp/backend/ent/link"
 	"github.com/marcustut/fyp/backend/ent/slide"
 	"github.com/marcustut/fyp/backend/ent/user"
 )
@@ -32,6 +33,7 @@ type OrderFunc func(*sql.Selector)
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
 		instance.Table: instance.ValidColumn,
+		link.Table:     link.ValidColumn,
 		slide.Table:    slide.ValidColumn,
 		user.Table:     user.ValidColumn,
 	}

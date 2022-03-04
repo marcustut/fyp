@@ -15,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
 	"github.com/marcustut/fyp/backend/ent/instance"
+	"github.com/marcustut/fyp/backend/ent/link"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
 	"github.com/marcustut/fyp/backend/ent/user"
@@ -516,6 +517,290 @@ func (i *Instance) ToEdge(order *InstanceOrder) *InstanceEdge {
 	return &InstanceEdge{
 		Node:   i,
 		Cursor: order.Field.toCursor(i),
+	}
+}
+
+// LinkEdge is the edge representation of Link.
+type LinkEdge struct {
+	Node   *Link  `json:"node"`
+	Cursor Cursor `json:"cursor"`
+}
+
+// LinkConnection is the connection containing edges to Link.
+type LinkConnection struct {
+	Edges      []*LinkEdge `json:"edges"`
+	PageInfo   PageInfo    `json:"pageInfo"`
+	TotalCount int         `json:"totalCount"`
+}
+
+// LinkPaginateOption enables pagination customization.
+type LinkPaginateOption func(*linkPager) error
+
+// WithLinkOrder configures pagination ordering.
+func WithLinkOrder(order *LinkOrder) LinkPaginateOption {
+	if order == nil {
+		order = DefaultLinkOrder
+	}
+	o := *order
+	return func(pager *linkPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultLinkOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithLinkFilter configures pagination filter.
+func WithLinkFilter(filter func(*LinkQuery) (*LinkQuery, error)) LinkPaginateOption {
+	return func(pager *linkPager) error {
+		if filter == nil {
+			return errors.New("LinkQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type linkPager struct {
+	order  *LinkOrder
+	filter func(*LinkQuery) (*LinkQuery, error)
+}
+
+func newLinkPager(opts []LinkPaginateOption) (*linkPager, error) {
+	pager := &linkPager{}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultLinkOrder
+	}
+	return pager, nil
+}
+
+func (p *linkPager) applyFilter(query *LinkQuery) (*LinkQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *linkPager) toCursor(l *Link) Cursor {
+	return p.order.Field.toCursor(l)
+}
+
+func (p *linkPager) applyCursors(query *LinkQuery, after, before *Cursor) *LinkQuery {
+	for _, predicate := range cursorsToPredicates(
+		p.order.Direction, after, before,
+		p.order.Field.field, DefaultLinkOrder.Field.field,
+	) {
+		query = query.Where(predicate)
+	}
+	return query
+}
+
+func (p *linkPager) applyOrder(query *LinkQuery, reverse bool) *LinkQuery {
+	direction := p.order.Direction
+	if reverse {
+		direction = direction.reverse()
+	}
+	query = query.Order(direction.orderFunc(p.order.Field.field))
+	if p.order.Field != DefaultLinkOrder.Field {
+		query = query.Order(direction.orderFunc(DefaultLinkOrder.Field.field))
+	}
+	return query
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Link.
+func (l *LinkQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...LinkPaginateOption,
+) (*LinkConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newLinkPager(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if l, err = pager.applyFilter(l); err != nil {
+		return nil, err
+	}
+
+	conn := &LinkConnection{Edges: []*LinkEdge{}}
+	if !hasCollectedField(ctx, edgesField) || first != nil && *first == 0 || last != nil && *last == 0 {
+		if hasCollectedField(ctx, totalCountField) ||
+			hasCollectedField(ctx, pageInfoField) {
+			count, err := l.Count(ctx)
+			if err != nil {
+				return nil, err
+			}
+			conn.TotalCount = count
+			conn.PageInfo.HasNextPage = first != nil && count > 0
+			conn.PageInfo.HasPreviousPage = last != nil && count > 0
+		}
+		return conn, nil
+	}
+
+	if (after != nil || first != nil || before != nil || last != nil) && hasCollectedField(ctx, totalCountField) {
+		count, err := l.Clone().Count(ctx)
+		if err != nil {
+			return nil, err
+		}
+		conn.TotalCount = count
+	}
+
+	l = pager.applyCursors(l, after, before)
+	l = pager.applyOrder(l, last != nil)
+	var limit int
+	if first != nil {
+		limit = *first + 1
+	} else if last != nil {
+		limit = *last + 1
+	}
+	if limit > 0 {
+		l = l.Limit(limit)
+	}
+
+	if field := getCollectedField(ctx, edgesField, nodeField); field != nil {
+		l = l.collectField(graphql.GetOperationContext(ctx), *field)
+	}
+
+	nodes, err := l.All(ctx)
+	if err != nil || len(nodes) == 0 {
+		return conn, err
+	}
+
+	if len(nodes) == limit {
+		conn.PageInfo.HasNextPage = first != nil
+		conn.PageInfo.HasPreviousPage = last != nil
+		nodes = nodes[:len(nodes)-1]
+	}
+
+	var nodeAt func(int) *Link
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Link {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Link {
+			return nodes[i]
+		}
+	}
+
+	conn.Edges = make([]*LinkEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		conn.Edges[i] = &LinkEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+
+	conn.PageInfo.StartCursor = &conn.Edges[0].Cursor
+	conn.PageInfo.EndCursor = &conn.Edges[len(conn.Edges)-1].Cursor
+	if conn.TotalCount == 0 {
+		conn.TotalCount = len(nodes)
+	}
+
+	return conn, nil
+}
+
+var (
+	// LinkOrderFieldCreatedAt orders Link by created_at.
+	LinkOrderFieldCreatedAt = &LinkOrderField{
+		field: link.FieldCreatedAt,
+		toCursor: func(l *Link) Cursor {
+			return Cursor{
+				ID:    l.ID,
+				Value: l.CreatedAt,
+			}
+		},
+	}
+	// LinkOrderFieldUpdatedAt orders Link by updated_at.
+	LinkOrderFieldUpdatedAt = &LinkOrderField{
+		field: link.FieldUpdatedAt,
+		toCursor: func(l *Link) Cursor {
+			return Cursor{
+				ID:    l.ID,
+				Value: l.UpdatedAt,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f LinkOrderField) String() string {
+	var str string
+	switch f.field {
+	case link.FieldCreatedAt:
+		str = "CREATED_AT"
+	case link.FieldUpdatedAt:
+		str = "UPDATED_AT"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f LinkOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *LinkOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("LinkOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATED_AT":
+		*f = *LinkOrderFieldCreatedAt
+	case "UPDATED_AT":
+		*f = *LinkOrderFieldUpdatedAt
+	default:
+		return fmt.Errorf("%s is not a valid LinkOrderField", str)
+	}
+	return nil
+}
+
+// LinkOrderField defines the ordering field of Link.
+type LinkOrderField struct {
+	field    string
+	toCursor func(*Link) Cursor
+}
+
+// LinkOrder defines the ordering of Link.
+type LinkOrder struct {
+	Direction OrderDirection  `json:"direction"`
+	Field     *LinkOrderField `json:"field"`
+}
+
+// DefaultLinkOrder is the default ordering of Link.
+var DefaultLinkOrder = &LinkOrder{
+	Direction: OrderDirectionAsc,
+	Field: &LinkOrderField{
+		field: link.FieldID,
+		toCursor: func(l *Link) Cursor {
+			return Cursor{ID: l.ID}
+		},
+	},
+}
+
+// ToEdge converts Link into LinkEdge.
+func (l *Link) ToEdge(order *LinkOrder) *LinkEdge {
+	if order == nil {
+		order = DefaultLinkOrder
+	}
+	return &LinkEdge{
+		Node:   l,
+		Cursor: order.Field.toCursor(l),
 	}
 }
 

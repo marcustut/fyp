@@ -11,6 +11,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/hashicorp/go-multierror"
 	"github.com/marcustut/fyp/backend/ent/instance"
+	"github.com/marcustut/fyp/backend/ent/link"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
 	"github.com/marcustut/fyp/backend/ent/user"
@@ -162,6 +163,67 @@ func (i *Instance) Node(ctx context.Context) (node *Node, err error) {
 	return node, nil
 }
 
+func (l *Link) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     l.ID,
+		Type:   "Link",
+		Fields: make([]*Field, 5),
+		Edges:  make([]*Edge, 1),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(l.LinkID); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "link_id",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(l.OriginalURL); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "original_url",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(l.VisitedCount); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "int64",
+		Name:  "visited_count",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(l.CreatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "time.Time",
+		Name:  "created_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(l.UpdatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "time.Time",
+		Name:  "updated_at",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "User",
+		Name: "owner",
+	}
+	err = l.QueryOwner().
+		Select(user.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
 func (s *Slide) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     s.ID,
@@ -262,7 +324,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 		ID:     u.ID,
 		Type:   "User",
 		Fields: make([]*Field, 8),
-		Edges:  make([]*Edge, 2),
+		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(u.Username); err != nil {
@@ -349,6 +411,16 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	if err != nil {
 		return nil, err
 	}
+	node.Edges[2] = &Edge{
+		Type: "Link",
+		Name: "links",
+	}
+	err = u.QueryLinks().
+		Select(link.FieldID).
+		Scan(ctx, &node.Edges[2].IDs)
+	if err != nil {
+		return nil, err
+	}
 	return node, nil
 }
 
@@ -423,6 +495,15 @@ func (c *Client) noder(ctx context.Context, table string, id ulid.ID) (Noder, er
 		n, err := c.Instance.Query().
 			Where(instance.ID(id)).
 			CollectFields(ctx, "Instance").
+			Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case link.Table:
+		n, err := c.Link.Query().
+			Where(link.ID(id)).
+			CollectFields(ctx, "Link").
 			Only(ctx)
 		if err != nil {
 			return nil, err
@@ -523,6 +604,19 @@ func (c *Client) noders(ctx context.Context, table string, ids []ulid.ID) ([]Nod
 		nodes, err := c.Instance.Query().
 			Where(instance.IDIn(ids...)).
 			CollectFields(ctx, "Instance").
+			All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case link.Table:
+		nodes, err := c.Link.Query().
+			Where(link.IDIn(ids...)).
+			CollectFields(ctx, "Link").
 			All(ctx)
 		if err != nil {
 			return nil, err

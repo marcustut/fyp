@@ -18,49 +18,49 @@ func NewInstanceRepository(client *ent.Client) usecaseRepository.Instance {
 	return &instanceRepository{client}
 }
 
-func (sr *instanceRepository) Get(ctx context.Context, id model.ID) (*model.Instance, error) {
-	s, err := sr.client.Instance.Query().Where(instance.IDEQ(id)).Only(ctx)
+func (ir *instanceRepository) Get(ctx context.Context, id model.ID) (*model.Instance, error) {
+	i, err := ir.client.Instance.Query().Where(instance.IDEQ(id)).Only(ctx)
 	if err != nil {
 		return nil, model.NewDBError(err)
 	}
-	return s, nil
+	return i, nil
 }
 
-func (sr *instanceRepository) List(ctx context.Context, after *model.Cursor, first *int, before *model.Cursor, last *int, where *model.InstanceWhereInput, orderBy *ent.InstanceOrder) (*model.InstanceConnection, error) {
-	sc, err := sr.client.
+func (ir *instanceRepository) List(ctx context.Context, after *model.Cursor, first *int, before *model.Cursor, last *int, where *model.InstanceWhereInput, orderBy *ent.InstanceOrder) (*model.InstanceConnection, error) {
+	ic, err := ir.client.
 		Instance.
 		Query().
 		Paginate(ctx, after, first, before, last, ent.WithInstanceFilter(where.Filter), ent.WithInstanceOrder(orderBy))
 	if err != nil {
 		return nil, model.NewDBError(err)
 	}
-	return sc, nil
+	return ic, nil
 }
 
-func (sr *instanceRepository) Create(ctx context.Context, input model.CreateInstanceInput) (*model.Instance, error) {
-	s, err := sr.client.Instance.Create().SetInput(input).Save(ctx)
+func (ir *instanceRepository) Create(ctx context.Context, input model.CreateInstanceInput) (*model.Instance, error) {
+	i, err := ir.client.Instance.Create().SetInput(input).Save(ctx)
 	if err != nil {
 		return nil, model.NewDBError(err)
 	}
-	return s, nil
+	return i, nil
 }
 
-func (sr *instanceRepository) Update(ctx context.Context, input model.UpdateInstanceInput) (*model.Instance, error) {
-	s, err := sr.client.Instance.UpdateOneID(input.ID).SetInput(input).Save(ctx)
+func (ir *instanceRepository) Update(ctx context.Context, input model.UpdateInstanceInput) (*model.Instance, error) {
+	i, err := ir.client.Instance.UpdateOneID(input.ID).SetInput(input).Save(ctx)
 	if err != nil {
 		return nil, model.NewDBError(err)
 	}
-	return s, nil
+	return i, nil
 }
 
-func (sr *instanceRepository) Delete(ctx context.Context, id model.ID) (*model.Instance, error) {
-	s, err := sr.Get(ctx, id)
+func (ir *instanceRepository) Delete(ctx context.Context, id model.ID) (*model.Instance, error) {
+	i, err := ir.Get(ctx, id)
 	if err != nil {
 		return nil, model.NewDBError(err)
 	}
-	err = sr.client.Instance.DeleteOneID(id).Exec(ctx)
+	err = ir.client.Instance.DeleteOneID(id).Exec(ctx)
 	if err != nil {
 		return nil, model.NewDBError(err)
 	}
-	return s, nil
+	return i, nil
 }

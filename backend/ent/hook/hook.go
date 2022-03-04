@@ -22,6 +22,19 @@ func (f InstanceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return f(ctx, mv)
 }
 
+// The LinkFunc type is an adapter to allow the use of ordinary
+// function as Link mutator.
+type LinkFunc func(context.Context, *ent.LinkMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LinkFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.LinkMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LinkMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The SlideFunc type is an adapter to allow the use of ordinary
 // function as Slide mutator.
 type SlideFunc func(context.Context, *ent.SlideMutation) (ent.Value, error)

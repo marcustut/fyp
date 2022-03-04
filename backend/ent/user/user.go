@@ -33,6 +33,8 @@ const (
 	EdgeInstances = "instances"
 	// EdgeSlides holds the string denoting the slides edge name in mutations.
 	EdgeSlides = "slides"
+	// EdgeLinks holds the string denoting the links edge name in mutations.
+	EdgeLinks = "links"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// InstancesTable is the table that holds the instances relation/edge.
@@ -49,6 +51,13 @@ const (
 	SlidesInverseTable = "slides"
 	// SlidesColumn is the table column denoting the slides relation/edge.
 	SlidesColumn = "user_slides"
+	// LinksTable is the table that holds the links relation/edge.
+	LinksTable = "links"
+	// LinksInverseTable is the table name for the Link entity.
+	// It exists in this package in order to avoid circular dependency with the "link" package.
+	LinksInverseTable = "links"
+	// LinksColumn is the table column denoting the links relation/edge.
+	LinksColumn = "user_links"
 )
 
 // Columns holds all SQL columns for user fields.

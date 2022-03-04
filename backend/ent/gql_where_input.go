@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/marcustut/fyp/backend/ent/instance"
+	"github.com/marcustut/fyp/backend/ent/link"
 	"github.com/marcustut/fyp/backend/ent/predicate"
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 	"github.com/marcustut/fyp/backend/ent/slide"
@@ -722,6 +723,349 @@ func (i *InstanceWhereInput) P() (predicate.Instance, error) {
 	}
 }
 
+// LinkWhereInput represents a where input for filtering Link queries.
+type LinkWhereInput struct {
+	Not *LinkWhereInput   `json:"not,omitempty"`
+	Or  []*LinkWhereInput `json:"or,omitempty"`
+	And []*LinkWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *ulid.ID  `json:"id,omitempty"`
+	IDNEQ   *ulid.ID  `json:"idNEQ,omitempty"`
+	IDIn    []ulid.ID `json:"idIn,omitempty"`
+	IDNotIn []ulid.ID `json:"idNotIn,omitempty"`
+	IDGT    *ulid.ID  `json:"idGT,omitempty"`
+	IDGTE   *ulid.ID  `json:"idGTE,omitempty"`
+	IDLT    *ulid.ID  `json:"idLT,omitempty"`
+	IDLTE   *ulid.ID  `json:"idLTE,omitempty"`
+
+	// "link_id" field predicates.
+	LinkID             *string  `json:"linkID,omitempty"`
+	LinkIDNEQ          *string  `json:"linkIDNEQ,omitempty"`
+	LinkIDIn           []string `json:"linkIDIn,omitempty"`
+	LinkIDNotIn        []string `json:"linkIDNotIn,omitempty"`
+	LinkIDGT           *string  `json:"linkIDGT,omitempty"`
+	LinkIDGTE          *string  `json:"linkIDGTE,omitempty"`
+	LinkIDLT           *string  `json:"linkIDLT,omitempty"`
+	LinkIDLTE          *string  `json:"linkIDLTE,omitempty"`
+	LinkIDContains     *string  `json:"linkIDContains,omitempty"`
+	LinkIDHasPrefix    *string  `json:"linkIDHasPrefix,omitempty"`
+	LinkIDHasSuffix    *string  `json:"linkIDHasSuffix,omitempty"`
+	LinkIDEqualFold    *string  `json:"linkIDEqualFold,omitempty"`
+	LinkIDContainsFold *string  `json:"linkIDContainsFold,omitempty"`
+
+	// "original_url" field predicates.
+	OriginalURL             *string  `json:"originalURL,omitempty"`
+	OriginalURLNEQ          *string  `json:"originalURLNEQ,omitempty"`
+	OriginalURLIn           []string `json:"originalURLIn,omitempty"`
+	OriginalURLNotIn        []string `json:"originalURLNotIn,omitempty"`
+	OriginalURLGT           *string  `json:"originalURLGT,omitempty"`
+	OriginalURLGTE          *string  `json:"originalURLGTE,omitempty"`
+	OriginalURLLT           *string  `json:"originalURLLT,omitempty"`
+	OriginalURLLTE          *string  `json:"originalURLLTE,omitempty"`
+	OriginalURLContains     *string  `json:"originalURLContains,omitempty"`
+	OriginalURLHasPrefix    *string  `json:"originalURLHasPrefix,omitempty"`
+	OriginalURLHasSuffix    *string  `json:"originalURLHasSuffix,omitempty"`
+	OriginalURLEqualFold    *string  `json:"originalURLEqualFold,omitempty"`
+	OriginalURLContainsFold *string  `json:"originalURLContainsFold,omitempty"`
+
+	// "visited_count" field predicates.
+	VisitedCount      *int64  `json:"visitedCount,omitempty"`
+	VisitedCountNEQ   *int64  `json:"visitedCountNEQ,omitempty"`
+	VisitedCountIn    []int64 `json:"visitedCountIn,omitempty"`
+	VisitedCountNotIn []int64 `json:"visitedCountNotIn,omitempty"`
+	VisitedCountGT    *int64  `json:"visitedCountGT,omitempty"`
+	VisitedCountGTE   *int64  `json:"visitedCountGTE,omitempty"`
+	VisitedCountLT    *int64  `json:"visitedCountLT,omitempty"`
+	VisitedCountLTE   *int64  `json:"visitedCountLTE,omitempty"`
+
+	// "created_at" field predicates.
+	CreatedAt      *time.Time  `json:"createdAt,omitempty"`
+	CreatedAtNEQ   *time.Time  `json:"createdAtNEQ,omitempty"`
+	CreatedAtIn    []time.Time `json:"createdAtIn,omitempty"`
+	CreatedAtNotIn []time.Time `json:"createdAtNotIn,omitempty"`
+	CreatedAtGT    *time.Time  `json:"createdAtGT,omitempty"`
+	CreatedAtGTE   *time.Time  `json:"createdAtGTE,omitempty"`
+	CreatedAtLT    *time.Time  `json:"createdAtLT,omitempty"`
+	CreatedAtLTE   *time.Time  `json:"createdAtLTE,omitempty"`
+
+	// "updated_at" field predicates.
+	UpdatedAt      *time.Time  `json:"updatedAt,omitempty"`
+	UpdatedAtNEQ   *time.Time  `json:"updatedAtNEQ,omitempty"`
+	UpdatedAtIn    []time.Time `json:"updatedAtIn,omitempty"`
+	UpdatedAtNotIn []time.Time `json:"updatedAtNotIn,omitempty"`
+	UpdatedAtGT    *time.Time  `json:"updatedAtGT,omitempty"`
+	UpdatedAtGTE   *time.Time  `json:"updatedAtGTE,omitempty"`
+	UpdatedAtLT    *time.Time  `json:"updatedAtLT,omitempty"`
+	UpdatedAtLTE   *time.Time  `json:"updatedAtLTE,omitempty"`
+
+	// "owner" edge predicates.
+	HasOwner     *bool             `json:"hasOwner,omitempty"`
+	HasOwnerWith []*UserWhereInput `json:"hasOwnerWith,omitempty"`
+}
+
+// Filter applies the LinkWhereInput filter on the LinkQuery builder.
+func (i *LinkWhereInput) Filter(q *LinkQuery) (*LinkQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// P returns a predicate for filtering links.
+// An error is returned if the input is empty or invalid.
+func (i *LinkWhereInput) P() (predicate.Link, error) {
+	var predicates []predicate.Link
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, link.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.Link, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, link.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, err
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.Link, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, link.And(and...))
+	}
+	if i.ID != nil {
+		predicates = append(predicates, link.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, link.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, link.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, link.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, link.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, link.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, link.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, link.IDLTE(*i.IDLTE))
+	}
+	if i.LinkID != nil {
+		predicates = append(predicates, link.LinkIDEQ(*i.LinkID))
+	}
+	if i.LinkIDNEQ != nil {
+		predicates = append(predicates, link.LinkIDNEQ(*i.LinkIDNEQ))
+	}
+	if len(i.LinkIDIn) > 0 {
+		predicates = append(predicates, link.LinkIDIn(i.LinkIDIn...))
+	}
+	if len(i.LinkIDNotIn) > 0 {
+		predicates = append(predicates, link.LinkIDNotIn(i.LinkIDNotIn...))
+	}
+	if i.LinkIDGT != nil {
+		predicates = append(predicates, link.LinkIDGT(*i.LinkIDGT))
+	}
+	if i.LinkIDGTE != nil {
+		predicates = append(predicates, link.LinkIDGTE(*i.LinkIDGTE))
+	}
+	if i.LinkIDLT != nil {
+		predicates = append(predicates, link.LinkIDLT(*i.LinkIDLT))
+	}
+	if i.LinkIDLTE != nil {
+		predicates = append(predicates, link.LinkIDLTE(*i.LinkIDLTE))
+	}
+	if i.LinkIDContains != nil {
+		predicates = append(predicates, link.LinkIDContains(*i.LinkIDContains))
+	}
+	if i.LinkIDHasPrefix != nil {
+		predicates = append(predicates, link.LinkIDHasPrefix(*i.LinkIDHasPrefix))
+	}
+	if i.LinkIDHasSuffix != nil {
+		predicates = append(predicates, link.LinkIDHasSuffix(*i.LinkIDHasSuffix))
+	}
+	if i.LinkIDEqualFold != nil {
+		predicates = append(predicates, link.LinkIDEqualFold(*i.LinkIDEqualFold))
+	}
+	if i.LinkIDContainsFold != nil {
+		predicates = append(predicates, link.LinkIDContainsFold(*i.LinkIDContainsFold))
+	}
+	if i.OriginalURL != nil {
+		predicates = append(predicates, link.OriginalURLEQ(*i.OriginalURL))
+	}
+	if i.OriginalURLNEQ != nil {
+		predicates = append(predicates, link.OriginalURLNEQ(*i.OriginalURLNEQ))
+	}
+	if len(i.OriginalURLIn) > 0 {
+		predicates = append(predicates, link.OriginalURLIn(i.OriginalURLIn...))
+	}
+	if len(i.OriginalURLNotIn) > 0 {
+		predicates = append(predicates, link.OriginalURLNotIn(i.OriginalURLNotIn...))
+	}
+	if i.OriginalURLGT != nil {
+		predicates = append(predicates, link.OriginalURLGT(*i.OriginalURLGT))
+	}
+	if i.OriginalURLGTE != nil {
+		predicates = append(predicates, link.OriginalURLGTE(*i.OriginalURLGTE))
+	}
+	if i.OriginalURLLT != nil {
+		predicates = append(predicates, link.OriginalURLLT(*i.OriginalURLLT))
+	}
+	if i.OriginalURLLTE != nil {
+		predicates = append(predicates, link.OriginalURLLTE(*i.OriginalURLLTE))
+	}
+	if i.OriginalURLContains != nil {
+		predicates = append(predicates, link.OriginalURLContains(*i.OriginalURLContains))
+	}
+	if i.OriginalURLHasPrefix != nil {
+		predicates = append(predicates, link.OriginalURLHasPrefix(*i.OriginalURLHasPrefix))
+	}
+	if i.OriginalURLHasSuffix != nil {
+		predicates = append(predicates, link.OriginalURLHasSuffix(*i.OriginalURLHasSuffix))
+	}
+	if i.OriginalURLEqualFold != nil {
+		predicates = append(predicates, link.OriginalURLEqualFold(*i.OriginalURLEqualFold))
+	}
+	if i.OriginalURLContainsFold != nil {
+		predicates = append(predicates, link.OriginalURLContainsFold(*i.OriginalURLContainsFold))
+	}
+	if i.VisitedCount != nil {
+		predicates = append(predicates, link.VisitedCountEQ(*i.VisitedCount))
+	}
+	if i.VisitedCountNEQ != nil {
+		predicates = append(predicates, link.VisitedCountNEQ(*i.VisitedCountNEQ))
+	}
+	if len(i.VisitedCountIn) > 0 {
+		predicates = append(predicates, link.VisitedCountIn(i.VisitedCountIn...))
+	}
+	if len(i.VisitedCountNotIn) > 0 {
+		predicates = append(predicates, link.VisitedCountNotIn(i.VisitedCountNotIn...))
+	}
+	if i.VisitedCountGT != nil {
+		predicates = append(predicates, link.VisitedCountGT(*i.VisitedCountGT))
+	}
+	if i.VisitedCountGTE != nil {
+		predicates = append(predicates, link.VisitedCountGTE(*i.VisitedCountGTE))
+	}
+	if i.VisitedCountLT != nil {
+		predicates = append(predicates, link.VisitedCountLT(*i.VisitedCountLT))
+	}
+	if i.VisitedCountLTE != nil {
+		predicates = append(predicates, link.VisitedCountLTE(*i.VisitedCountLTE))
+	}
+	if i.CreatedAt != nil {
+		predicates = append(predicates, link.CreatedAtEQ(*i.CreatedAt))
+	}
+	if i.CreatedAtNEQ != nil {
+		predicates = append(predicates, link.CreatedAtNEQ(*i.CreatedAtNEQ))
+	}
+	if len(i.CreatedAtIn) > 0 {
+		predicates = append(predicates, link.CreatedAtIn(i.CreatedAtIn...))
+	}
+	if len(i.CreatedAtNotIn) > 0 {
+		predicates = append(predicates, link.CreatedAtNotIn(i.CreatedAtNotIn...))
+	}
+	if i.CreatedAtGT != nil {
+		predicates = append(predicates, link.CreatedAtGT(*i.CreatedAtGT))
+	}
+	if i.CreatedAtGTE != nil {
+		predicates = append(predicates, link.CreatedAtGTE(*i.CreatedAtGTE))
+	}
+	if i.CreatedAtLT != nil {
+		predicates = append(predicates, link.CreatedAtLT(*i.CreatedAtLT))
+	}
+	if i.CreatedAtLTE != nil {
+		predicates = append(predicates, link.CreatedAtLTE(*i.CreatedAtLTE))
+	}
+	if i.UpdatedAt != nil {
+		predicates = append(predicates, link.UpdatedAtEQ(*i.UpdatedAt))
+	}
+	if i.UpdatedAtNEQ != nil {
+		predicates = append(predicates, link.UpdatedAtNEQ(*i.UpdatedAtNEQ))
+	}
+	if len(i.UpdatedAtIn) > 0 {
+		predicates = append(predicates, link.UpdatedAtIn(i.UpdatedAtIn...))
+	}
+	if len(i.UpdatedAtNotIn) > 0 {
+		predicates = append(predicates, link.UpdatedAtNotIn(i.UpdatedAtNotIn...))
+	}
+	if i.UpdatedAtGT != nil {
+		predicates = append(predicates, link.UpdatedAtGT(*i.UpdatedAtGT))
+	}
+	if i.UpdatedAtGTE != nil {
+		predicates = append(predicates, link.UpdatedAtGTE(*i.UpdatedAtGTE))
+	}
+	if i.UpdatedAtLT != nil {
+		predicates = append(predicates, link.UpdatedAtLT(*i.UpdatedAtLT))
+	}
+	if i.UpdatedAtLTE != nil {
+		predicates = append(predicates, link.UpdatedAtLTE(*i.UpdatedAtLTE))
+	}
+
+	if i.HasOwner != nil {
+		p := link.HasOwner()
+		if !*i.HasOwner {
+			p = link.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasOwnerWith) > 0 {
+		with := make([]predicate.User, 0, len(i.HasOwnerWith))
+		for _, w := range i.HasOwnerWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, link.HasOwnerWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, fmt.Errorf("github.com/marcustut/fyp/backend/ent: empty predicate LinkWhereInput")
+	case 1:
+		return predicates[0], nil
+	default:
+		return link.And(predicates...), nil
+	}
+}
+
 // SlideWhereInput represents a where input for filtering Slide queries.
 type SlideWhereInput struct {
 	Not *SlideWhereInput   `json:"not,omitempty"`
@@ -1208,6 +1552,10 @@ type UserWhereInput struct {
 	// "slides" edge predicates.
 	HasSlides     *bool              `json:"hasSlides,omitempty"`
 	HasSlidesWith []*SlideWhereInput `json:"hasSlidesWith,omitempty"`
+
+	// "links" edge predicates.
+	HasLinks     *bool             `json:"hasLinks,omitempty"`
+	HasLinksWith []*LinkWhereInput `json:"hasLinksWith,omitempty"`
 }
 
 // Filter applies the UserWhereInput filter on the UserQuery builder.
@@ -1629,6 +1977,24 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, user.HasSlidesWith(with...))
+	}
+	if i.HasLinks != nil {
+		p := user.HasLinks()
+		if !*i.HasLinks {
+			p = user.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasLinksWith) > 0 {
+		with := make([]predicate.Link, 0, len(i.HasLinksWith))
+		for _, w := range i.HasLinksWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, err
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, user.HasLinksWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

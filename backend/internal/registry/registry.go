@@ -29,6 +29,7 @@ func (r *registry) NewController() controller.Controller {
 		User:     r.NewUserController(),
 		Slide:    r.NewSlideController(),
 		Instance: r.NewInstanceController(),
+		Link:     r.NewLinkController(),
 	}
 }
 
@@ -51,4 +52,11 @@ func (r *registry) NewInstanceController() controller.Instance {
 	repo := repository.NewInstanceRepository(r.client)
 	u := usecase.NewInstanceUsecase(repo)
 	return controller.NewInstanceController(u)
+}
+
+// NewLinkController conforms to interface
+func (r *registry) NewLinkController() controller.Link {
+	repo := repository.NewLinkRepository(r.client)
+	u := usecase.NewLinkUsecase(repo)
+	return controller.NewLinkController(u)
 }

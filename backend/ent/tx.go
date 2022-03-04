@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Instance is the client for interacting with the Instance builders.
 	Instance *InstanceClient
+	// Link is the client for interacting with the Link builders.
+	Link *LinkClient
 	// Slide is the client for interacting with the Slide builders.
 	Slide *SlideClient
 	// User is the client for interacting with the User builders.
@@ -154,6 +156,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Instance = NewInstanceClient(tx.config)
+	tx.Link = NewLinkClient(tx.config)
 	tx.Slide = NewSlideClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }

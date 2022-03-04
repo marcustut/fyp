@@ -122,6 +122,79 @@ func (u *InstanceUpdateOne) SetInput(i UpdateInstanceInput) *InstanceUpdateOne {
 	return u
 }
 
+// CreateLinkInput represents a mutation input for creating links.
+type CreateLinkInput struct {
+	LinkID       string
+	OriginalURL  string
+	VisitedCount *int64
+	CreatedAt    *time.Time
+	UpdatedAt    *time.Time
+	OwnerID      ulid.ID
+}
+
+// Mutate applies the CreateLinkInput on the LinkCreate builder.
+func (i *CreateLinkInput) Mutate(m *LinkCreate) {
+	m.SetLinkID(i.LinkID)
+	m.SetOriginalURL(i.OriginalURL)
+	if v := i.VisitedCount; v != nil {
+		m.SetVisitedCount(*v)
+	}
+	if v := i.CreatedAt; v != nil {
+		m.SetCreatedAt(*v)
+	}
+	if v := i.UpdatedAt; v != nil {
+		m.SetUpdatedAt(*v)
+	}
+	m.SetOwnerID(i.OwnerID)
+}
+
+// SetInput applies the change-set in the CreateLinkInput on the create builder.
+func (c *LinkCreate) SetInput(i CreateLinkInput) *LinkCreate {
+	i.Mutate(c)
+	return c
+}
+
+// UpdateLinkInput represents a mutation input for updating links.
+type UpdateLinkInput struct {
+	ID           ulid.ID
+	LinkID       *string
+	OriginalURL  *string
+	VisitedCount *int64
+	OwnerID      *ulid.ID
+	ClearOwner   bool
+}
+
+// Mutate applies the UpdateLinkInput on the LinkMutation.
+func (i *UpdateLinkInput) Mutate(m *LinkMutation) {
+	if v := i.LinkID; v != nil {
+		m.SetLinkID(*v)
+	}
+	if v := i.OriginalURL; v != nil {
+		m.SetOriginalURL(*v)
+	}
+	if v := i.VisitedCount; v != nil {
+		m.SetVisitedCount(*v)
+	}
+	if i.ClearOwner {
+		m.ClearOwner()
+	}
+	if v := i.OwnerID; v != nil {
+		m.SetOwnerID(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateLinkInput on the update builder.
+func (u *LinkUpdate) SetInput(i UpdateLinkInput) *LinkUpdate {
+	i.Mutate(u.Mutation())
+	return u
+}
+
+// SetInput applies the change-set in the UpdateLinkInput on the update-one builder.
+func (u *LinkUpdateOne) SetInput(i UpdateLinkInput) *LinkUpdateOne {
+	i.Mutate(u.Mutation())
+	return u
+}
+
 // CreateSlideInput represents a mutation input for creating slides.
 type CreateSlideInput struct {
 	Name        string
@@ -251,6 +324,7 @@ type CreateUserInput struct {
 	UpdatedAt    *time.Time
 	InstanceIDs  []ulid.ID
 	SlideIDs     []ulid.ID
+	LinkIDs      []ulid.ID
 }
 
 // Mutate applies the CreateUserInput on the UserCreate builder.
@@ -279,6 +353,9 @@ func (i *CreateUserInput) Mutate(m *UserCreate) {
 	if ids := i.SlideIDs; len(ids) > 0 {
 		m.AddSlideIDs(ids...)
 	}
+	if ids := i.LinkIDs; len(ids) > 0 {
+		m.AddLinkIDs(ids...)
+	}
 }
 
 // SetInput applies the change-set in the CreateUserInput on the create builder.
@@ -301,6 +378,8 @@ type UpdateUserInput struct {
 	RemoveInstanceIDs []ulid.ID
 	AddSlideIDs       []ulid.ID
 	RemoveSlideIDs    []ulid.ID
+	AddLinkIDs        []ulid.ID
+	RemoveLinkIDs     []ulid.ID
 }
 
 // Mutate applies the UpdateUserInput on the UserMutation.
@@ -337,6 +416,12 @@ func (i *UpdateUserInput) Mutate(m *UserMutation) {
 	}
 	if ids := i.RemoveSlideIDs; len(ids) > 0 {
 		m.RemoveSlideIDs(ids...)
+	}
+	if ids := i.AddLinkIDs; len(ids) > 0 {
+		m.AddLinkIDs(ids...)
+	}
+	if ids := i.RemoveLinkIDs; len(ids) > 0 {
+		m.RemoveLinkIDs(ids...)
 	}
 }
 

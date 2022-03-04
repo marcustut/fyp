@@ -11,6 +11,7 @@ import (
 	"github.com/marcustut/fyp/backend/ent/schema/ulid"
 
 	"github.com/marcustut/fyp/backend/ent/instance"
+	"github.com/marcustut/fyp/backend/ent/link"
 	"github.com/marcustut/fyp/backend/ent/slide"
 	"github.com/marcustut/fyp/backend/ent/user"
 
@@ -26,6 +27,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Instance is the client for interacting with the Instance builders.
 	Instance *InstanceClient
+	// Link is the client for interacting with the Link builders.
+	Link *LinkClient
 	// Slide is the client for interacting with the Slide builders.
 	Slide *SlideClient
 	// User is the client for interacting with the User builders.
@@ -44,6 +47,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Instance = NewInstanceClient(c.config)
+	c.Link = NewLinkClient(c.config)
 	c.Slide = NewSlideClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -80,6 +84,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:      ctx,
 		config:   cfg,
 		Instance: NewInstanceClient(cfg),
+		Link:     NewLinkClient(cfg),
 		Slide:    NewSlideClient(cfg),
 		User:     NewUserClient(cfg),
 	}, nil
@@ -101,6 +106,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		config:   cfg,
 		Instance: NewInstanceClient(cfg),
+		Link:     NewLinkClient(cfg),
 		Slide:    NewSlideClient(cfg),
 		User:     NewUserClient(cfg),
 	}, nil
@@ -133,6 +139,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Instance.Use(hooks...)
+	c.Link.Use(hooks...)
 	c.Slide.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -257,6 +264,112 @@ func (c *InstanceClient) QuerySlide(i *Instance) *SlideQuery {
 // Hooks returns the client hooks.
 func (c *InstanceClient) Hooks() []Hook {
 	return c.hooks.Instance
+}
+
+// LinkClient is a client for the Link schema.
+type LinkClient struct {
+	config
+}
+
+// NewLinkClient returns a client for the Link from the given config.
+func NewLinkClient(c config) *LinkClient {
+	return &LinkClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `link.Hooks(f(g(h())))`.
+func (c *LinkClient) Use(hooks ...Hook) {
+	c.hooks.Link = append(c.hooks.Link, hooks...)
+}
+
+// Create returns a create builder for Link.
+func (c *LinkClient) Create() *LinkCreate {
+	mutation := newLinkMutation(c.config, OpCreate)
+	return &LinkCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Link entities.
+func (c *LinkClient) CreateBulk(builders ...*LinkCreate) *LinkCreateBulk {
+	return &LinkCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Link.
+func (c *LinkClient) Update() *LinkUpdate {
+	mutation := newLinkMutation(c.config, OpUpdate)
+	return &LinkUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LinkClient) UpdateOne(l *Link) *LinkUpdateOne {
+	mutation := newLinkMutation(c.config, OpUpdateOne, withLink(l))
+	return &LinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LinkClient) UpdateOneID(id ulid.ID) *LinkUpdateOne {
+	mutation := newLinkMutation(c.config, OpUpdateOne, withLinkID(id))
+	return &LinkUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Link.
+func (c *LinkClient) Delete() *LinkDelete {
+	mutation := newLinkMutation(c.config, OpDelete)
+	return &LinkDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *LinkClient) DeleteOne(l *Link) *LinkDeleteOne {
+	return c.DeleteOneID(l.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *LinkClient) DeleteOneID(id ulid.ID) *LinkDeleteOne {
+	builder := c.Delete().Where(link.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LinkDeleteOne{builder}
+}
+
+// Query returns a query builder for Link.
+func (c *LinkClient) Query() *LinkQuery {
+	return &LinkQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Link entity by its id.
+func (c *LinkClient) Get(ctx context.Context, id ulid.ID) (*Link, error) {
+	return c.Query().Where(link.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LinkClient) GetX(ctx context.Context, id ulid.ID) *Link {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOwner queries the owner edge of a Link.
+func (c *LinkClient) QueryOwner(l *Link) *UserQuery {
+	query := &UserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := l.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(link.Table, link.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, link.OwnerTable, link.OwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(l.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *LinkClient) Hooks() []Hook {
+	return c.hooks.Link
 }
 
 // SlideClient is a client for the Slide schema.
@@ -491,6 +604,22 @@ func (c *UserClient) QuerySlides(u *User) *SlideQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(slide.Table, slide.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.SlidesTable, user.SlidesColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryLinks queries the links edge of a User.
+func (c *UserClient) QueryLinks(u *User) *LinkQuery {
+	query := &LinkQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(link.Table, link.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.LinksTable, user.LinksColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

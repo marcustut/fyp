@@ -9,6 +9,9 @@ import (
 // Instance is the predicate function for instance builders.
 type Instance func(*sql.Selector)
 
+// Link is the predicate function for link builders.
+type Link func(*sql.Selector)
+
 // Slide is the predicate function for slide builders.
 type Slide func(*sql.Selector)
 
