@@ -1,10 +1,25 @@
 version: "3.8"
 services:
-
   # Auth service
-  auth-service:
-    image: rust:latest
-    container_name: auth-service
+  # auth-service:
+  #   image: rust:latest
+  #   container_name: auth-service
+
+  # Slide service
+  slide-service:
+    build:
+      context: .
+      dockerfile: ./docker/slide-service/Dockerfile
+      args:
+        APP_ENV: ${APP_ENV}
+
+  # Compute service
+  compute-service:
+    build:
+      context: .
+      dockerfile: ./docker/compute-service/Dockerfile
+      args:
+        APP_ENV: ${APP_ENV}
 #  auth-db:
 #    image: postgres:14.1-alpine
 #    container_name: auth-db
