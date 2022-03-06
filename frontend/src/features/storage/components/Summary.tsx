@@ -5,6 +5,8 @@ import { HalfCircleProgress } from '@/components/HalfCircleProgress'
 import { niceBytes } from '@/utils/formatting'
 import { useListSlideQuery, UserWithAuth } from '@/generated/graphql'
 
+const maxSize = 102400
+
 type SummaryProps = {
   user: UserWithAuth
   variant: 'detailed' | 'visual'
@@ -17,7 +19,9 @@ export const Summary: React.FC<SummaryProps> = ({
   className = '',
 }) => {
   const [slides] = useListSlideQuery({
-    variables: { where: { hasUserWith: [{ id: user.user.id }] } },
+    variables: {
+      where: { hasUserWith: [{ id: user.user.id }], deleted: false },
+    },
   })
   const usage = useMemo(() => {
     if (!slides.data) return []
@@ -81,11 +85,11 @@ export const Summary: React.FC<SummaryProps> = ({
             <h3 className="text-2xl font-medium">Storage</h3>
             <HalfCircleProgress
               className="my-8"
-              progress={(storageUsed / 10000000) * 100}
+              progress={(storageUsed / maxSize) * 100}
             />
             <p className="text-3xl font-medium">{niceBytes(storageUsed)}</p>
             <p className="mt-1 text-slate-400">
-              of {niceBytes(10240000)} capacity
+              of {niceBytes(maxSize)} capacity
             </p>
           </>
         )

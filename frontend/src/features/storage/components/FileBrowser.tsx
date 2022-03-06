@@ -23,6 +23,7 @@ import {
 } from '@/generated/graphql'
 import { AvatarDropdown } from '@/features/auth'
 import { NewSlide } from '@/features/slide'
+import { FileRenameDialog } from '@/features/storage'
 import { niceBytes } from '@/utils/formatting'
 
 type FileBrowserProps = {
@@ -42,6 +43,10 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
   const [slides] = useListSlideQuery({
     variables: { where: { hasUserWith: [{ id: user.user.id }] } },
   })
+  const [fileRenameDialogProps, setFileRenameDialogProps] = useState<{
+    open: boolean
+    slide?: Slide
+  }>({ open: false })
   const [_deleteSlideState, deleteSlide] = useDeleteSlideMutation()
   const [_updateSlideState, updateSlide] = useUpdateSlideMutation()
   const { push } = useRouter()
@@ -183,6 +188,14 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                             )
                             break
                           }
+                          case 'normal':
+                          case 'shared':
+                          case 'starred':
+                            setFileRenameDialogProps({
+                              open: true,
+                              slide: findSlide(value),
+                            })
+                            break
                           default:
                             toast.warn('not implemented')
                             break
@@ -248,6 +261,20 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 
   return (
     <AppContainer>
+      {fileRenameDialogProps.slide && (
+        <FileRenameDialog
+          open={fileRenameDialogProps.open}
+          setOpen={(open) =>
+            typeof open === 'boolean'
+              ? setFileRenameDialogProps({ ...fileRenameDialogProps, open })
+              : setFileRenameDialogProps({
+                  ...fileRenameDialogProps,
+                  open: open(fileRenameDialogProps.open),
+                })
+          }
+          originalFile={fileRenameDialogProps.slide}
+        />
+      )}
       <div className="flex w-full items-center">
         <GlobalSearch
           setGlobalFilter={setGlobalFilter}
