@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"github.com/marcustut/fyp/backend/internal/infrastructure/datastore"
 	"github.com/marcustut/fyp/backend/internal/infrastructure/router"
 	"github.com/marcustut/fyp/backend/internal/registry"
+	"github.com/robfig/cron/v3"
 	"github.com/rs/cors"
 )
 
@@ -24,6 +26,8 @@ func main() {
 	ctrl := newController(client)
 
 	r := router.NewCompute(ctrl, cfg)
+	cr := newCron()
+	cr.Start()
 
 	log.Printf("compute-service running on port %d\n", config.C.Services.Compute.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.C.Services.Compute.Port), cors.Default().Handler(r)))
@@ -48,4 +52,35 @@ func newAWSConfig() aws.Config {
 		log.Fatalf("failed getting aws config: %v", err)
 	}
 	return *cfg
+}
+
+func newCron() *cron.Cron {
+	c := cron.New()
+	_, err := c.AddFunc("@every 1h", func() {
+		// clean instances every hour
+		reqURL := fmt.Sprintf("http://localhost:%d/clean", config.C.Services.Compute.Port)
+		req, err := http.NewRequest(http.MethodPost, reqURL, nil)
+		if err != nil {
+			log.Printf("unable to create HTTP request: %v\n", err)
+		}
+		req.Header.Set("accept", "application/json")
+
+		// execute the request
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			log.Printf("unable to send HTTP request: %v\n", err)
+		}
+		defer res.Body.Close()
+
+		var msg string
+		if err = json.NewDecoder(res.Body).Decode(&msg); err != nil {
+			log.Printf("unable to parse JSON response: %v\n", err)
+		}
+
+		log.Println(msg)
+	})
+	if err != nil {
+		log.Fatalf("error adding cron: %v", err)
+	}
+	return c
 }

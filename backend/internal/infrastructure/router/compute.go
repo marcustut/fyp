@@ -290,5 +290,80 @@ func NewCompute(ctrl controller.Controller, cfg aws.Config) *mux.Router {
 		}
 	}).Methods("POST")
 
+	r.HandleFunc("/clean", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		// list instances that are created more than an hour ago
+		ic, err := ctrl.Instance.List(r.Context(), nil, nil, nil, nil, &ent.InstanceWhereInput{
+			CreatedAtNotIn: []time.Time{time.Now().Add(-60 * time.Minute), time.Now()},
+		}, nil)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			if json.NewEncoder(w).Encode(fmt.Sprintf("%v", model.NewDBError(err))) != nil {
+				panic("error encoding json")
+			}
+			return
+		}
+
+		// dont continue if no instances
+		if ic.TotalCount == 0 {
+			w.WriteHeader(http.StatusOK)
+			if json.NewEncoder(w).Encode("no instances are running longer than 1hr") != nil {
+				panic("error encoding json")
+			}
+			return
+		}
+
+		// get all the instances' EC2 instance-id
+		var iIDs []string
+		for _, edge := range ic.Edges {
+			iIDs = append(iIDs, edge.Node.InstanceID)
+		}
+
+		// terminate instances
+		_, err = client.TerminateInstances(r.Context(), &ec2.TerminateInstancesInput{
+			InstanceIds: iIDs,
+		})
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			if json.NewEncoder(w).Encode(fmt.Sprintf("%v", model.NewInternalServerError(err))) != nil {
+				panic("error encoding json")
+			}
+			return
+		}
+
+		// wait for terminatation of ec2 instance
+		waiter := ec2.NewInstanceTerminatedWaiter(client)
+		_, err = waiter.WaitForOutput(r.Context(), &ec2.DescribeInstancesInput{
+			InstanceIds: iIDs,
+		}, time.Minute*5)
+		if err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			if json.NewEncoder(w).Encode(fmt.Sprintf("%v", model.NewInternalServerError(err))) != nil {
+				panic("error encoding json")
+			}
+			return
+		}
+
+		// delete instances from db
+		for _, id := range iIDs {
+			_, err = ctrl.Instance.Delete(r.Context(), ulid.ID(id))
+			if err != nil {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusInternalServerError)
+				if json.NewEncoder(w).Encode(fmt.Sprintf("%v", model.NewInternalServerError(err))) != nil {
+					panic("error encoding json")
+				}
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusOK)
+		if json.NewEncoder(w).Encode(fmt.Sprintf("successfully cleaned %d instances\n", len(iIDs))) != nil {
+			panic("error encoding json")
+		}
+	}).Methods("POST")
+
 	return r
 }

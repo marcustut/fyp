@@ -43,6 +43,7 @@ require (
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/klauspost/compress v1.14.2 // indirect
+	github.com/robfig/cron/v3 v3.0.0 // indirect
 	github.com/ugorji/go/codec v1.2.6 // indirect
 	nhooyr.io/websocket v1.8.7 // indirect
 )
