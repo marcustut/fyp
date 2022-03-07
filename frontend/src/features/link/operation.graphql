@@ -1,0 +1,14 @@
+mutation ShortenURL($input: CreateLinkOptionalLinkIDInput!) {
+  CreateLinkOptionalLinkID(input: $input) {
+    ...LinkFields
+  }
+}
+
+fragment LinkFields on Link {
+  id
+  link_id
+  original_url
+  visited_count
+  updated_at
+  created_at
+}

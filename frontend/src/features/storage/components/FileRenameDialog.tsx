@@ -7,19 +7,19 @@ import { toast } from 'react-toastify'
 import { z } from 'zod'
 
 const SlideRenameSchema = z.object({
-  name: z.string().nonempty(),
+  name: z.string().min(1),
 })
 
 type FileRenameDialogProps = {
   open: boolean
   setOpen: React.Dispatch<React.SetStateAction<boolean>>
-  originalFile: Slide
+  slide: Slide
 }
 
 export const FileRenameDialog: React.FC<FileRenameDialogProps> = ({
   open,
   setOpen,
-  originalFile,
+  slide,
 }) => {
   const {
     register,
@@ -34,7 +34,7 @@ export const FileRenameDialog: React.FC<FileRenameDialogProps> = ({
   const onSubmit = async (values: z.infer<typeof SlideRenameSchema>) => {
     setLoading(true)
     const { data, error } = await updateSlide({
-      input: { id: originalFile.id, name: values.name },
+      input: { id: slide.id, name: values.name },
     })
     if (error) toast.error(error.message)
     else if (!data) toast.error(`unexpected error`)
@@ -57,7 +57,7 @@ export const FileRenameDialog: React.FC<FileRenameDialogProps> = ({
               type="text"
               className="mt-1 w-full"
               placeholder="enter here..."
-              defaultValue={originalFile.name}
+              defaultValue={slide.name}
             />
             <p className="mt-1 ml-1 text-xs text-red-500">
               {errors.name && errors.name.message}

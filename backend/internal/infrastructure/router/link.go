@@ -28,6 +28,20 @@ func NewLink(ctrl controller.Controller) *mux.Router {
 			return
 		}
 
+		// update the visited_count
+		for _, edge := range lc.Edges {
+			updatedCount := edge.Node.VisitedCount + 1
+			_, err = ctrl.Link.Update(r.Context(), ent.UpdateLinkInput{
+				ID:           edge.Node.ID,
+				VisitedCount: &updatedCount,
+			})
+			if err != nil {
+				w.Header().Set("Location", config.C.Services.Link.ErrorReturnURL)
+				w.WriteHeader(http.StatusFound)
+				return
+			}
+		}
+
 		// redirect to original_url
 		w.Header().Set("Location", fmt.Sprint(lc.Edges[0].Node.OriginalURL))
 		w.WriteHeader(http.StatusFound)

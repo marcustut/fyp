@@ -19,8 +19,7 @@ export const CTA: React.FC = () => {
           borderRadius: TW.borderRadius('rounded-3xl'),
           backgroundColor: TW.backgroundColor('bg-indigo-600'),
         })}
-        // TODO: Implement this
-        onClick={() => toast.warning('not implemented')}
+        onClick={() => window.open('https://forms.gle/RFRNVEEwDJGFXK9d8')}
       >
         Feedback
       </Button>

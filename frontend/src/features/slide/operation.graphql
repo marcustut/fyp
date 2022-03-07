@@ -79,4 +79,21 @@ fragment SlideFields on Slide {
   deleted
   created_at
   updated_at
+  user {
+    ...UserFields
+  }
+  instance {
+    id
+    instance_id
+    instance_type
+    private_dns_name
+    private_ip_address
+    public_dns_name
+    public_ip_address
+    image_id
+    architecture
+    availability_zone
+    created_at
+    updated_at
+  }
 }

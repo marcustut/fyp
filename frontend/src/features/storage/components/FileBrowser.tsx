@@ -25,6 +25,7 @@ import { AvatarDropdown } from '@/features/auth'
 import { NewSlide } from '@/features/slide'
 import { FileRenameDialog } from '@/features/storage'
 import { niceBytes } from '@/utils/formatting'
+import { ShareDialog } from '@/features/link'
 
 type FileBrowserProps = {
   user: UserWithAuth
@@ -44,6 +45,10 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
     variables: { where: { hasUserWith: [{ id: user.user.id }] } },
   })
   const [fileRenameDialogProps, setFileRenameDialogProps] = useState<{
+    open: boolean
+    slide?: Slide
+  }>({ open: false })
+  const [shareDialogProps, setShareDialogProps] = useState<{
     open: boolean
     slide?: Slide
   }>({ open: false })
@@ -158,6 +163,20 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                       onClick: () => window.open(`slide/${value}`),
                     },
                     {
+                      render: () => <>Share</>,
+                      icon: (defaultClasses) => (
+                        <Icon
+                          icon="heroicons-outline:share"
+                          className={`${defaultClasses}`}
+                        />
+                      ),
+                      onClick: () =>
+                        setShareDialogProps({
+                          open: true,
+                          slide: findSlide(value),
+                        }),
+                    },
+                    {
                       render: () => (
                         <>{variant === 'bin' ? 'Restore' : 'Rename'}</>
                       ),
@@ -261,6 +280,20 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 
   return (
     <AppContainer>
+      {shareDialogProps.slide && (
+        <ShareDialog
+          open={shareDialogProps.open}
+          setOpen={(open) =>
+            typeof open === 'boolean'
+              ? setShareDialogProps({ ...shareDialogProps, open })
+              : setShareDialogProps({
+                  ...shareDialogProps,
+                  open: open(shareDialogProps.open),
+                })
+          }
+          slide={shareDialogProps.slide}
+        />
+      )}
       {fileRenameDialogProps.slide && (
         <FileRenameDialog
           open={fileRenameDialogProps.open}
@@ -272,7 +305,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                   open: open(fileRenameDialogProps.open),
                 })
           }
-          originalFile={fileRenameDialogProps.slide}
+          slide={fileRenameDialogProps.slide}
         />
       )}
       <div className="flex w-full items-center">

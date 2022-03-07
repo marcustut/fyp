@@ -19,6 +19,8 @@ type Slide {
   deleted: Boolean!
   created_at: Time!
   updated_at: Time!
+  user: User!
+  instance: Instance
 }
 
 input CreateSlideInput {

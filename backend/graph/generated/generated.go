@@ -79,6 +79,7 @@ type ComplexityRoot struct {
 		ID           func(childComplexity int) int
 		LinkID       func(childComplexity int) int
 		OriginalURL  func(childComplexity int) int
+		Owner        func(childComplexity int) int
 		UpdatedAt    func(childComplexity int) int
 		VisitedCount func(childComplexity int) int
 	}
@@ -146,11 +147,13 @@ type ComplexityRoot struct {
 		CreatedAt   func(childComplexity int) int
 		Deleted     func(childComplexity int) int
 		ID          func(childComplexity int) int
+		Instance    func(childComplexity int) int
 		Name        func(childComplexity int) int
 		PathToken   func(childComplexity int) int
 		SharedWith  func(childComplexity int) int
 		Size        func(childComplexity int) int
 		UpdatedAt   func(childComplexity int) int
+		User        func(childComplexity int) int
 	}
 
 	SlideConnection struct {
@@ -393,6 +396,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Link.OriginalURL(childComplexity), true
+
+	case "Link.owner":
+		if e.complexity.Link.Owner == nil {
+			break
+		}
+
+		return e.complexity.Link.Owner(childComplexity), true
 
 	case "Link.updated_at":
 		if e.complexity.Link.UpdatedAt == nil {
@@ -907,6 +917,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Slide.ID(childComplexity), true
 
+	case "Slide.instance":
+		if e.complexity.Slide.Instance == nil {
+			break
+		}
+
+		return e.complexity.Slide.Instance(childComplexity), true
+
 	case "Slide.name":
 		if e.complexity.Slide.Name == nil {
 			break
@@ -941,6 +958,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Slide.UpdatedAt(childComplexity), true
+
+	case "Slide.user":
+		if e.complexity.Slide.User == nil {
+			break
+		}
+
+		return e.complexity.Slide.User(childComplexity), true
 
 	case "SlideConnection.edges":
 		if e.complexity.SlideConnection.Edges == nil {
@@ -1773,6 +1797,7 @@ type Link {
   visited_count: Int!
   created_at: Time!
   updated_at: Time!
+  owner: User!
 }
 
 input CreateLinkOptionalLinkIDInput {
@@ -1884,6 +1909,8 @@ type Slide {
   deleted: Boolean!
   created_at: Time!
   updated_at: Time!
+  user: User!
+  instance: Instance
 }
 
 input CreateSlideInput {
@@ -3601,6 +3628,41 @@ func (ec *executionContext) _Link_updated_at(ctx context.Context, field graphql.
 	res := resTmp.(time.Time)
 	fc.Result = res
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Link_owner(ctx context.Context, field graphql.CollectedField, obj *ent.Link) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Link",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Owner(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _LinkConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.LinkConnection) (ret graphql.Marshaler) {
@@ -5715,6 +5777,73 @@ func (ec *executionContext) _Slide_updated_at(ctx context.Context, field graphql
 	res := resTmp.(time.Time)
 	fc.Result = res
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Slide_user(ctx context.Context, field graphql.CollectedField, obj *ent.Slide) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Slide",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.User(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Slide_instance(ctx context.Context, field graphql.CollectedField, obj *ent.Slide) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Slide",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Instance(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Instance)
+	fc.Result = res
+	return ec.marshalOInstance2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstance(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _SlideConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.SlideConnection) (ret graphql.Marshaler) {
@@ -11833,33 +11962,47 @@ func (ec *executionContext) _Link(ctx context.Context, sel ast.SelectionSet, obj
 		case "id":
 			out.Values[i] = ec._Link_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "link_id":
 			out.Values[i] = ec._Link_link_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "original_url":
 			out.Values[i] = ec._Link_original_url(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "visited_count":
 			out.Values[i] = ec._Link_visited_count(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "created_at":
 			out.Values[i] = ec._Link_created_at(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "updated_at":
 			out.Values[i] = ec._Link_updated_at(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "owner":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Link_owner(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12330,12 +12473,12 @@ func (ec *executionContext) _Slide(ctx context.Context, sel ast.SelectionSet, ob
 		case "id":
 			out.Values[i] = ec._Slide_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._Slide_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "path_token":
 			out.Values[i] = ec._Slide_path_token(ctx, field, obj)
@@ -12344,28 +12487,53 @@ func (ec *executionContext) _Slide(ctx context.Context, sel ast.SelectionSet, ob
 		case "access_level":
 			out.Values[i] = ec._Slide_access_level(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "shared_with":
 			out.Values[i] = ec._Slide_shared_with(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "deleted":
 			out.Values[i] = ec._Slide_deleted(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "created_at":
 			out.Values[i] = ec._Slide_created_at(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "updated_at":
 			out.Values[i] = ec._Slide_updated_at(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "user":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Slide_user(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "instance":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Slide_instance(ctx, field, obj)
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -13812,6 +13980,13 @@ func (ec *executionContext) marshalOID2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbacke
 		return graphql.Null
 	}
 	return v
+}
+
+func (ec *executionContext) marshalOInstance2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstance(ctx context.Context, sel ast.SelectionSet, v *ent.Instance) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Instance(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOInstanceOrder2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐInstanceOrder(ctx context.Context, v interface{}) (*ent.InstanceOrder, error) {
