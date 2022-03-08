@@ -138,6 +138,67 @@ def send_static_files(path):
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@app.route('/estimate', methods=['GET'])
+def estimate_time(article_len: int):
+    # 8 second per word
+    raw = article_len * 8
+    mins = (raw - raw % 60) / 60
+    secs = raw % 60
+    return f"{mins} minute(s) {secs} second(s)"
+
+def count_word():
+    type_ = request.args.get('type')
+    input_ = request.args.get('input')
+
+    if type_ == 'url':
+        validateURL = URLValidator()
+
+        # Check if input looks like an URL
+        try:
+            validateURL(input_)
+        except ValidationError:
+            raise HTTPException(StatusCode=400, detail=f"Input is an invalid URL.")
+
+        inputer = Inputer(type=type_)
+
+        # Get URL
+        try:
+            _, article_len = inputer.get_input(inp=input_)
+
+        except requests.ConnectionError as ex:
+            raise HTTPException(StatusCode=404, detail=f"URL does not exist. {ex} ")
+
+    elif type_ == 'pdf':
+        # Check if path exists
+        if os.path.isfile(f"./uploads/{input_}"):
+            # Extract text
+            inputer = Inputer(type=type_)
+            try:
+                _, article_len = inputer.get_input(inp="./uploads/" + input_)
+            except Exception as ex:
+                raise HTTPException(StatusCode=422, detail=f"Failed to extract text from PDF file. {ex}")
+        else:
+            raise HTTPException(StatusCode=404, detail="File does not exist.")
+
+    elif type_ == 'txt':
+        # Check if path exists
+        if os.path.isfile(f"./uploads/{input_}"):
+            inputer = Inputer(type=type_)
+            # Read TXT file
+            try:
+                _, article_len = inputer.get_input(inp="./uploads/" + input_)
+            except Exception as ex:
+                raise HTTPException(StatusCode=422, detail=f"Failed to read content from TXT file. {ex}")
+        else:
+            raise HTTPException(StatusCode=404, detail="File does not exist.")
+
+    else:
+        raise HTTPException(StatusCode=403, detail="File type not supported.")
+
+    est = estimate_time(article_len=article_len)
+
+    return {"articleLength": article_len, "estimatedTime": est}, 200
+
 @app.route('/uploads', methods=['POST'])
 def upload_file():
     # Check if request has file

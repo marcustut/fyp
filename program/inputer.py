@@ -13,7 +13,7 @@ class Inputer():
     valid_types = {'url', 'txt', 'pdf'}
     max_chunk: int
 
-    def __init__(self, type: str, max_chunk: int) -> None:
+    def __init__(self, type: str, max_chunk=500) -> None:
         '''Initialises the Inputer object.'''
         if(self.__contains__(type)):
             self.type = type
