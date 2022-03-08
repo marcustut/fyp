@@ -138,14 +138,7 @@ def send_static_files(path):
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/estimate', methods=['GET'])
-def estimate_time(article_len: int):
-    # 8 second per word
-    raw = article_len * 8
-    mins = (raw - raw % 60) / 60
-    secs = raw % 60
-    return f"{mins} minute(s) {secs} second(s)"
-
+@app.route('/estimate', methods=['POST'])
 def count_word():
     type_ = request.args.get('type')
     input_ = request.args.get('input')
@@ -195,9 +188,12 @@ def count_word():
     else:
         raise HTTPException(StatusCode=403, detail="File type not supported.")
 
-    est = estimate_time(article_len=article_len)
+    # 8 second per word
+    raw = round(article_len * 0.125)
+    mins = int((raw - raw % 60) / 60)
+    secs = raw % 60
 
-    return {"articleLength": article_len, "estimatedTime": est}, 200
+    return {"articleLength": article_len, "estimatedTime": f"{mins} minute(s) {secs} second(s)"}, 200
 
 @app.route('/uploads', methods=['POST'])
 def upload_file():
