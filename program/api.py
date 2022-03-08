@@ -189,11 +189,11 @@ def count_word():
         raise HTTPException(StatusCode=403, detail="File type not supported.")
 
     # 8 second per word
-    raw = round(article_len * 0.125)
+    raw = round(article_len * 0.15)
     mins = int((raw - raw % 60) / 60)
     secs = raw % 60
 
-    return {"articleLength": article_len, "estimatedTime": f"{mins} minute(s) {secs} second(s)"}, 200
+    return {"articleLength": article_len, "minutes": mins, "seconds": secs}, 200
 
 @app.route('/uploads', methods=['POST'])
 def upload_file():
