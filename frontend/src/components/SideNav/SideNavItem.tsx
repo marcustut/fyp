@@ -6,6 +6,7 @@ type SideNavItemProps = {
   name: string
   icon: (defaultClass: string, active: boolean) => JSX.Element
   path: string
+  openInNewTab?: boolean
   active?: boolean
   className?: string
 }
@@ -14,6 +15,7 @@ export const SideNavItem: React.FC<SideNavItemProps> = ({
   name,
   icon,
   path,
+  openInNewTab = false,
   active = false,
   className = '',
 }) => {
@@ -25,7 +27,7 @@ export const SideNavItem: React.FC<SideNavItemProps> = ({
           ? 'bg-indigo-100/50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-800 dark:text-indigo-50 dark:hover:bg-indigo-700'
           : 'bg-transparent text-slate-400 hover:bg-indigo-100/50 hover:text-indigo-600 dark:bg-transparent dark:hover:bg-indigo-800 dark:hover:text-indigo-50'
       }`}
-      onClick={() => push(path)}
+      onClick={() => (openInNewTab ? window.open(path) : push(path))}
     >
       {icon('mr-3 h-6 w-6', active)}
       {name}

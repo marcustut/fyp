@@ -12,7 +12,7 @@ const FilesPage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>AI Summarizer - Files</title>
+        <title>SliGen - Files</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -21,7 +21,7 @@ const FilesPage: NextPage = () => {
           <Spinner />
         ) : (
           <AppLayout>
-            <SideNav title="AI Summarizer" />
+            <SideNav title="SliGen" />
             <FileBrowser user={user} variant="normal" />
             <InfoTab
               mainRender={() => <Summary user={user} variant="visual" />}

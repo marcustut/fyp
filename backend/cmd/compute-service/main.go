@@ -56,7 +56,7 @@ func newAWSConfig() aws.Config {
 
 func newCron() *cron.Cron {
 	c := cron.New()
-	_, err := c.AddFunc("@every 1h", func() {
+	_, err := c.AddFunc("@every 5h", func() {
 		// clean instances every hour
 		reqURL := fmt.Sprintf("http://localhost:%d/clean", config.C.Services.Compute.Port)
 		req, err := http.NewRequest(http.MethodPost, reqURL, nil)

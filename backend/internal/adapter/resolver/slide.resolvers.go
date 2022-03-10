@@ -146,11 +146,27 @@ func (r *mutationResolver) DeleteSlide(ctx context.Context, id ulid.ID, userID u
 		return nil, err
 	}
 
-	// delete file from db
+	// delete slide from db
 	s, err := r.controller.Slide.Delete(ctx, id)
 	if err != nil {
 		return nil, handler.HandleError(ctx, err)
 	}
+	return s, nil
+}
+
+func (r *mutationResolver) AddUsersToSlide(ctx context.Context, id ulid.ID, emails []string) (*ent.Slide, error) {
+	s, err := r.controller.Slide.Get(ctx, id)
+	if err != nil {
+		return nil, handler.HandleError(ctx, err)
+	}
+
+	newSharedWith := helper.RemoveDuplicatesFromStrings(append(s.SharedWith, emails...))
+
+	s, err = s.Update().SetSharedWith(newSharedWith).Save(ctx)
+	if err != nil {
+		return nil, handler.HandleError(ctx, err)
+	}
+
 	return s, nil
 }
 

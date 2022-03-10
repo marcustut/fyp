@@ -96,6 +96,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		AddUsersToSlide          func(childComplexity int, id ulid.ID, emails []string) int
 		CreateInstance           func(childComplexity int, input ent.CreateInstanceInput) int
 		CreateLink               func(childComplexity int, input ent.CreateLinkInput) int
 		CreateLinkOptionalLinkID func(childComplexity int, input graph.CreateLinkOptionalLinkIDInput) int
@@ -213,6 +214,7 @@ type MutationResolver interface {
 	UpdateSlide(ctx context.Context, input ent.UpdateSlideInput) (*ent.Slide, error)
 	UpdateSlideWithText(ctx context.Context, id ulid.ID, text string) (*ent.Slide, error)
 	DeleteSlide(ctx context.Context, id ulid.ID, userID ulid.ID) (*ent.Slide, error)
+	AddUsersToSlide(ctx context.Context, id ulid.ID, emails []string) (*ent.Slide, error)
 	CreateUser(ctx context.Context, input ent.CreateUserInput) (*ent.User, error)
 	UpdateUser(ctx context.Context, input ent.UpdateUserInput) (*ent.User, error)
 	DeleteUser(ctx context.Context, id ulid.ID) (*ent.User, error)
@@ -452,6 +454,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.LinkEdge.Node(childComplexity), true
+
+	case "Mutation.AddUsersToSlide":
+		if e.complexity.Mutation.AddUsersToSlide == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_AddUsersToSlide_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddUsersToSlide(childComplexity, args["id"].(ulid.ID), args["emails"].([]string)), true
 
 	case "Mutation.CreateInstance":
 		if e.complexity.Mutation.CreateInstance == nil {
@@ -1976,6 +1990,8 @@ extend type Mutation {
   UpdateSlide(input: UpdateSlideInput!): Slide!
   UpdateSlideWithText(id: ID!, text: String!): Slide!
   DeleteSlide(id: ID!, user_id: ID!): Slide!
+
+  AddUsersToSlide(id: ID!, emails: [String!]!): Slide!
 }
 `, BuiltIn: false},
 	{Name: "graph/user.graphqls", Input: `enum UserOrderField {
@@ -2054,6 +2070,30 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_AddUsersToSlide_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ulid.ID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚋschemaᚋulidᚐID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 []string
+	if tmp, ok := rawArgs["emails"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("emails"))
+		arg1, err = ec.unmarshalNString2ᚕstringᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["emails"] = arg1
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_CreateInstance_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -4496,6 +4536,48 @@ func (ec *executionContext) _Mutation_DeleteSlide(ctx context.Context, field gra
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().DeleteSlide(rctx, args["id"].(ulid.ID), args["user_id"].(ulid.ID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Slide)
+	fc.Result = res
+	return ec.marshalNSlide2ᚖgithubᚗcomᚋmarcustutᚋfypᚋbackendᚋentᚐSlide(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_AddUsersToSlide(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_AddUsersToSlide_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddUsersToSlide(rctx, args["id"].(ulid.ID), args["emails"].([]string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -12175,6 +12257,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "DeleteSlide":
 			out.Values[i] = ec._Mutation_DeleteSlide(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "AddUsersToSlide":
+			out.Values[i] = ec._Mutation_AddUsersToSlide(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

@@ -16,7 +16,7 @@ const AuthPageQuery = z.object({
 })
 
 const Auth: NextPage = () => {
-  const { query, replace, back } = useRouter()
+  const { query, replace } = useRouter()
   const { user } = useAuth()
   const [result] = useUserByAccessTokenQuery({
     variables: { token: query.access_token as string },
@@ -32,9 +32,6 @@ const Auth: NextPage = () => {
     setView('failed')
   }
 
-  // redirect if already logged in
-  useEffect(() => user && back(), [user])
-
   // validate access_token
   useEffect(() => {
     // skip when query string is undefined
@@ -43,14 +40,20 @@ const Auth: NextPage = () => {
     // check if access_token exists and is valid JWT
     const res = AuthPageQuery.safeParse(query)
     if (!res.success) handleError(res.error)
-  }, [query])
 
-  useEffect(() => {
-    if (!result.data) return
+    // skip when fetching
+    if (result.fetching) return
 
+    // if no user, redirect back to landing
+    if (!result.data) {
+      replace('/')
+      return
+    }
+
+    // else bring to app
     setUser(result.data.UserByAccessToken)
     replace('/files')
-  }, [result])
+  }, [query, result])
 
   return (
     <div className="flex h-[100vh] flex-col items-center justify-center">

@@ -1,22 +1,25 @@
 import Head from 'next/head'
-import { useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
 import { NextPage } from 'next'
+
 import { useDarkMode } from '@/hooks'
 import { AuthDialog } from '@/features/auth'
+import { Icon } from '@iconify/react'
+import { useAuth } from '@/lib/auth'
 
 const IndexPage: NextPage = () => {
   const [authOpen, setAuthOpen] = useState<boolean>(false)
   const { darkMode, setDarkMode } = useDarkMode()
-  // const [summarizedText, setSummarizedText] = useState<string>('not summarized')
+  const { user } = useAuth()
 
-  const handleSignIn = () => {
-    setAuthOpen(true)
-  }
+  const handleSignIn = () => setAuthOpen(true)
 
   return (
     <>
       <Head>
-        <title>AI Summarizer</title>
+        <title>SliGen</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -25,28 +28,37 @@ const IndexPage: NextPage = () => {
       <div className="space-y-20 overflow-hidden dark:text-white">
         <header className="px-4 sm:px-6 md:px-8">
           <div className="flex w-full items-center justify-between py-6">
-            <button className="text-2xl font-bold">AI Presentation Tool</button>
+            <button className="flex items-center text-3xl font-bold text-indigo-600">
+              <div className="mr-4 rounded-xl bg-indigo-600 p-2">
+                <img src="/SliGenOutline.png" className="h-8 w-8" />
+              </div>
+              SliGen
+            </button>
             <div className="flex space-x-6">
-              <nav className="flex items-center space-x-8 font-medium">
-                <a
-                  className="hover:text-indigo-500 dark:hover:text-indigo-400"
-                  href="/docs"
-                >
-                  Docs
-                </a>
-                <a
-                  className="hover:text-indigo-500 dark:hover:text-indigo-400"
-                  href="/about"
-                >
-                  About
-                </a>
-              </nav>
-              <div className="border-l border-slate-200 dark:border-slate-800"></div>
+              {user && (
+                <>
+                  <nav className="flex items-center space-x-8 font-medium">
+                    <a
+                      className="hover:text-indigo-500 dark:hover:text-indigo-400"
+                      href="/files"
+                    >
+                      Go to App
+                    </a>
+                  </nav>
+                  <div className="border-l border-slate-700 dark:border-slate-200" />
+                </>
+              )}
               <button
-                className="text-slate-200 dark:text-slate-800"
+                className="text-slate-700 dark:text-slate-200"
                 onClick={() => setDarkMode(!darkMode)}
               >
-                {darkMode ? 'go light' : 'go dark'}
+                <Icon
+                  icon={
+                    darkMode
+                      ? 'heroicons-outline:sun'
+                      : 'heroicons-outline:moon'
+                  }
+                />
               </button>
             </div>
           </div>
@@ -78,16 +90,15 @@ const IndexPage: NextPage = () => {
           </div>
         </main>
 
-        <footer className="flex h-24 w-full items-center justify-center border-t border-slate-200 dark:border-slate-800">
-          <a
-            className="flex items-center justify-center"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Powered by{' '}
-            <img src="/vercel.svg" alt="Vercel Logo" className="ml-2 h-4" />
-          </a>
+        <footer className="flex h-24 w-full items-center justify-center whitespace-pre-wrap border-t border-slate-200 dark:border-slate-800">
+          built by{' '}
+          <Link href="https://github.com/marcustut">
+            <a className="font-medium text-slate-500">@marcustut </a>
+          </Link>
+          and{' '}
+          <Link href="https://github.com/lianaling">
+            <a className="font-medium text-slate-500">@lianaling</a>
+          </Link>
         </footer>
       </div>
     </>

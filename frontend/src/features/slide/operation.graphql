@@ -69,6 +69,12 @@ mutation DeleteSlide($id: ID!, $user_id: ID!) {
   }
 }
 
+mutation AddUsersToSlide($id: ID!, $emails: [String!]!) {
+  AddUsersToSlide(id: $id, emails: $emails) {
+    ...SlideFields
+  }
+}
+
 fragment SlideFields on Slide {
   id
   name

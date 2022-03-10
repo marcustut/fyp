@@ -14,10 +14,11 @@ sudo setcap cap_net_bind_service=+ep `readlink -f \`which node\``
 mkdir slidev && cd slidev && npm init -y
 
 # install dependencies
-npm install @slidev/cli @slidev/theme-default @slidev/theme-apple-basic @slidev/theme-seriph @slidev/theme-bricks @slidev/theme-shibainu
+npm install @slidev/cli@0.28.9 @slidev/theme-default@0.21.2 @slidev/theme-apple-basic@0.20.0 @slidev/theme-seriph@0.21.2 @slidev/theme-bricks@0.0.2 @slidev/theme-shibainu@0.0.2
 
 # copy .md from bucket
 aws s3 cp s3://${BUCKET_NAME}/slides/${USER_ID}/${SLIDE_ID}.md slides.md
+#aws s3 cp s3://ai-text-summarizer/slides/USER_01FVCVRPPZ13BNZ5HNCGWCC89W/SLID_01FWDJKJ5NWKEBRR13Z3Q69X33.md slides.md
 
 # run slidev
 npx slidev --port 80 --remote

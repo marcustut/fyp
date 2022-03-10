@@ -198,11 +198,6 @@ func (lc *LinkCreate) check() error {
 	if _, ok := lc.mutation.OriginalURL(); !ok {
 		return &ValidationError{Name: "original_url", err: errors.New(`ent: missing required field "original_url"`)}
 	}
-	if v, ok := lc.mutation.OriginalURL(); ok {
-		if err := link.OriginalURLValidator(v); err != nil {
-			return &ValidationError{Name: "original_url", err: fmt.Errorf(`ent: validator failed for field "original_url": %w`, err)}
-		}
-	}
 	if _, ok := lc.mutation.VisitedCount(); !ok {
 		return &ValidationError{Name: "visited_count", err: errors.New(`ent: missing required field "visited_count"`)}
 	}

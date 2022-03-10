@@ -48,6 +48,12 @@ type SummarizeResponse = {
   error?: Error
 }
 
+export type SummarizeEstimateResponse = {
+  articleLength: number; 
+  minutes: number;
+  seconds: number;
+}
+
 // config to setup SummarizeClient
 type SummarizeClientConfig = {
   ServerURL: string
@@ -113,5 +119,15 @@ export class SummarizeClient {
     const resp = await response.json()
 
     return resp
+  }
+
+  public estimate = async (
+    type: SummarizeType,
+    input: string
+  ): Promise<SummarizeEstimateResponse> => {
+    const response = await fetch(`${this.ServerURL}/estimate?type=${type}&input=${input}`, {
+      method: 'POST',
+    })
+    return await response.json()
   }
 }

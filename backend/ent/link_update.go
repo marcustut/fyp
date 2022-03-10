@@ -146,11 +146,6 @@ func (lu *LinkUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (lu *LinkUpdate) check() error {
-	if v, ok := lu.mutation.OriginalURL(); ok {
-		if err := link.OriginalURLValidator(v); err != nil {
-			return &ValidationError{Name: "original_url", err: fmt.Errorf("ent: validator failed for field \"original_url\": %w", err)}
-		}
-	}
 	if _, ok := lu.mutation.OwnerID(); lu.mutation.OwnerCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"owner\"")
 	}
@@ -381,11 +376,6 @@ func (luo *LinkUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (luo *LinkUpdateOne) check() error {
-	if v, ok := luo.mutation.OriginalURL(); ok {
-		if err := link.OriginalURLValidator(v); err != nil {
-			return &ValidationError{Name: "original_url", err: fmt.Errorf("ent: validator failed for field \"original_url\": %w", err)}
-		}
-	}
 	if _, ok := luo.mutation.OwnerID(); luo.mutation.OwnerCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"owner\"")
 	}

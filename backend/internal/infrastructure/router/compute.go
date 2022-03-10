@@ -116,7 +116,7 @@ func NewCompute(ctrl controller.Controller, cfg aws.Config) *mux.Router {
 			MaxCount:     aws.Int32(1),
 			MinCount:     aws.Int32(1),
 			ImageId:      aws.String(awsConstant.AmiAmazonLinux2x86_64),
-			InstanceType: types.InstanceTypeT2Micro,
+			InstanceType: types.InstanceTypeT2Medium,
 			IamInstanceProfile: &types.IamInstanceProfileSpecification{
 				Arn: aws.String(awsConstant.EC2InstanceProfileArn),
 			},

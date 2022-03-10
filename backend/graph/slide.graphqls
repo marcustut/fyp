@@ -86,4 +86,6 @@ extend type Mutation {
   UpdateSlide(input: UpdateSlideInput!): Slide!
   UpdateSlideWithText(id: ID!, text: String!): Slide!
   DeleteSlide(id: ID!, user_id: ID!): Slide!
+
+  AddUsersToSlide(id: ID!, emails: [String!]!): Slide!
 }

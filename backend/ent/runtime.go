@@ -55,10 +55,6 @@ func init() {
 	_ = linkMixinFields2
 	linkFields := schema.Link{}.Fields()
 	_ = linkFields
-	// linkDescOriginalURL is the schema descriptor for original_url field.
-	linkDescOriginalURL := linkMixinFields1[1].Descriptor()
-	// link.OriginalURLValidator is a validator for the "original_url" field. It is called by the builders before save.
-	link.OriginalURLValidator = linkDescOriginalURL.Validators[0].(func(string) error)
 	// linkDescVisitedCount is the schema descriptor for visited_count field.
 	linkDescVisitedCount := linkMixinFields1[2].Descriptor()
 	// link.DefaultVisitedCount holds the default value on creation for the visited_count field.

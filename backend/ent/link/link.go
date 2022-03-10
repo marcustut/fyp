@@ -68,8 +68,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// OriginalURLValidator is a validator for the "original_url" field. It is called by the builders before save.
-	OriginalURLValidator func(string) error
 	// DefaultVisitedCount holds the default value on creation for the "visited_count" field.
 	DefaultVisitedCount int64
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.

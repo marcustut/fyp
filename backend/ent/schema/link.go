@@ -6,7 +6,6 @@ import (
 	"entgo.io/ent/schema/field"
 	entMixin "entgo.io/ent/schema/mixin"
 	"github.com/marcustut/fyp/backend/ent/mixin"
-	"github.com/marcustut/fyp/backend/internal/const/regex"
 )
 
 // Link holds the schema definition for the Link entity.
@@ -24,8 +23,7 @@ func (LinkMixin) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("link_id").
 			Unique(),
-		field.String("original_url").
-			Match(regex.Regexes[regex.URL]),
+		field.String("original_url"),
 		field.Int64("visited_count").
 			Default(0),
 	}

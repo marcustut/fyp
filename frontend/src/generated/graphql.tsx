@@ -399,6 +399,7 @@ export type LinkWhereInput = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  AddUsersToSlide: Slide;
   CreateInstance: Instance;
   CreateLink: Link;
   CreateLinkOptionalLinkID: Link;
@@ -420,6 +421,12 @@ export type Mutation = {
   UpdateSlide: Slide;
   UpdateSlideWithText: Slide;
   UpdateUser: User;
+};
+
+
+export type MutationAddUsersToSlideArgs = {
+  emails: Array<Scalars['String']>;
+  id: Scalars['ID'];
 };
 
 
@@ -1008,6 +1015,18 @@ export type UserByAccessTokenQueryVariables = Exact<{
 
 export type UserByAccessTokenQuery = { __typename?: 'Query', UserByAccessToken: { __typename?: 'UserWithAuth', access_token: string, expired_at: any, user: { __typename?: 'User', id: string, username: string, email: string, full_name?: string | null, avatar_url?: string | null, bio?: string | null, created_at: any, updated_at: any } } };
 
+export type UsersQueryVariables = Exact<{
+  after?: InputMaybe<Scalars['Cursor']>;
+  first?: InputMaybe<Scalars['Int']>;
+  before?: InputMaybe<Scalars['Cursor']>;
+  last?: InputMaybe<Scalars['Int']>;
+  where?: InputMaybe<UserWhereInput>;
+  orderBy?: InputMaybe<UserOrder>;
+}>;
+
+
+export type UsersQuery = { __typename?: 'Query', Users: { __typename?: 'UserConnection', totalCount: number, pageInfo: { __typename?: 'PageInfo', hasNextPage: boolean, hasPreviousPage: boolean, startCursor?: any | null, endCursor?: any | null }, edges?: Array<{ __typename?: 'UserEdge', node?: { __typename?: 'User', id: string, username: string, email: string, full_name?: string | null, avatar_url?: string | null, bio?: string | null, created_at: any, updated_at: any } | null } | null> | null } };
+
 export type SignUpMutationVariables = Exact<{
   input: CreateUserInput;
 }>;
@@ -1099,6 +1118,14 @@ export type DeleteSlideMutationVariables = Exact<{
 
 export type DeleteSlideMutation = { __typename?: 'Mutation', DeleteSlide: { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, deleted: boolean, created_at: any, updated_at: any, user: { __typename?: 'User', id: string, username: string, email: string, full_name?: string | null, avatar_url?: string | null, bio?: string | null, created_at: any, updated_at: any }, instance?: { __typename?: 'Instance', id: string, instance_id: string, instance_type: string, private_dns_name: string, private_ip_address: string, public_dns_name: string, public_ip_address: string, image_id: string, architecture: string, availability_zone: string, created_at: any, updated_at: any } | null } };
 
+export type AddUsersToSlideMutationVariables = Exact<{
+  id: Scalars['ID'];
+  emails: Array<Scalars['String']> | Scalars['String'];
+}>;
+
+
+export type AddUsersToSlideMutation = { __typename?: 'Mutation', AddUsersToSlide: { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, deleted: boolean, created_at: any, updated_at: any, user: { __typename?: 'User', id: string, username: string, email: string, full_name?: string | null, avatar_url?: string | null, bio?: string | null, created_at: any, updated_at: any }, instance?: { __typename?: 'Instance', id: string, instance_id: string, instance_type: string, private_dns_name: string, private_ip_address: string, public_dns_name: string, public_ip_address: string, image_id: string, architecture: string, availability_zone: string, created_at: any, updated_at: any } | null } };
+
 export type SlideFieldsFragment = { __typename?: 'Slide', id: string, name: string, path_token?: Array<string> | null, size?: number | null, access_level: AccessLevel, shared_with: Array<string>, deleted: boolean, created_at: any, updated_at: any, user: { __typename?: 'User', id: string, username: string, email: string, full_name?: string | null, avatar_url?: string | null, bio?: string | null, created_at: any, updated_at: any }, instance?: { __typename?: 'Instance', id: string, instance_id: string, instance_type: string, private_dns_name: string, private_ip_address: string, public_dns_name: string, public_ip_address: string, image_id: string, architecture: string, availability_zone: string, created_at: any, updated_at: any } | null };
 
 export const UserFieldsFragmentDoc = gql`
@@ -1172,6 +1199,35 @@ export const UserByAccessTokenDocument = gql`
 
 export function useUserByAccessTokenQuery(options: Omit<Urql.UseQueryArgs<UserByAccessTokenQueryVariables>, 'query'>) {
   return Urql.useQuery<UserByAccessTokenQuery>({ query: UserByAccessTokenDocument, ...options });
+};
+export const UsersDocument = gql`
+    query Users($after: Cursor, $first: Int, $before: Cursor, $last: Int, $where: UserWhereInput, $orderBy: UserOrder) {
+  Users(
+    after: $after
+    first: $first
+    before: $before
+    last: $last
+    where: $where
+    orderBy: $orderBy
+  ) {
+    totalCount
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+    edges {
+      node {
+        ...UserFields
+      }
+    }
+  }
+}
+    ${UserFieldsFragmentDoc}`;
+
+export function useUsersQuery(options?: Omit<Urql.UseQueryArgs<UsersQueryVariables>, 'query'>) {
+  return Urql.useQuery<UsersQuery>({ query: UsersDocument, ...options });
 };
 export const SignUpDocument = gql`
     mutation SignUp($input: CreateUserInput!) {
@@ -1312,4 +1368,15 @@ export const DeleteSlideDocument = gql`
 
 export function useDeleteSlideMutation() {
   return Urql.useMutation<DeleteSlideMutation, DeleteSlideMutationVariables>(DeleteSlideDocument);
+};
+export const AddUsersToSlideDocument = gql`
+    mutation AddUsersToSlide($id: ID!, $emails: [String!]!) {
+  AddUsersToSlide(id: $id, emails: $emails) {
+    ...SlideFields
+  }
+}
+    ${SlideFieldsFragmentDoc}`;
+
+export function useAddUsersToSlideMutation() {
+  return Urql.useMutation<AddUsersToSlideMutation, AddUsersToSlideMutationVariables>(AddUsersToSlideDocument);
 };

@@ -6,14 +6,7 @@ import { Column } from 'react-table'
 import { Icon } from '@iconify/react'
 import dayjs from 'dayjs'
 
-import {
-  Notification,
-  AppContainer,
-  Table,
-  GlobalSearch,
-  Menu,
-  Spinner,
-} from '@/components'
+import { AppContainer, Table, GlobalSearch, Menu, Spinner } from '@/components'
 import {
   Slide,
   useDeleteSlideMutation,
@@ -239,6 +232,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                               user_id: user.user.id,
                             })
                             if (error || !data) {
+                              console.log(data)
                               toast.error(
                                 'An error occured while deleting slide'
                               )
@@ -292,6 +286,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                 })
           }
           slide={shareDialogProps.slide}
+          user={user}
         />
       )}
       {fileRenameDialogProps.slide && (
@@ -317,11 +312,11 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
           )}
           inputContainerClassName={'dark:focus-within:text-indigo-50'}
         />
-        <Notification
+        {/* <Notification
           dot
           className="mr-8 h-8 w-8"
           onClick={() => toast.warn('not implemented')}
-        />
+        /> */}
         <AvatarDropdown
           avatarProps={{
             src: user.user.avatar_url,

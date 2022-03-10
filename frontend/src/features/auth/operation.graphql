@@ -4,6 +4,37 @@ query UserByAccessToken($token: String!) {
   }
 }
 
+query Users(
+  $after: Cursor
+  $first: Int
+  $before: Cursor
+  $last: Int
+  $where: UserWhereInput
+  $orderBy: UserOrder
+) {
+  Users(
+    after: $after
+    first: $first
+    before: $before
+    last: $last
+    where: $where
+    orderBy: $orderBy
+  ) {
+    totalCount
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+    edges {
+      node {
+        ...UserFields
+      }
+    }
+  }
+}
+
 mutation SignUp($input: CreateUserInput!) {
   SignUp(input: $input) {
     ...UserWithAuthFields

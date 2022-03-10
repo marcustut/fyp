@@ -1,8 +1,8 @@
-import React, { Fragment, useCallback, useState } from 'react'
+import React, { Fragment, useCallback, useEffect, useState } from 'react'
 import Dropzone from 'react-dropzone'
 import { Icon } from '@iconify/react'
 import { Tab } from '@headlessui/react'
-import { Selection } from '@/components'
+import { Selection, Spinner } from '@/components'
 import { classnames, TW, TTailwindString } from 'tailwindcss-classnames'
 
 import { Button, ButtonProps, Dialog, Input } from '@/components'
@@ -11,6 +11,7 @@ import { handleFileRejections } from '@/utils/handler'
 import { SUMMARIZE_API_URL } from '@/lib/constants'
 import {
   SummarizeClient,
+  SummarizeEstimateResponse,
   SummarizeMaxCharPerSlide,
   SummarizeMaxChunk,
   SummarizeMode,
@@ -72,6 +73,10 @@ export const NewSlide: React.FC<NewSlideProps> = ({ user, buttonProps }) => {
   const [uploadType, setUploadType] = useState<UploadType>(UploadType.File)
   const [url, setUrl] = useState<string>('')
   const [text, setText] = useState<string>('')
+  const [estimation, setEstimation] = useState<{
+    loading: boolean
+    result?: SummarizeEstimateResponse
+  }>({ loading: false })
   const [summarizeOpts, setSummarizeOpts] = useState<
     Required<UserSummarizeOptions>
   >({
@@ -83,6 +88,11 @@ export const NewSlide: React.FC<NewSlideProps> = ({ user, buttonProps }) => {
   const [stagedFile, setStagedFile] =
     useState<{ blob: Blob; fileName: string }>()
   const [_, createSlideWithText] = useCreateSlideWithTextMutation()
+
+  useEffect(
+    () => setEstimation({ loading: false, result: undefined }),
+    [uploadType]
+  )
 
   const handleCreateSlide = useCallback(
     async (mdText: string, fileName: string) => {
@@ -108,7 +118,7 @@ export const NewSlide: React.FC<NewSlideProps> = ({ user, buttonProps }) => {
 
   const handleSummarize = useCallback(async () => {
     setLoading(true)
-    const outputName = `Slide ${generateName()}.md`
+    const outputName = `${generateName()} Slide`
     switch (uploadType) {
       case UploadType.File: {
         if (!stagedFile) {
@@ -123,7 +133,6 @@ export const NewSlide: React.FC<NewSlideProps> = ({ user, buttonProps }) => {
             input: stagedFile.fileName,
             outputName,
             ...summarizeOpts,
-            maxChunk: 250,
           })
           await handleCreateSlide(mdText, outputName)
         } catch (err) {
@@ -248,17 +257,26 @@ export const NewSlide: React.FC<NewSlideProps> = ({ user, buttonProps }) => {
               <Tab.Panels className="mt-2 w-full rounded-xl bg-gradient-to-t from-indigo-200 to-indigo-100 p-2 dark:from-indigo-500 dark:to-indigo-400">
                 <Tab.Panel>
                   <Dropzone
-                    accept="application/pdf, text/plain"
+                    accept="application/pdf"
                     multiple={false}
                     maxFiles={1}
                     maxSize={10000000}
-                    onDropAccepted={(acceptedFiles, event) => {
-                      setLoading(true)
+                    onDropAccepted={async (acceptedFiles, event) => {
+                      setEstimation({ loading: true, result: undefined })
+                      const fileName = acceptedFiles[0].name.replaceAll(
+                        ' ',
+                        '_'
+                      )
                       setStagedFile({
                         blob: acceptedFiles[0],
-                        fileName: acceptedFiles[0].name.replaceAll(' ', '_'),
+                        fileName,
                       })
-                      setLoading(false)
+                      await summarize.uploadFile(acceptedFiles[0], fileName)
+                      const result = await summarize.estimate(
+                        SummarizeType.PDF,
+                        fileName
+                      )
+                      setEstimation({ loading: false, result })
                     }}
                     onDropRejected={handleFileRejections}
                   >
@@ -283,11 +301,11 @@ export const NewSlide: React.FC<NewSlideProps> = ({ user, buttonProps }) => {
                                 select files
                               </p>
                               <p className="text-center text-sm text-indigo-400 dark:text-indigo-200">
-                                only .PDF and .TXT files are accepted
+                                only .PDF files are accepted
                               </p>
                             </>
                           ) : (
-                            <pre>{JSON.stringify(acceptedFiles, null, 2)}</pre>
+                            <pre>{acceptedFiles[0].name}</pre>
                           )}
                         </div>
                       </div>
@@ -345,7 +363,10 @@ export const NewSlide: React.FC<NewSlideProps> = ({ user, buttonProps }) => {
               <Selection
                 value={summarizeOpts.maxChunk}
                 onChange={(maxChunk) =>
-                  setSummarizeOpts({ ...summarizeOpts, maxChunk })
+                  setSummarizeOpts({
+                    ...summarizeOpts,
+                    maxChunk: parseInt(maxChunk as unknown as string),
+                  })
                 }
                 labelText={'Paragraph Length'}
                 buttonText={maxChunks[summarizeOpts.maxChunk]}
@@ -354,12 +375,64 @@ export const NewSlide: React.FC<NewSlideProps> = ({ user, buttonProps }) => {
               <Selection
                 value={summarizeOpts.maxCharPerSlide}
                 onChange={(maxCharPerSlide) =>
-                  setSummarizeOpts({ ...summarizeOpts, maxCharPerSlide })
+                  setSummarizeOpts({
+                    ...summarizeOpts,
+                    maxCharPerSlide: parseInt(
+                      maxCharPerSlide as unknown as string
+                    ),
+                  })
                 }
                 labelText={'Slide Layout'}
                 buttonText={maxCharPerSlides[summarizeOpts.maxCharPerSlide]}
                 options={maxCharPerSlides}
               />
+
+              <div className="mt-4 flex items-center text-neutral-400">
+                {!estimation.loading && estimation.result ? (
+                  <>
+                    <Icon icon="heroicons-outline:clock" />
+                    <span className="mx-1 text-xs">Estimated Time:</span>
+                    <span className="font-medium">
+                      {estimation.result.minutes} minute{' '}
+                      {estimation.result.seconds} seconds
+                    </span>
+                  </>
+                ) : !estimation.loading && !estimation.result ? (
+                  <Button
+                    variant="secondary"
+                    className="text-xs"
+                    onClick={async () => {
+                      switch (uploadType) {
+                        case UploadType.URL:
+                          if (!isValidHttpUrl(url))
+                            toast.warn('not a valid url')
+                          else {
+                            setEstimation({ loading: true, result: undefined })
+                            const result = await summarize.estimate(
+                              SummarizeType.URL,
+                              url
+                            )
+                            setEstimation({ loading: false, result })
+                          }
+                          break
+                        case UploadType.Text:
+                          setEstimation({ loading: true, result: undefined })
+                          const result = await summarize.estimate(
+                            SummarizeType.URL,
+                            url
+                          )
+                          setEstimation({ loading: false, result })
+                          break
+                      }
+                    }}
+                  >
+                    Estimate Wait Time
+                  </Button>
+                ) : (
+                  <Spinner className="ml-2 h-5 w-5" />
+                )}
+              </div>
+
               <Button
                 loading={loading}
                 variant="primary"
