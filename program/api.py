@@ -36,7 +36,7 @@ class Summarize(Resource):
         parser.add_argument('input', required=True)
         parser.add_argument('maxChunk', default=500, required=False, type=int, choices=range(50, 501, 50))
         parser.add_argument('maxCharPerSlide', default=500, required=False, type=int, choices=range(100, 501, 50)) # max_len
-        parser.add_argument('theme', default='apple-basic', required=False, choices=['apple-basic', 'seriph', 'default'])
+        parser.add_argument('theme', default='apple-basic', required=False, choices=['apple-basic', 'seriph', 'default', 'bricks', 'shibainu'])
         parser.add_argument('outputName', required=True)
 
         args = parser.parse_args()
